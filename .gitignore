@@ -1,0 +1,9 @@
+/bin/
+/dist/
+/eval-report/
+*.test
+*.out
+.env
+.env.local
+.claude/settings.local.json
+deploy/data/

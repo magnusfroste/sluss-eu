@@ -1,0 +1,32 @@
+version: pv_pii_local_2026_07
+metadata:
+  owner: platform
+  description: >
+    Production PII-egress policy. Prompts classified as containing personal data
+    (PII) may only route to a provider tagged `local` — i.e. an on-prem / private
+    model that keeps the data in the house. Everything else routes normally
+    (cloud allowed) for cost and speed. Point ROUTER_POLICY_PATH at this file.
+settings:
+  default_model_profile: balanced
+  conservative_unknowns: true
+  max_router_overhead_ms: 100
+  default_timeout_ms: 30000
+  default_retention: standard
+rules:
+  # 1) Personal data (PII) stays in the house: only a `local`-tagged provider
+  #    (e.g. the on-prem DGX / vLLM model) is an eligible candidate. If no such
+  #    provider is healthy, this is a fail-closed, audited block — never a silent
+  #    fallback to the cloud. Requires at least one routable model whose provider
+  #    carries the `local` compliance tag (set it on the Providers page).
+  - id: pii_stays_local
+    when:
+      sensitivity: pii
+    route:
+      constraints:
+        require_provider_tags: [local]
+  # 2) Everything else routes normally — the power of the cloud when it is safe.
+  - id: default
+    when: {}
+    route:
+      defaults:
+        model_profile: balanced

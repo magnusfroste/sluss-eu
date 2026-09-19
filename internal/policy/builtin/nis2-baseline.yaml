@@ -1,0 +1,110 @@
+version: pv_nis2_baseline_2026_08
+metadata:
+  owner: security
+  description: >
+    NIS2 / cybersäkerhetslagen (2026-01) BASELINE ruleset — a starting point a
+    CISO adapts, like a firewall's default rules. It routes each prompt by data
+    classification and task risk: personal data and possible secrets stay in the
+    house, the most sensitive reviews fail closed, everything else routes for
+    cost/CO2. This is a CONTROL AND EVIDENCE tool — not a legal compliance
+    certification, and it makes no legal claims.
+    ASSUMPTION: you have providers tagged `local` (on-prem / EU) and, for rule 3,
+    `air-gapped`. Adapt the tags/rules to your provider set (Providers page).
+    Evaluation order per rule: block → force → constraints → hints → defaults;
+    constraints accumulate and are fail-closed (no silent fallback).
+settings:
+  default_model_profile: balanced
+  conservative_unknowns: true
+  max_router_overhead_ms: 100
+  default_timeout_ms: 30000
+  default_retention: standard
+rules:
+  # 1) PERSONAL DATA (GDPR / NIS2 data protection): a prompt classified as
+  #    containing personal data may only route to a `local`-tagged provider
+  #    (on-prem / EU-resident) — it stays in the house.
+  - id: personal_data_stays_local
+    when:
+      sensitivity: pii
+    route:
+      constraints:
+        require_provider_tags: [local]
+
+  # 2) POSSIBLE SECRETS / CREDENTIALS (access control, supply-chain hygiene):
+  #    never send possible secrets to a cloud provider.
+  - id: secrets_stay_local
+    when:
+      sensitivity: secrets_possible
+    route:
+      constraints:
+        require_provider_tags: [local]
+
+  # 3) SECURITY REVIEW — the most sensitive class (incident / vulnerability /
+  #    auth material). Require an `air-gapped` model or FAIL CLOSED (audited
+  #    block), never a silent fallback to the cloud. Remove this rule, or add an
+  #    air-gapped provider, if you don't run one.
+  - id: security_review_airgapped
+    when:
+      task_type: security_review
+    route:
+      constraints:
+        require_provider_tags: [air-gapped]
+
+  # 4) DATABASE MIGRATION touches production data — keep it in the house.
+  - id: database_migration_stays_local
+    when:
+      task_type: database_migration
+    route:
+      constraints:
+        require_provider_tags: [local]
+
+  # 4b) BUSINESS-SENSITIVE / SPECIAL-CATEGORY DATA (ISSUE-093): security-
+  #     classified material, health data (GDPR art. 9), financial and legal
+  #     material stays in the house. Detected rule-based (EN + SV terms).
+  - id: sensitive_classes_stay_local
+    when:
+      sensitivity: { in: [security_classified, health, financial, legal] }
+    route:
+      constraints:
+        require_provider_tags: [local]
+
+  # 4c) UNREADABLE ATTACHMENTS (ISSUE-102): image/binary content the rule-based
+  #     classifier cannot read is never guessed about — it stays in the house
+  #     (a local vision model) or fails closed. What cannot be classified is
+  #     confined categorically.
+  - id: unreadable_attachments_stay_local
+    when:
+      requires_vision: true
+    route:
+      constraints:
+        require_provider_tags: [local]
+
+  # 4d) AGENT CAPABILITY (ISSUE-111): when a request declares tools, the
+  #     declared capability is classified (read < write < external <
+  #     destructive; unknown tools count as write). An agent that can DELETE,
+  #     EXECUTE or send data OUT of the organisation only runs against a
+  #     `local`-tagged model — or fails closed. The prompt content may be
+  #     harmless; the capability is not.
+  - id: agent_high_capability_stays_local
+    when:
+      tool_risk: { in: [external, destructive] }
+    route:
+      constraints:
+        require_provider_tags: [local]
+
+  # 5) SOURCE CODE / IP: keep intellectual property with an EU-resident provider.
+  #    Comment this out if you don't tag providers `eu-resident`, or it will
+  #    fail closed for code prompts.
+  # - id: source_code_eu_resident
+  #   when:
+  #     sensitivity: source_code
+  #   route:
+  #     constraints:
+  #       require_provider_tags: [eu-resident]
+
+  # 6) DEFAULT: everything else routes normally (cloud allowed) — the power of
+  #    the cloud when it's safe, at the lowest cost/CO2.
+  - id: default
+    when: {}
+    route:
+      defaults:
+        model_profile: balanced

@@ -1,0 +1,66 @@
+# Regression suite for misrouting incidents (ISSUE-041).
+#
+# Every confirmed misrouting incident becomes a case here. Unlike the quality
+# dataset (dataset-v1.yaml, which tolerates a pass-rate floor), EVERY case in
+# this file MUST pass — CI fails on a single regression.
+#
+# Add a new case when an incident is confirmed: include the incident id in the
+# name, the exact prompt that misrouted, and the route it MUST produce.
+#
+# tier vocabulary: cheap | balanced | premium
+version: regression-v1
+cases:
+  # INC-001: a payment security review must never route below premium.
+  - id: reg_inc_001
+    name: "INC-001 payment security review must be premium"
+    task_type: security_review
+    risk_level: high
+    prompt: "Security review: audit our payment capture endpoint for auth bypass and injection."
+    expected_route: {tier: premium}
+
+  # INC-002: destructive DB migration must never route to a cheap model.
+  - id: reg_inc_002
+    name: "INC-002 drop table must be premium"
+    task_type: database_migration
+    risk_level: high
+    prompt: "We need to DROP TABLE customer_archive in production after backup."
+    expected_route: {tier: premium}
+
+  # INC-003: explicit model pin must always be honoured regardless of prompt.
+  - id: reg_inc_003
+    name: "INC-003 explicit model pin honoured"
+    task_type: simple_chat
+    risk_level: low
+    explicit_model: premium-reasoning
+    prompt: "hi"
+    expected_route: {model: premium-reasoning}
+
+  # INC-004: router_mode=cheap must keep a plain summary on the cheap tier.
+  - id: reg_inc_004
+    name: "INC-004 cheap mode keeps summary cheap"
+    task_type: summarization
+    risk_level: low
+    router_mode: cheap
+    prompt: "Summarize this release note in two sentences."
+    expected_route: {tier: cheap}
+
+  # INC-005: vague high-risk prompt with no clear task must escalate to premium.
+  - id: reg_inc_005
+    name: "INC-005 vague production+pii escalates to premium"
+    task_type: unknown_high_risk
+    risk_level: high
+    prompt: "Something looks wrong with customer data in production, please investigate."
+    expected_route: {tier: premium}
+
+  # INC-006: a stack trace with code must reach a code-capable (>= balanced) tier.
+  - id: reg_inc_006
+    name: "INC-006 stack trace debugging is at least balanced"
+    task_type: hard_code_debugging
+    risk_level: medium
+    prompt: |
+      panic: runtime error: index out of range [3] with length 3
+      goroutine 1 [running]:
+      main.run()
+      	/srv/app/run.go:18 +0x39
+      Fix the bug in `func run() { _ = xs[3] }`.
+    expected_route: {tier: balanced}

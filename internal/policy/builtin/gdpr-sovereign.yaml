@@ -1,0 +1,47 @@
+version: pv_gdpr_sovereign_2026_07
+metadata:
+  owner: security
+  description: >
+    GDPR data-sovereignty baseline — a starter ruleset for keeping personal data
+    inside the EU (data-transfer / Schrems II posture). Personal data may only go
+    to an EU-resident provider (or a local one); possible secrets stay local;
+    everything else routes for cost. CONTROL AND EVIDENCE tool — not a legal
+    compliance certification, no legal claims.
+    ASSUMPTION: tag EU/on-prem providers `eu-resident` and `local` (Providers
+    page). The pii rule fails closed if no eu-resident/local provider exists.
+settings:
+  default_model_profile: balanced
+  conservative_unknowns: true
+  max_router_overhead_ms: 100
+  default_timeout_ms: 30000
+  default_retention: standard
+rules:
+  # 1) Personal data must stay in the EU: require an eu-resident (or local)
+  #    provider. Tag on-prem models with both `local` and `eu-resident`.
+  - id: personal_data_eu_resident
+    when:
+      sensitivity: pii
+    route:
+      constraints:
+        require_provider_tags: [eu-resident]
+  # 2) Possible secrets / credentials stay in the house.
+  - id: secrets_stay_local
+    when:
+      sensitivity: secrets_possible
+    route:
+      constraints:
+        require_provider_tags: [local]
+  # 2b) SPECIAL-CATEGORY DATA (GDPR art. 9, ISSUE-093): health data gets the
+  #     same EU-residency requirement as personal data.
+  - id: health_data_eu_resident
+    when:
+      sensitivity: health
+    route:
+      constraints:
+        require_provider_tags: [eu-resident]
+  # 3) Default: everything else routes normally for cost/CO2.
+  - id: default
+    when: {}
+    route:
+      defaults:
+        model_profile: balanced

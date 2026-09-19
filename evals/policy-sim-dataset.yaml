@@ -1,0 +1,28 @@
+version: policy-sim-v1
+cases:
+  - id: sim_001
+    name: tenant-specific upgrade
+    task_type: simple_chat
+    risk_level: low
+    tenant_id: tenant-ab
+    project_id: primary
+    prompt: "Hello there, please summarize this short note."
+    expected_route: {tier: balanced}
+
+  - id: sim_002
+    name: shared default stays aligned
+    task_type: simple_chat
+    risk_level: low
+    tenant_id: tenant-shared
+    project_id: primary
+    prompt: "Summarize this changelog in one sentence."
+    expected_route: {tier: balanced}
+
+  - id: sim_003
+    name: experiment-only project block
+    task_type: simple_chat
+    risk_level: low
+    tenant_id: tenant-shared
+    project_id: blocked-proj
+    prompt: "Say hello."
+    expected_route: {tier: balanced}

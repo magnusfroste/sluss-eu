@@ -1,0 +1,69 @@
+#
+# docker-compose.yml — tokenizer router on EasyPanel (or any compose host).
+#
+# Single container, no database required. Paste real values into the service's
+# env field in EasyPanel; the ${VAR:-default} substitution fills them in (see
+# deploy/example.env). Point any OpenAI-compatible client at https://<domain>/v1
+# with model "auto".
+#
+# Two ways to get the image:
+#   - build from this repo (default below), or
+#   - pull a published image (uncomment `image:` + comment out `build:`) once the
+#     publish workflow has pushed ghcr.io/magnusfroste/sluss.
+#
+services:
+  router:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    # image: ghcr.io/magnusfroste/sluss:${IMAGE_TAG:-latest}
+    # pull_policy: ${PULL_POLICY:-always}
+    restart: unless-stopped
+    ports:
+      - "${APP_BIND:-0.0.0.0}:${APP_PORT:-8080}:8080"
+    volumes:
+      # Persists spend/savings across restarts & redeploys (ROUTER_DATA_DIR).
+      # A NAMED volume, not a relative bind mount: on Git-driven PaaS (EasyPanel)
+      # the checkout directory is wiped on every redeploy, so `./data` would
+      # silently lose the data. Named volumes are owned by Docker and survive.
+      - tokenizer-data:/data
+    environment:
+      - ROUTER_ADDR=:8080
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      # --- Auth: clients send this as `Authorization: Bearer ...`. REQUIRED —
+      #     use a strong secret (openssl rand -hex 24), never the dev default. ---
+      - LOCAL_API_KEY=${LOCAL_API_KEY:?set a strong LOCAL_API_KEY}
+      # --- Provider: set OPENROUTER_API_KEY for a real provider; omit → mock. ---
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - OPENROUTER_REFERER=${OPENROUTER_REFERER:-}
+      - OPENROUTER_TITLE=${OPENROUTER_TITLE:-}
+      # --- Model roster: which OpenRouter model fills each tier (optional).
+      #     Use OpenRouter slugs, e.g. z-ai/glm-4.6. Empty keeps the default. ---
+      - ROUTER_MODEL_CHEAP=${ROUTER_MODEL_CHEAP:-}
+      - ROUTER_MODEL_BALANCED=${ROUTER_MODEL_BALANCED:-}
+      - ROUTER_MODEL_PREMIUM=${ROUTER_MODEL_PREMIUM:-}
+      # --- Cost guard: per-tenant spend cap in USD (0 disables). ---
+      - ROUTER_BUDGET_USD=${ROUTER_BUDGET_USD:-0}
+      # --- Privacy / retention. Prompt logging OFF unless explicitly enabled. ---
+      - ROUTER_PROMPT_LOGGING=${ROUTER_PROMPT_LOGGING:-false}
+      - ROUTER_RETENTION_DAYS=${ROUTER_RETENTION_DAYS:-30}
+      # --- Incident lever: route uncertain classifications at a raised tier. ---
+      - ROUTER_CONSERVATIVE_MODE=${ROUTER_CONSERVATIVE_MODE:-false}
+      # --- Persistence: spend/savings survive restart when this points at the
+      #     mounted volume above. ---
+      - ROUTER_DATA_DIR=${ROUTER_DATA_DIR:-/data}
+      # --- Dashboard: set a password to open /router/dashboard in a browser
+      #     (HTTP Basic Auth). Leave blank to keep the Bearer + admin gate. ---
+      - ROUTER_DASHBOARD_PASSWORD=${ROUTER_DASHBOARD_PASSWORD:-}
+      # --- Green receipt: grid CO2e intensity for the energy-savings estimate. ---
+      - ROUTER_GRID_CO2E_G_PER_KWH=${ROUTER_GRID_CO2E_G_PER_KWH:-400}
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/healthz"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+volumes:
+  # Survives container recreation and Git-checkout wipes on redeploy.
+  tokenizer-data:

@@ -1,0 +1,210 @@
+# Offline lightweight classifier experiment dataset.
+#
+# Purpose:
+#   - Compare the current deterministic rule baseline with an experiment-only
+#     trained linear model.
+#   - Stay fully offline and reproducible under `go test`.
+#   - Avoid any production rollout path; wiring this into live routing requires
+#     a separate ADR and explicit production implementation work.
+#
+# Constraints:
+#   - Fabricated prompts only; no real customer data or secrets.
+#   - Ordered train/test splits for deterministic training and evaluation.
+version: classifier-experiment-v1
+cases:
+  - id: clf_train_chat_latency
+    split: train
+    task_type: simple_chat
+    risk_level: low
+    prompt: "What is the difference between latency and throughput?"
+  - id: clf_train_chat_cache
+    split: train
+    task_type: simple_chat
+    risk_level: low
+    prompt: "Explain what a cache miss is in plain language."
+
+  - id: clf_train_git_commit
+    split: train
+    task_type: trivial_git
+    risk_level: low
+    prompt: |
+      Write a commit message for this diff:
+      diff --git a/internal/router/job.go b/internal/router/job.go
+      @@ -1 +1 @@
+      -old
+      +new
+  - id: clf_train_git_release
+    split: train
+    task_type: trivial_git
+    risk_level: low
+    prompt: "Draft a concise git commit title and body for these staged release notes changes."
+
+  - id: clf_train_shell_grep
+    split: train
+    task_type: simple_shell
+    risk_level: low
+    prompt: "Give me a grep command to count ERROR lines in app.log."
+  - id: clf_train_shell_curl
+    split: train
+    task_type: simple_shell
+    risk_level: low
+    prompt: "Need a curl one-liner to POST JSON to the local health endpoint."
+
+  - id: clf_train_summary_incident
+    split: train
+    task_type: summarization
+    risk_level: low
+    prompt: "Summarize this incident timeline into three bullets."
+  - id: clf_train_summary_recap
+    split: train
+    task_type: summarization
+    risk_level: low
+    prompt: "Give me a short recap of this debugging session."
+
+  - id: clf_train_edit_rename
+    split: train
+    task_type: simple_code_edit
+    risk_level: medium
+    prompt: "Rename buildJob to newJob in internal/router/job.go."
+  - id: clf_train_edit_config
+    split: train
+    task_type: simple_code_edit
+    risk_level: medium
+    prompt: "Update config/defaults.go to add a timeout field."
+
+  - id: clf_train_debug_nil
+    split: train
+    task_type: hard_code_debugging
+    risk_level: medium
+    prompt: |
+      panic: runtime error: invalid memory address or nil pointer dereference
+        at /app/main.go:42
+      Debug the handler code.
+  - id: clf_train_debug_race
+    split: train
+    task_type: hard_code_debugging
+    risk_level: medium
+    prompt: "Debug this deadlock in my concurrent Go code. The worker goroutine never releases the mutex."
+
+  - id: clf_train_security_xss
+    split: train
+    task_type: security_review
+    risk_level: high
+    prompt: "Audit this login page for XSS, CSRF, and auth bypass issues."
+  - id: clf_train_security_threat
+    split: train
+    task_type: security_review
+    risk_level: high
+    prompt: "Build a threat model for the payment service and list exploit paths."
+
+  - id: clf_train_migration_alter
+    split: train
+    task_type: database_migration
+    risk_level: high
+    prompt: "Write a migration to ALTER TABLE users ADD COLUMN last_seen_at timestamptz."
+  - id: clf_train_migration_index
+    split: train
+    task_type: database_migration
+    risk_level: high
+    prompt: "Create db/migrations/008_events.sql with CREATE INDEX CONCURRENTLY on events(created_at)."
+
+  - id: clf_train_long_context_repo
+    split: train
+    task_type: long_context_analysis
+    risk_level: low
+    prompt: "Review the whole repository and explain the architecture."
+    expand_tokens: 12000
+  - id: clf_train_long_context_contract
+    split: train
+    task_type: long_context_analysis
+    risk_level: low
+    prompt: "Analyze this very large document and map every interface contract."
+    expand_tokens: 10000
+
+  - id: clf_train_copy_headline
+    split: train
+    task_type: creative_copy
+    risk_level: low
+    prompt: "Write five homepage headlines for a developer billing product."
+  - id: clf_train_copy_subject
+    split: train
+    task_type: creative_copy
+    risk_level: low
+    prompt: "Draft three launch email subject lines and preview text."
+
+  - id: clf_train_unknown_pii
+    split: train
+    task_type: unknown_high_risk
+    risk_level: high
+    prompt: "Production customer data includes email, phone, and address. What should we do next?"
+  - id: clf_train_unknown_secret
+    split: train
+    task_type: unknown_high_risk
+    risk_level: critical
+    prompt: "Urgent production incident: leaked private key and exploit report. What now?"
+
+  - id: clf_test_chat_queue
+    split: test
+    task_type: simple_chat
+    risk_level: low
+    prompt: "What does queue depth measure?"
+  - id: clf_test_git_diff
+    split: test
+    task_type: trivial_git
+    risk_level: low
+    prompt: |
+      Write a commit message for this git diff:
+      diff --git a/README.md b/README.md
+      @@ -2 +2 @@
+      -beta
+      +stable
+  - id: clf_test_shell_grep
+    split: test
+    task_type: simple_shell
+    risk_level: low
+    prompt: "Need a grep command that prints only WARN lines from router.log."
+  - id: clf_test_summary_digest
+    split: test
+    task_type: summarization
+    risk_level: low
+    prompt: "Create a brief summary of this weekly ops report."
+  - id: clf_test_edit_flag
+    split: test
+    task_type: simple_code_edit
+    risk_level: medium
+    prompt: "Modify internal/engine/score.go to add a conservative mode flag."
+  - id: clf_test_debug_traceback
+    split: test
+    task_type: hard_code_debugging
+    risk_level: medium
+    prompt: |
+      Traceback (most recent call last):
+        File "app.py", line 10, in <module>
+          run()
+      Debug why this worker crashes with KeyError.
+  - id: clf_test_security_review
+    split: test
+    task_type: security_review
+    risk_level: high
+    prompt: "Please review this auth callback flow for vulnerability and secret leakage."
+  - id: clf_test_migration_schema
+    split: test
+    task_type: database_migration
+    risk_level: high
+    prompt: "Prepare a schema rollback plan before we drop table audit_events."
+  - id: clf_test_long_context
+    split: test
+    task_type: long_context_analysis
+    risk_level: low
+    prompt: "Analyze the entire codebase and summarize all routing decisions."
+    expand_tokens: 11000
+  - id: clf_test_copy_tagline
+    split: test
+    task_type: creative_copy
+    risk_level: low
+    prompt: "Write four taglines for a secure checkout product."
+  - id: clf_test_unknown_secret
+    split: test
+    task_type: unknown_high_risk
+    risk_level: critical
+    prompt: "Production outage with leaked API key, exploited auth path, and urgent customer impact. What do we do?"

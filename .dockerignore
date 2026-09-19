@@ -1,0 +1,13 @@
+# Keep the build context small and never ship secrets or local artifacts.
+.git
+.gitignore
+.env
+.env.*
+*.local.yaml
+bin/
+.ai/
+.claude/
+.scratch/
+node_modules/
+*.log
+eval-report/

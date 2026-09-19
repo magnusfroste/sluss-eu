@@ -1,0 +1,19 @@
+version: policy-sim-a
+settings:
+  default_model_profile: balanced
+  conservative_unknowns: true
+  max_router_overhead_ms: 100
+  default_timeout_ms: 30000
+  default_retention: standard
+rules:
+  - id: tenant_ab_balanced
+    when:
+      tenant: tenant-ab
+    route:
+      force:
+        model_profile: balanced
+  - id: shared_default
+    when: {}
+    route:
+      defaults:
+        model_profile: balanced

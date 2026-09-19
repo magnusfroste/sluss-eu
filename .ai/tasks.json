@@ -1,0 +1,508 @@
+{
+  "tasks": [
+    {
+      "id": "ISSUE-001",
+      "title": "Initiera repo och grundstruktur",
+      "source": "docs/05-issues/ISSUE-001-initiera-repo-och-grundstruktur.md",
+      "status": "done",
+      "priority": "P0",
+      "updated_at": "2026-05-19T21:44:52+02:00"
+    },
+    {
+      "id": "ISSUE-002",
+      "title": "Skapa /healthz och /readyz",
+      "source": "docs/05-issues/ISSUE-002-skapa-healthz-och-readyz.md",
+      "status": "done",
+      "priority": "P0",
+      "updated_at": "2026-05-19T21:44:52+02:00"
+    },
+    {
+      "id": "ISSUE-003",
+      "title": "Implementera API key auth skeleton",
+      "source": "docs/05-issues/ISSUE-003-implementera-api-key-auth-skeleton.md",
+      "status": "done",
+      "priority": "P0",
+      "updated_at": "2026-05-19T21:44:52+02:00"
+    },
+    {
+      "id": "ISSUE-004",
+      "title": "Implementera POST /v1/chat/completions non-streaming",
+      "source": "docs/05-issues/ISSUE-004-implementera-post-v1-chat-completions-non-streaming.md",
+      "status": "done",
+      "priority": "P0",
+      "updated_at": "2026-05-19T21:44:52+02:00"
+    },
+    {
+      "id": "ISSUE-005",
+      "title": "Bygg mock provider",
+      "source": "docs/05-issues/ISSUE-005-bygg-mock-provider.md",
+      "status": "done",
+      "priority": "P0",
+      "updated_at": "2026-05-19T21:44:52+02:00"
+    },
+    {
+      "id": "ISSUE-006",
+      "title": "Lägg till request id och basic tracing",
+      "source": "docs/05-issues/ISSUE-006-l-gg-till-request-id-och-basic-tracing.md",
+      "status": "done",
+      "priority": "P0",
+      "updated_at": "2026-05-19T21:44:52+02:00"
+    },
+    {
+      "id": "ISSUE-007",
+      "title": "Skapa databasmigrationer för tenants och api_keys",
+      "source": "docs/05-issues/ISSUE-007-skapa-databasmigrationer-f-r-tenants-och-api-keys.md",
+      "status": "done",
+      "priority": "P0",
+      "updated_at": "2026-05-19T22:40:00+02:00"
+    },
+    {
+      "id": "ISSUE-008",
+      "title": "Skapa model registry schema",
+      "source": "docs/05-issues/ISSUE-008-skapa-model-registry-schema.md",
+      "status": "done",
+      "priority": "P0",
+      "updated_at": "2026-05-19T22:40:00+02:00"
+    },
+    {
+      "id": "ISSUE-009",
+      "title": "Implementera in-memory model registry",
+      "source": "docs/05-issues/ISSUE-009-implementera-in-memory-model-registry.md",
+      "status": "done",
+      "priority": "P0",
+      "updated_at": "2026-05-19T22:40:00+02:00"
+    },
+    {
+      "id": "ISSUE-010",
+      "title": "Definiera interna modellprofiler",
+      "source": "docs/05-issues/ISSUE-010-definiera-interna-modellprofiler.md",
+      "status": "done",
+      "priority": "P0",
+      "updated_at": "2026-05-19T22:40:00+02:00"
+    },
+    {
+      "id": "ISSUE-011",
+      "title": "Implementera första riktiga provideradapter",
+      "source": "docs/05-issues/ISSUE-011-implementera-f-rsta-riktiga-provideradapter.md",
+      "status": "done",
+      "priority": "P0",
+      "updated_at": "2026-05-19T22:40:00+02:00"
+    },
+    {
+      "id": "ISSUE-012",
+      "title": "Implementera streaming skeleton",
+      "source": "docs/05-issues/ISSUE-012-implementera-streaming-skeleton.md",
+      "status": "done",
+      "priority": "P0",
+      "updated_at": "2026-05-19T22:40:00+02:00"
+    },
+    {
+      "id": "ISSUE-013",
+      "title": "Implementera cost estimator",
+      "source": "docs/05-issues/ISSUE-013-implementera-cost-estimator.md",
+      "status": "done",
+      "priority": "P0",
+      "updated_at": "2026-05-19T22:40:00+02:00"
+    },
+    {
+      "id": "ISSUE-014",
+      "title": "Skapa JobDescriptor datamodell",
+      "source": "docs/05-issues/ISSUE-014-skapa-jobdescriptor-datamodell.md",
+      "status": "done",
+      "priority": "P0",
+      "updated_at": "2026-05-20T14:15:00+02:00"
+    },
+    {
+      "id": "ISSUE-015",
+      "title": "Implementera snabb tokenestimering",
+      "source": "docs/05-issues/ISSUE-015-implementera-snabb-tokenestimering.md",
+      "status": "done",
+      "priority": "P0",
+      "updated_at": "2026-05-20T14:15:00+02:00"
+    },
+    {
+      "id": "ISSUE-016",
+      "title": "Implementera feature extraction för kodsignaler",
+      "source": "docs/05-issues/ISSUE-016-implementera-feature-extraction-f-r-kodsignaler.md",
+      "status": "done",
+      "priority": "P0",
+      "updated_at": "2026-05-20T14:15:00+02:00"
+    },
+    {
+      "id": "ISSUE-017",
+      "title": "Implementera taskklassregler",
+      "source": "docs/05-issues/ISSUE-017-implementera-taskklassregler.md",
+      "status": "done",
+      "priority": "P0",
+      "updated_at": "2026-05-20T14:15:00+02:00"
+    },
+    {
+      "id": "ISSUE-018",
+      "title": "Implementera riskklassregler",
+      "source": "docs/05-issues/ISSUE-018-implementera-riskklassregler.md",
+      "status": "done",
+      "priority": "P0",
+      "updated_at": "2026-05-20T14:15:00+02:00"
+    },
+    {
+      "id": "ISSUE-019",
+      "title": "Mät feature extraction latency",
+      "source": "docs/05-issues/ISSUE-019-m-t-feature-extraction-latency.md",
+      "status": "done",
+      "priority": "P0",
+      "updated_at": "2026-05-20T14:15:00+02:00"
+    },
+    {
+      "id": "ISSUE-020",
+      "title": "Definiera policy DSL v1",
+      "source": "docs/05-issues/ISSUE-020-definiera-policy-dsl-v1.md",
+      "status": "done",
+      "priority": "P0",
+      "updated_at": "2026-05-20T14:30:00+02:00"
+    },
+    {
+      "id": "ISSUE-021",
+      "title": "Implementera policy parser och validering",
+      "source": "docs/05-issues/ISSUE-021-implementera-policy-parser-och-validering.md",
+      "status": "done",
+      "priority": "P0",
+      "updated_at": "2026-05-20T14:55:00+02:00"
+    },
+    {
+      "id": "ISSUE-022",
+      "title": "Implementera compiled policy cache",
+      "source": "docs/05-issues/ISSUE-022-implementera-compiled-policy-cache.md",
+      "status": "done",
+      "priority": "P0",
+      "updated_at": "2026-05-28T15:21:17+02:00"
+    },
+    {
+      "id": "ISSUE-023",
+      "title": "Implementera policy explanations",
+      "source": "docs/05-issues/ISSUE-023-implementera-policy-explanations.md",
+      "status": "done",
+      "priority": "P0",
+      "updated_at": "2026-05-28T18:08:15+02:00"
+    },
+    {
+      "id": "ISSUE-024",
+      "title": "Implementera policy test runner",
+      "source": "docs/05-issues/ISSUE-024-implementera-policy-test-runner.md",
+      "status": "done",
+      "priority": "P0",
+      "updated_at": "2026-05-28T18:14:13+02:00"
+    },
+    {
+      "id": "ISSUE-025",
+      "title": "Implementera candidate filtering",
+      "source": "docs/05-issues/ISSUE-025-implementera-candidate-filtering.md",
+      "status": "done",
+      "priority": "P0",
+      "updated_at": "2026-06-05T18:06:18+02:00"
+    },
+    {
+      "id": "ISSUE-026",
+      "title": "Implementera scoringfunktion v1",
+      "source": "docs/05-issues/ISSUE-026-implementera-scoringfunktion-v1.md",
+      "status": "done",
+      "priority": "P0",
+      "updated_at": "2026-06-05T18:06:18+02:00"
+    },
+    {
+      "id": "ISSUE-027",
+      "title": "Implementera fallback planning",
+      "source": "docs/05-issues/ISSUE-027-implementera-fallback-planning.md",
+      "status": "done",
+      "priority": "P0",
+      "updated_at": "2026-06-05T18:06:18+02:00"
+    },
+    {
+      "id": "ISSUE-028",
+      "title": "Implementera /router/decision dry-run",
+      "source": "docs/05-issues/ISSUE-028-implementera-router-decision-dry-run.md",
+      "status": "done",
+      "priority": "P0",
+      "updated_at": "2026-06-05T18:06:18+02:00"
+    },
+    {
+      "id": "ISSUE-029",
+      "title": "Implementera provider timeout och retry",
+      "source": "docs/05-issues/ISSUE-029-implementera-provider-timeout-och-retry.md",
+      "status": "done",
+      "priority": "P0",
+      "updated_at": "2026-06-05T18:06:18+02:00"
+    },
+    {
+      "id": "ISSUE-030",
+      "title": "Implementera fallback före first token",
+      "source": "docs/05-issues/ISSUE-030-implementera-fallback-f-re-first-token.md",
+      "status": "done",
+      "priority": "P0",
+      "updated_at": "2026-06-05T18:06:18+02:00"
+    },
+    {
+      "id": "ISSUE-031",
+      "title": "Skapa request_logs och route_attempts",
+      "source": "docs/05-issues/ISSUE-031-skapa-request-logs-och-route-attempts.md",
+      "status": "done",
+      "priority": "P0",
+      "updated_at": "2026-06-05T18:06:18+02:00"
+    },
+    {
+      "id": "ISSUE-032",
+      "title": "Implementera async event queue",
+      "source": "docs/05-issues/ISSUE-032-implementera-async-event-queue.md",
+      "status": "done",
+      "priority": "P0",
+      "updated_at": "2026-06-05T18:06:18+02:00"
+    },
+    {
+      "id": "ISSUE-033",
+      "title": "Implementera metrics för routing och latency",
+      "source": "docs/05-issues/ISSUE-033-implementera-metrics-f-r-routing-och-latency.md",
+      "status": "done",
+      "priority": "P0",
+      "updated_at": "2026-06-05T18:06:18+02:00"
+    },
+    {
+      "id": "ISSUE-034",
+      "title": "Implementera minimal spend aggregation",
+      "source": "docs/05-issues/ISSUE-034-implementera-minimal-spend-aggregation.md",
+      "status": "done",
+      "priority": "P0",
+      "updated_at": "2026-06-05T18:06:18+02:00"
+    },
+    {
+      "id": "ISSUE-035",
+      "title": "Skapa minimal dashboard",
+      "source": "docs/05-issues/ISSUE-035-skapa-minimal-dashboard.md",
+      "status": "done",
+      "priority": "P0",
+      "updated_at": "2026-06-05T18:06:18+02:00"
+    },
+    {
+      "id": "ISSUE-036",
+      "title": "Implementera provider health worker",
+      "source": "docs/05-issues/ISSUE-036-implementera-provider-health-worker.md",
+      "status": "done",
+      "priority": "P0",
+      "updated_at": "2026-06-05T18:06:18+02:00"
+    },
+    {
+      "id": "ISSUE-037",
+      "title": "Skapa eval dataset v1",
+      "source": "docs/05-issues/ISSUE-037-skapa-eval-dataset-v1.md",
+      "status": "done",
+      "priority": "P1",
+      "updated_at": "2026-06-05T18:06:18+02:00"
+    },
+    {
+      "id": "ISSUE-038",
+      "title": "Implementera eval runner",
+      "source": "docs/05-issues/ISSUE-038-implementera-eval-runner.md",
+      "status": "done",
+      "priority": "P1",
+      "updated_at": "2026-06-05T18:06:18+02:00"
+    },
+    {
+      "id": "ISSUE-039",
+      "title": "Implementera outcome API",
+      "source": "docs/05-issues/ISSUE-039-implementera-outcome-api.md",
+      "status": "done",
+      "priority": "P1",
+      "updated_at": "2026-06-05T18:06:18+02:00"
+    },
+    {
+      "id": "ISSUE-040",
+      "title": "Implementera acceptance feedback i dashboard",
+      "source": "docs/05-issues/ISSUE-040-implementera-acceptance-feedback-i-dashboard.md",
+      "status": "done",
+      "priority": "P1",
+      "updated_at": "2026-06-05T18:06:18+02:00"
+    },
+    {
+      "id": "ISSUE-041",
+      "title": "Skapa regression suite för felrouting",
+      "source": "docs/05-issues/ISSUE-041-skapa-regression-suite-f-r-felrouting.md",
+      "status": "done",
+      "priority": "P1",
+      "updated_at": "2026-06-05T18:06:18+02:00"
+    },
+    {
+      "id": "ISSUE-042",
+      "title": "Implementera secret masking v1",
+      "source": "docs/05-issues/ISSUE-042-implementera-secret-masking-v1.md",
+      "status": "done",
+      "priority": "P1",
+      "updated_at": "2026-06-05T18:06:18+02:00"
+    },
+    {
+      "id": "ISSUE-043",
+      "title": "Implementera provider allow/deny per projekt",
+      "source": "docs/05-issues/ISSUE-043-implementera-provider-allow-deny-per-projekt.md",
+      "status": "done",
+      "priority": "P1",
+      "updated_at": "2026-06-08T22:02:36+02:00"
+    },
+    {
+      "id": "ISSUE-044",
+      "title": "Implementera audit log",
+      "source": "docs/05-issues/ISSUE-044-implementera-audit-log.md",
+      "status": "done",
+      "priority": "P1",
+      "updated_at": "2026-06-12T15:55:31+02:00"
+    },
+    {
+      "id": "ISSUE-045",
+      "title": "Implementera retention settings",
+      "source": "docs/05-issues/ISSUE-045-implementera-retention-settings.md",
+      "status": "done",
+      "priority": "P1",
+      "updated_at": "2026-06-12T15:55:31+02:00"
+    },
+    {
+      "id": "ISSUE-046",
+      "title": "Implementera API key scopes",
+      "source": "docs/05-issues/ISSUE-046-implementera-api-key-scopes.md",
+      "status": "done",
+      "priority": "P1",
+      "updated_at": "2026-06-12T15:55:31+02:00"
+    },
+    {
+      "id": "ISSUE-047",
+      "title": "Skapa CLI för decision debug",
+      "source": "docs/05-issues/ISSUE-047-skapa-cli-f-r-decision-debug.md",
+      "status": "done",
+      "priority": "P1",
+      "updated_at": "2026-06-12T15:55:31+02:00"
+    },
+    {
+      "id": "ISSUE-048",
+      "title": "Skapa SDK metadata helpers",
+      "source": "docs/05-issues/ISSUE-048-skapa-sdk-metadata-helpers.md",
+      "status": "done",
+      "priority": "P1",
+      "updated_at": "2026-06-12T15:55:31+02:00"
+    },
+    {
+      "id": "ISSUE-049",
+      "title": "Skapa spend simulator",
+      "source": "docs/05-issues/ISSUE-049-skapa-spend-simulator.md",
+      "status": "done",
+      "priority": "P1",
+      "updated_at": "2026-06-12T15:55:31+02:00"
+    },
+    {
+      "id": "ISSUE-050",
+      "title": "Integrera med CI för evals",
+      "source": "docs/05-issues/ISSUE-050-integrera-med-ci-f-r-evals.md",
+      "status": "done",
+      "priority": "P1",
+      "updated_at": "2026-06-12T15:55:31+02:00"
+    },
+    {
+      "id": "ISSUE-051",
+      "title": "Implementera budget caps",
+      "source": "docs/05-issues/ISSUE-051-implementera-budget-caps.md",
+      "status": "done",
+      "priority": "P1",
+      "updated_at": "2026-06-12T15:55:31+02:00"
+    },
+    {
+      "id": "ISSUE-052",
+      "title": "Implementera route decision cache",
+      "source": "docs/05-issues/ISSUE-052-implementera-route-decision-cache.md",
+      "status": "done",
+      "priority": "P1",
+      "updated_at": "2026-06-12T15:55:31+02:00"
+    },
+    {
+      "id": "ISSUE-053",
+      "title": "Implementera model-specific prompt adapter skeleton",
+      "source": "docs/05-issues/ISSUE-053-implementera-model-specific-prompt-adapter-skeleton.md",
+      "status": "done",
+      "priority": "P2",
+      "updated_at": "2026-06-12T16:24:34+02:00"
+    },
+    {
+      "id": "ISSUE-054",
+      "title": "Implementera A/B policy simulation",
+      "source": "docs/05-issues/ISSUE-054-implementera-a-b-policy-simulation.md",
+      "status": "done",
+      "priority": "P2",
+      "updated_at": "2026-06-12T16:18:17+02:00"
+    },
+    {
+      "id": "ISSUE-055",
+      "title": "Implementera shadow routing",
+      "source": "docs/05-issues/ISSUE-055-implementera-shadow-routing.md",
+      "status": "done",
+      "priority": "P2",
+      "updated_at": "2026-06-12T16:30:04+02:00"
+    },
+    {
+      "id": "ISSUE-056",
+      "title": "Skapa beta release checklist",
+      "source": "docs/05-issues/ISSUE-056-skapa-beta-release-checklist.md",
+      "status": "done",
+      "priority": "P1",
+      "updated_at": "2026-06-12T15:55:31+02:00"
+    },
+    {
+      "id": "ISSUE-057",
+      "title": "Implementera RBAC skeleton",
+      "source": "docs/05-issues/ISSUE-057-implementera-rbac-skeleton.md",
+      "status": "done",
+      "priority": "P2",
+      "updated_at": "2026-06-12T16:13:54+02:00"
+    },
+    {
+      "id": "ISSUE-058",
+      "title": "Implementera trained lightweight classifier experiment",
+      "source": "docs/05-issues/ISSUE-058-implementera-trained-lightweight-classifier-experiment.md",
+      "status": "done",
+      "priority": "P2",
+      "updated_at": "2026-06-12T16:32:33+02:00"
+    },
+    {
+      "id": "ISSUE-059",
+      "title": "Implementera cost-quality frontier report",
+      "source": "docs/05-issues/ISSUE-059-implementera-cost-quality-frontier-report.md",
+      "status": "done",
+      "priority": "P2",
+      "updated_at": "2026-06-12T16:28:55+02:00"
+    },
+    {
+      "id": "ISSUE-060",
+      "title": "Implementera global conservative mode",
+      "source": "docs/05-issues/ISSUE-060-implementera-global-conservative-mode.md",
+      "status": "done",
+      "priority": "P1",
+      "updated_at": "2026-06-12T15:55:31+02:00"
+    },
+    {
+      "id": "ISSUE-061",
+      "title": "Rebrand Tokenix → Tokenizer",
+      "source": "docs/05-issues/ISSUE-061-rebrand-tokenix-till-tokenizer.md",
+      "status": "done",
+      "priority": "P1",
+      "updated_at": "2026-05-19T21:44:52+02:00"
+    },
+    {
+      "id": "ISSUE-062",
+      "title": "Context-processor pipeline (interface only)",
+      "source": "docs/05-issues/ISSUE-062-context-processor-pipeline-interface.md",
+      "status": "done",
+      "priority": "P2",
+      "updated_at": "2026-05-19T21:44:52+02:00"
+    },
+    {
+      "id": "ISSUE-063",
+      "title": "Policy-gated context pipeline activation",
+      "source": "docs/05-issues/ISSUE-063-policy-gated-context-pipeline-activation.md",
+      "status": "done",
+      "priority": "P1",
+      "updated_at": "2026-06-12T16:32:33+02:00"
+    }
+  ]
+}

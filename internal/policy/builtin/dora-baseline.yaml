@@ -1,0 +1,61 @@
+version: pv_dora_baseline_2026_07
+metadata:
+  owner: security
+  description: >
+    DORA baseline (financial entities) — a CISO/COO starter ruleset for the EU
+    Digital Operational Resilience Act. Emphasis: ICT third-party control and
+    evidence. Personal data and possible secrets stay in the house; every request
+    must use a provider you have a data-processing agreement with (dpa-signed);
+    security review fails closed. CONTROL AND EVIDENCE tool — not a legal
+    compliance certification, no legal claims.
+    ASSUMPTION: tag providers `local` and `dpa-signed` (Providers page). Adapt to
+    your provider set — the dpa-signed default fails closed if no such provider.
+settings:
+  default_model_profile: balanced
+  conservative_unknowns: true
+  max_router_overhead_ms: 100
+  default_timeout_ms: 30000
+  default_retention: standard
+rules:
+  # 1) Personal data stays in the house.
+  - id: personal_data_stays_local
+    when:
+      sensitivity: pii
+    route:
+      constraints:
+        require_provider_tags: [local]
+  # 2) Possible secrets / credentials never leave for the cloud.
+  - id: secrets_stay_local
+    when:
+      sensitivity: secrets_possible
+    route:
+      constraints:
+        require_provider_tags: [local]
+  # 2b) FINANCIAL ENTITY CORE DATA (ISSUE-093): financial material (payroll,
+  #     bokslut, insider information) and legal material stays in the house.
+  - id: financial_and_legal_stay_local
+    when:
+      sensitivity: { in: [financial, legal, security_classified] }
+    route:
+      constraints:
+        require_provider_tags: [local]
+  # 3) Security review — most sensitive — requires air-gapped or fails closed.
+  - id: security_review_airgapped
+    when:
+      task_type: security_review
+    route:
+      constraints:
+        require_provider_tags: [air-gapped]
+  # 4) DORA third-party control: EVERY request must use a provider you have a
+  #    data-processing agreement with. Comment out if you don't tag `dpa-signed`.
+  - id: require_documented_provider
+    when: {}
+    route:
+      constraints:
+        require_provider_tags: [dpa-signed]
+  # 5) Default profile.
+  - id: default
+    when: {}
+    route:
+      defaults:
+        model_profile: balanced

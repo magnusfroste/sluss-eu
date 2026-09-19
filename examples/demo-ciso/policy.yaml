@@ -1,0 +1,36 @@
+version: demo-ciso
+# CISO-demopolicy (ISSUE-082). Kör med providers taggade via
+# ROUTER_PROVIDER_TAGS="anthropic=local,eu-resident;openai=cloud".
+# Allt är syntetiskt — inga riktiga personuppgifter.
+settings:
+  default_model_profile: balanced
+  conservative_unknowns: true
+  max_router_overhead_ms: 100
+  default_timeout_ms: 30000
+  default_retention: standard
+rules:
+  # 1) Personuppgifter (PII) får bara gå till en modell som stannar i huset.
+  #    Med taggarna ovan routas de till den lokala (anthropic) modellen —
+  #    signaturögonblicket "moln → lokal", och bytet syns i demo-chatten.
+  - id: pii_stays_local
+    when:
+      sensitivity: pii
+    route:
+      constraints:
+        require_provider_tags: [local]
+  # 2) Säkerhetsgranskning (den känsligaste klassen) kräver en air-gapped modell.
+  #    Ingen provider har den taggen → ingen kandidat → fail-closed block, aldrig
+  #    tyst fallback till moln. (Matchar på task_type — deterministiskt klassad,
+  #    till skillnad från rå prompttext som aldrig lämnar klienten.)
+  - id: security_review_airgapped
+    when:
+      task_type: security_review
+    route:
+      constraints:
+        require_provider_tags: [air-gapped]
+  # 3) Allt annat routas normalt (moln tillåtet) — kraften när det är ofarligt.
+  - id: default
+    when: {}
+    route:
+      defaults:
+        model_profile: balanced

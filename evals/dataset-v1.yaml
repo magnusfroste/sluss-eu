@@ -1,0 +1,422 @@
+# Eval dataset v1 — golden routing cases.
+#
+# Each case is a prompt plus the expected routing outcome. The eval runner
+# (internal/evals) classifies the prompt with the real feature extractor, runs
+# it through the routing engine in dry-run mode (no provider call), and compares
+# the selected model tier against expected_route.tier.
+#
+# Constraints (ISSUE-037):
+#   - >= 50 cases
+#   - every case has a task_type and an expected route
+#   - NO real secrets, API keys, or customer data — all values are fabricated
+#
+# tier vocabulary: cheap | balanced | premium
+version: eval-v1
+cases:
+  # --- security_review → premium ---
+  - id: eval_001
+    name: auth vulnerability review
+    task_type: security_review
+    risk_level: high
+    prompt: "Please do a security review of our login flow and find any vulnerability in the auth bypass logic."
+    expected_route: {tier: premium}
+  - id: eval_002
+    name: xss audit
+    task_type: security_review
+    risk_level: high
+    prompt: "Audit this template rendering for XSS and CSRF issues."
+    expected_route: {tier: premium}
+  - id: eval_003
+    name: secret scanning review
+    task_type: security_review
+    risk_level: high
+    prompt: "Review this config and scan for any secrets or injection risks."
+    expected_route: {tier: premium}
+  - id: eval_004
+    name: threat model
+    task_type: security_review
+    risk_level: high
+    prompt: "Build a threat model for our payment service and list exploit paths."
+    expected_route: {tier: premium}
+  - id: eval_005
+    name: cve triage
+    task_type: security_review
+    risk_level: high
+    prompt: "Given this dependency list, which CVE entries represent a real vulnerability for us?"
+    expected_route: {tier: premium}
+
+  # --- database_migration → premium ---
+  - id: eval_010
+    name: alter table migration
+    task_type: database_migration
+    risk_level: high
+    prompt: "Write a migration to ALTER TABLE orders add a status column with a backfill."
+    expected_route: {tier: premium}
+  - id: eval_011
+    name: create index migration
+    task_type: database_migration
+    risk_level: high
+    prompt: "I need to CREATE INDEX concurrently on the events table without locking writes."
+    expected_route: {tier: premium}
+  - id: eval_012
+    name: drop table migration
+    task_type: database_migration
+    risk_level: high
+    prompt: "Generate a safe rollback plan before we DROP TABLE legacy_sessions."
+    expected_route: {tier: premium}
+  - id: eval_013
+    name: create table schema
+    task_type: database_migration
+    risk_level: high
+    prompt: "CREATE TABLE invoices with foreign keys to tenants and a unique constraint."
+    expected_route: {tier: premium}
+
+  # --- hard_code_debugging → balanced (stack trace + code) ---
+  - id: eval_020
+    name: nil panic stack trace
+    task_type: hard_code_debugging
+    risk_level: medium
+    prompt: |
+      My service panics. Here is the stack trace:
+      goroutine 1 [running]:
+      main.handle(0x0)
+      	/app/main.go:42 +0x1d
+      panic: runtime error: invalid memory address or nil pointer dereference
+      Fix the bug in `func handle(req *Request)`.
+    expected_route: {tier: balanced}
+  - id: eval_021
+    name: python traceback debug
+    task_type: hard_code_debugging
+    risk_level: medium
+    prompt: |
+      Traceback (most recent call last):
+        File "app.py", line 88, in <module>
+          process(data)
+      KeyError: 'user_id'
+      Debug this in the code `def process(data): return data['user_id']`.
+    expected_route: {tier: balanced}
+  - id: eval_022
+    name: java exception trace
+    task_type: hard_code_debugging
+    risk_level: medium
+    prompt: |
+      Exception in thread "main" java.lang.NullPointerException
+        at com.example.Service.run(Service.java:31)
+      Here is the method: `public void run() { repo.save(null); }` — what is wrong?
+    expected_route: {tier: balanced}
+
+  # --- long_context_analysis → balanced (large context) ---
+  - id: eval_030
+    name: long document analysis
+    task_type: long_context_analysis
+    risk_level: low
+    prompt: "ANALYZE_LARGE_CONTEXT_PLACEHOLDER"
+    expand_tokens: 60000
+    expected_route: {tier: balanced}
+  - id: eval_031
+    name: long codebase review
+    task_type: long_context_analysis
+    risk_level: low
+    prompt: "LONG_CODE_PLACEHOLDER"
+    expand_tokens: 80000
+    expected_route: {tier: balanced}
+
+  # --- trivial_git → cheap ---
+  - id: eval_040
+    name: commit message from diff
+    task_type: trivial_git
+    risk_level: low
+    prompt: |
+      Write a commit message for this git diff:
+      diff --git a/README.md b/README.md
+      --- a/README.md
+      +++ b/README.md
+      @@ -1 +1 @@
+      -old
+      +new
+    expected_route: {tier: cheap}
+  - id: eval_041
+    name: commit title for staged changes
+    task_type: trivial_git
+    risk_level: low
+    prompt: "Give me a commit message and commit title for my staged changes adding a changelog entry."
+    expected_route: {tier: cheap}
+
+  # --- summarization → cheap ---
+  - id: eval_050
+    name: summarize meeting notes
+    task_type: summarization
+    risk_level: low
+    prompt: "Summarize these meeting notes into three bullet points."
+    expected_route: {tier: cheap}
+  - id: eval_051
+    name: tldr article
+    task_type: summarization
+    risk_level: low
+    prompt: "Give me a tl;dr of this blog post about caching strategies."
+    expected_route: {tier: cheap}
+  - id: eval_052
+    name: recap thread
+    task_type: summarization
+    risk_level: low
+    prompt: "Recap this support thread so I can hand it off to the next shift."
+    expected_route: {tier: cheap}
+  - id: eval_053
+    name: summary of report
+    task_type: summarization
+    risk_level: low
+    prompt: "Write a short summary of the quarterly engineering report."
+    expected_route: {tier: cheap}
+
+  # --- simple_code_edit → cheap ---
+  - id: eval_060
+    name: rename function
+    task_type: simple_code_edit
+    risk_level: low
+    prompt: "Rename the function `getUser` to `fetchUser` in this code `func getUser() {}` and update callers."
+    expected_route: {tier: balanced}
+  - id: eval_061
+    name: add field to struct
+    task_type: simple_code_edit
+    risk_level: low
+    prompt: "Add an `email` field to this struct `type User struct { Name string }` and update the JSON tags."
+    expected_route: {tier: balanced}
+  - id: eval_062
+    name: refactor loop
+    task_type: simple_code_edit
+    risk_level: low
+    prompt: "Refactor this code `for i:=0;i<len(xs);i++ {}` to use range."
+    expected_route: {tier: balanced}
+  - id: eval_063
+    name: fix typo in code
+    task_type: simple_code_edit
+    risk_level: low
+    prompt: "Fix the typo in this code `fmt.Pintln(\"hi\")`."
+    expected_route: {tier: balanced}
+
+  # --- simple_shell → cheap ---
+  - id: eval_070
+    name: bash find command
+    task_type: simple_shell
+    risk_level: low
+    prompt: "What bash command finds all files larger than 100MB under the current directory?"
+    expected_route: {tier: cheap}
+  - id: eval_071
+    name: zsh alias
+    task_type: simple_shell
+    risk_level: low
+    prompt: "Give me a zsh alias that runs the cli command to list git branches."
+    expected_route: {tier: cheap}
+
+  # --- creative_copy → cheap ---
+  - id: eval_080
+    name: landing headline
+    task_type: creative_copy
+    risk_level: low
+    prompt: "Write a headline and tagline for our new analytics landing page copy."
+    expected_route: {tier: cheap}
+  - id: eval_081
+    name: ad copy
+    task_type: creative_copy
+    risk_level: low
+    prompt: "Write ad copy for a developer tools launch."
+    expected_route: {tier: cheap}
+
+  # --- simple_chat → cheap ---
+  - id: eval_090
+    name: greeting
+    task_type: simple_chat
+    risk_level: low
+    prompt: "Hi there, how are you today?"
+    expected_route: {tier: cheap}
+  - id: eval_091
+    name: short factual question
+    task_type: simple_chat
+    risk_level: low
+    prompt: "What is the capital of Sweden?"
+    expected_route: {tier: cheap}
+  - id: eval_092
+    name: casual question
+    task_type: simple_chat
+    risk_level: low
+    prompt: "Can you recommend a good book about distributed systems?"
+    expected_route: {tier: cheap}
+  - id: eval_093
+    name: thanks
+    task_type: simple_chat
+    risk_level: low
+    prompt: "Thanks, that was helpful!"
+    expected_route: {tier: cheap}
+
+  # --- unknown_high_risk → premium (risk signal, weak task intent) ---
+  - id: eval_100
+    name: vague production risk
+    task_type: unknown_high_risk
+    risk_level: high
+    prompt: "Something is off in production with customer data, can you take a look?"
+    expected_route: {tier: premium}
+  - id: eval_101
+    name: vague secret handling
+    task_type: unknown_high_risk
+    risk_level: high
+    prompt: "We have an api key situation in prod, not sure what to do."
+    expected_route: {tier: premium}
+  - id: eval_102
+    name: vague pii concern
+    task_type: unknown_high_risk
+    risk_level: high
+    prompt: "There may be PII leaking somewhere, help."
+    expected_route: {tier: premium}
+
+  # --- router_mode overrides ---
+  - id: eval_110
+    name: cheap mode on summary
+    task_type: summarization
+    risk_level: low
+    router_mode: cheap
+    prompt: "Summarize this changelog. Keep it cheap."
+    expected_route: {tier: cheap}
+  - id: eval_111
+    name: premium mode on chat
+    task_type: simple_chat
+    risk_level: low
+    router_mode: premium
+    prompt: "Hello!"
+    expected_route: {tier: premium}
+
+  # --- explicit model pin ---
+  - id: eval_120
+    name: explicit balanced model
+    task_type: simple_chat
+    risk_level: low
+    explicit_model: balanced-coder
+    prompt: "Hi"
+    expected_route: {tier: balanced}
+
+  # --- extra coverage to exceed 50 cases ---
+  - id: eval_130
+    name: summarize email
+    task_type: summarization
+    risk_level: low
+    prompt: "Summarize this email chain into action items."
+    expected_route: {tier: cheap}
+  - id: eval_131
+    name: summarize pr
+    task_type: summarization
+    risk_level: low
+    prompt: "Give me a summary of what this pull request changes."
+    expected_route: {tier: cheap}
+  - id: eval_132
+    name: edit add validation
+    task_type: simple_code_edit
+    risk_level: low
+    prompt: "Add a nil check to this code `func f(p *T){ p.X = 1 }`."
+    expected_route: {tier: balanced}
+  - id: eval_133
+    name: edit remove dead code
+    task_type: simple_code_edit
+    risk_level: low
+    prompt: "Remove the unused variable in this code `x := 1; return 2`."
+    expected_route: {tier: balanced}
+  - id: eval_134
+    name: create table orders
+    task_type: database_migration
+    risk_level: high
+    prompt: "CREATE TABLE orders (id uuid primary key, total numeric)."
+    expected_route: {tier: premium}
+  - id: eval_135
+    name: drop index migration
+    task_type: database_migration
+    risk_level: high
+    prompt: "DROP TABLE temp_imports after we confirm the data moved."
+    expected_route: {tier: premium}
+  - id: eval_136
+    name: security scan injection
+    task_type: security_review
+    risk_level: high
+    prompt: "Scan this query builder for SQL injection and auth bypass."
+    expected_route: {tier: premium}
+  - id: eval_137
+    name: vulnerability in upload
+    task_type: security_review
+    risk_level: high
+    prompt: "Is there a vulnerability in how we handle file uploads? Possible SSRF?"
+    expected_route: {tier: premium}
+  - id: eval_138
+    name: bash tar command
+    task_type: simple_shell
+    risk_level: low
+    prompt: "Give me the bash command to extract a tar.gz archive."
+    expected_route: {tier: cheap}
+  - id: eval_139
+    name: greeting swedish
+    task_type: simple_chat
+    risk_level: low
+    prompt: "Hej, hur mår du?"
+    expected_route: {tier: cheap}
+  - id: eval_140
+    name: recommendation question
+    task_type: simple_chat
+    risk_level: low
+    prompt: "Which programming language should a beginner start with?"
+    expected_route: {tier: cheap}
+  - id: eval_141
+    name: tldr docs
+    task_type: summarization
+    risk_level: low
+    prompt: "tl;dr of the onboarding docs please."
+    expected_route: {tier: cheap}
+  - id: eval_142
+    name: headline product
+    task_type: creative_copy
+    risk_level: low
+    prompt: "Write a tagline for our CI product landing page copy."
+    expected_route: {tier: cheap}
+  - id: eval_143
+    name: debug segfault trace
+    task_type: hard_code_debugging
+    risk_level: medium
+    prompt: |
+      Segfault. Stack trace:
+      #0  0x0000 in compute () at calc.c:12
+      Fix the code `int* p = NULL; *p = 5;`.
+    expected_route: {tier: balanced}
+  - id: eval_144
+    name: commit message bugfix
+    task_type: trivial_git
+    risk_level: low
+    prompt: |
+      Write a commit message for staged changes. git diff:
+      diff --git a/x.go b/x.go
+      @@ -1 +1 @@
+    expected_route: {tier: cheap}
+  - id: eval_145
+    name: refactor rename var
+    task_type: simple_code_edit
+    risk_level: low
+    prompt: "Rename variable `tmp` to `buffer` in this code `tmp := make([]byte, 0)`."
+    expected_route: {tier: balanced}
+  - id: eval_146
+    name: edit update import
+    task_type: simple_code_edit
+    risk_level: low
+    prompt: "Update the import in this code `import \"old/pkg\"` to the new path."
+    expected_route: {tier: balanced}
+  - id: eval_147
+    name: alter table add column
+    task_type: database_migration
+    risk_level: high
+    prompt: "ALTER TABLE users ADD COLUMN last_login timestamptz."
+    expected_route: {tier: premium}
+  - id: eval_148
+    name: security review permission
+    task_type: security_review
+    risk_level: high
+    prompt: "Review our RBAC code for any permission bypass or auth bypass."
+    expected_route: {tier: premium}
+  - id: eval_149
+    name: short chat ok
+    task_type: simple_chat
+    risk_level: low
+    prompt: "Sounds good."
+    expected_route: {tier: cheap}

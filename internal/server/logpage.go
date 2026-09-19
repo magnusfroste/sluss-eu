@@ -1,0 +1,167 @@
+package server
+
+import (
+	"fmt"
+	"html/template"
+	"log/slog"
+	"net/http"
+	"time"
+
+	"github.com/magnusfroste/sluss/internal/eventlog"
+	"github.com/magnusfroste/sluss/internal/history"
+)
+
+// LogOptions configures the full request-log page. History (durable SQLite) is
+// preferred; RequestLog (in-memory ring) is the fallback when no data dir is set.
+type LogOptions struct {
+	History    *history.Store
+	RequestLog *eventlog.RequestLogTracker
+	Logger     *slog.Logger
+	Version    string
+	// Limit caps how many rows the page renders (newest first). 0 → 500.
+	Limit int
+}
+
+// LogPageData is the template payload for the log page.
+type LogPageData struct {
+	Version string
+	Rows    []eventlog.RequestLogRecord
+	Count   int
+	Durable bool
+}
+
+// LogPageHandler renders the full per-request routing log — every message with
+// the model the router picked and what it cost. Lives on its own page so the
+// dashboard can stay focused on statistics and insights.
+func LogPageHandler(opts LogOptions) http.HandlerFunc {
+	limit := opts.Limit
+	if limit <= 0 {
+		limit = 500
+	}
+	return func(w http.ResponseWriter, r *http.Request) {
+		var rows []eventlog.RequestLogRecord
+		durable := false
+		switch {
+		case opts.History != nil:
+			rows = opts.History.Recent(limit)
+			durable = true
+		case opts.RequestLog != nil:
+			rows = opts.RequestLog.Recent(limit)
+		}
+		data := LogPageData{Version: opts.Version, Rows: rows, Count: len(rows), Durable: durable}
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		if err := logTmpl.Execute(w, data); err != nil {
+			if opts.Logger != nil {
+				opts.Logger.Error("log page render failed", "err", err)
+			}
+			http.Error(w, "log render error", http.StatusInternalServerError)
+		}
+	}
+}
+
+var logTmpl = template.Must(template.New("log").Funcs(template.FuncMap{
+	"adminCSS": adminCSSFunc,
+	"adminNav": adminNavFunc,
+	"usd":      func(v float64) string { return fmt.Sprintf("$%.6f", v) },
+	"clock":    func(t time.Time) string { return t.Local().Format("2006-01-02 15:04:05") },
+	"tierClass": func(model string) string {
+		switch {
+		case model == "":
+			return ""
+		case containsAny(model, "premium"):
+			return "premium"
+		case containsAny(model, "balanced"):
+			return "balanced"
+		default:
+			return "cheap"
+		}
+	},
+	"riskClass": func(r string) string {
+		switch r {
+		case "high", "critical":
+			return "bad"
+		case "medium":
+			return "warn"
+		default:
+			return "ok"
+		}
+	},
+}).Parse(logPageHTML))
+
+func containsAny(s string, subs ...string) bool {
+	for _, sub := range subs {
+		if len(sub) > 0 && len(s) >= len(sub) {
+			for i := 0; i+len(sub) <= len(s); i++ {
+				if s[i:i+len(sub)] == sub {
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
+const logPageHTML = `<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sluss — Request log</title>
+<style>
+  {{adminCSS}}
+  body{margin:0;background:#0b1220;color:#e8eef7;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    padding:20px 26px;border-bottom:1px solid #22304d}
+  h1{font-size:1.3rem;margin:0}
+  .sub{color:#8fa1bf;font-size:.85rem;margin-top:4px}
+  .links a{color:#22c58b;text-decoration:none;font-weight:600;margin-left:18px;font-size:.92rem}
+  .links a:hover{text-decoration:underline}
+  .wrap{padding:26px 32px;overflow-x:auto}
+  table{border-collapse:collapse;width:100%;min-width:820px;font-size:13.5px}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid #1a2740;white-space:nowrap;vertical-align:top}
+  thead th{position:sticky;top:0;background:#0e1626;color:#8fa1bf;font-size:11.5px;
+    letter-spacing:.06em;text-transform:uppercase;font-weight:600}
+  tbody tr:hover{background:#0e1626}
+  .mono{font-family:ui-monospace,Menlo,monospace}
+  .num{text-align:right;font-variant-numeric:tabular-nums}
+  .slug{color:#64748b;font-size:11.5px;font-family:ui-monospace,Menlo,monospace}
+  .pill{display:inline-block;padding:2px 9px;border-radius:999px;font-weight:600;font-size:12px;font-family:ui-monospace,Menlo,monospace}
+  .pill.cheap{background:#13351f;color:#4fd08a}.pill.balanced{background:#33290f;color:#f4b740}
+  .pill.premium{background:#361529;color:#f07ab0}
+  .ok{color:#22c55e}.warn{color:#f59e0b}.bad{color:#ef4444}
+  .empty{color:#64748b;text-align:center;padding:3rem}
+  .badge-src{font-size:12px;color:#8fa1bf}
+</style></head>
+<body>
+<div class="tk-shell">
+{{adminNav "log"}}
+<div class="tk-main">
+<header>
+  <div>
+    <h1>Request log</h1>
+    <div class="sub">{{.Count}} requests · <span class="badge-src">{{if .Durable}}durable (SQLite){{else}}in-memory (set ROUTER_DATA_DIR to persist){{end}}</span> · {{.Version}}</div>
+  </div>
+</header>
+<div class="wrap">
+<table>
+<thead><tr><th>Time</th><th>Task</th><th>Risk</th><th>Selected model</th><th>Provider</th>
+<th class="num">In</th><th class="num">Out</th><th class="num">Cost</th></tr></thead>
+<tbody>
+{{range .Rows}}
+<tr>
+  <td class="mono">{{clock .Time}}</td>
+  <td>{{if .Blocked}}<span class="bad">blocked</span> {{end}}{{.TaskType}}</td>
+  <td class="{{riskClass .RiskLevel}}">{{.RiskLevel}}</td>
+  <td>{{if .Model}}<span class="pill {{tierClass .Model}}">{{.Model}}</span>{{if .ProviderModelID}}<div class="slug">{{.ProviderModelID}}</div>{{end}}{{end}}</td>
+  <td class="mono">{{.Provider}}</td>
+  <td class="num">{{.InputTokens}}</td>
+  <td class="num">{{.OutputTokens}}</td>
+  <td class="num mono">{{usd .CostUSD}}</td>
+</tr>
+{{else}}
+<tr><td colspan="8" class="empty">No requests yet — open the <a href="/chat" style="color:#22c58b">live chat</a> and send one.</td></tr>
+{{end}}
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</body></html>`

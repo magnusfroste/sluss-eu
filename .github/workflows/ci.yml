@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache: true
+      - name: vet
+        run: go vet ./...
+      - name: gofmt
+        run: |
+          out=$(gofmt -l . | grep -v '^vendor/' || true)
+          if [ -n "$out" ]; then
+            echo "gofmt issues:"; echo "$out"; exit 1
+          fi
+      - name: secret scan (ISSUE-112)
+        run: bash scripts/check-secrets.sh
+      - name: test
+        run: go test ./... -race -count=1
+      - name: eval smoke
+        run: make test-eval
+      - name: policy tests
+        run: make test-policy
+      - name: ciso demo (end-to-end vs mock)
+        run: make demo-ciso
+      - name: eval report
+        run: make eval-report
+      - name: upload eval report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-report
+          path: eval-report/
+          if-no-files-found: error

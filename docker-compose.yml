@@ -1,0 +1,34 @@
+# Dev infrastructure only. NOTE (DECISION_LOG 2026-07-04): the v1.0 router uses
+# NEITHER of these at runtime — the fast path is in-memory and durable history
+# is SQLite on the data volume (ISSUE-070). Postgres + Redis are reserved for
+# Enterprise 2.0: Postgres as multi-writer source of truth, Redis as shared
+# replica state (health/budget/stickiness) once 2+ router replicas run.
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: tokenizer
+      POSTGRES_PASSWORD: tokenizer
+      POSTGRES_DB: tokenizer
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tokenizer"]
+      interval: 2s
+      timeout: 2s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 2s
+      retries: 20
+
+volumes:
+  pgdata:
