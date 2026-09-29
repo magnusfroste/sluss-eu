@@ -34,6 +34,9 @@ const (
 	// tags change (ISSUE-093): the tags are supply-chain facts policy routes on,
 	// so who changed them and when is evidence.
 	ActionProviderTags Action = "provider.tags"
+	// ActionRosterReload records a live roster (models/providers) swap
+	// (ISSUE-115) — what routes where changed without a restart.
+	ActionRosterReload Action = "roster.reload"
 )
 
 // Outcome describes the result of an audited action.

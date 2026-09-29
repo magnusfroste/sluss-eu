@@ -68,6 +68,10 @@ type CompiledPolicy struct {
 	registryVersion string
 	settings        Settings
 	rules           []compiledRule
+	// source is the parsed policy this was compiled from, kept so the policy
+	// can be re-validated against a new registry snapshot (ISSUE-115) without
+	// re-reading its origin (file, builtin pack or console rules).
+	source *Policy
 }
 
 type compiledRule struct {
@@ -108,6 +112,7 @@ func Compile(p *Policy, snapshot *registry.Snapshot) (*CompiledPolicy, error) {
 		registryVersion: snapshot.RegistryVersion(),
 		settings:        p.Settings,
 		rules:           make([]compiledRule, 0, len(p.Rules)),
+		source:          p,
 	}
 	for _, rule := range p.Rules {
 		matcher, err := compileMatcher(rule.When)
@@ -301,6 +306,34 @@ func (c *Cache) Reload(sources []Source) error {
 		})
 	}
 	return nil
+}
+
+// Rebind re-validates and recompiles every active policy against a new
+// registry snapshot (ISSUE-115: roster hot-reload). It is two-phase: nothing
+// changes until the returned commit is called, so a caller can prepare several
+// caches and the registry swap and commit them together — or abandon all of
+// them when any one fails (e.g. the new roster drops a model a policy forces).
+// A nil or empty cache yields a no-op commit.
+func (c *Cache) Rebind(snapshot *registry.Snapshot) (commit func(), err error) {
+	if c == nil {
+		return func() {}, nil
+	}
+	current, ok := c.active.Load().(map[Scope]*CompiledPolicy)
+	if !ok || len(current) == 0 {
+		return func() {}, nil
+	}
+	next := make(map[Scope]*CompiledPolicy, len(current))
+	for scope, p := range current {
+		if p == nil || p.source == nil {
+			return nil, fmt.Errorf("%w: policy %q has no source to rebind", ErrInvalidPolicy, p.Version())
+		}
+		compiled, err := Compile(p.source, snapshot)
+		if err != nil {
+			return nil, fmt.Errorf("active policy %s does not validate against the new roster: %w", p.Version(), err)
+		}
+		next[scope] = compiled
+	}
+	return func() { c.active.Store(next) }, nil
 }
 
 func compileSources(sources []Source) (map[Scope]*CompiledPolicy, error) {

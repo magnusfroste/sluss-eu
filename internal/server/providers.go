@@ -28,6 +28,8 @@ type ProvidersOptions struct {
 	// truth for provider connections (ISSUE-073). It enables add/delete of custom
 	// providers. Nil (no data dir) → the providers page is read-only.
 	Roster providercfg.RosterStore
+	// Reloader applies edits live (ISSUE-115); nil → restart to apply.
+	Reloader *RosterReloader
 	// Cache supplies the active policy so the risk register (ISSUE-093) can show
 	// which tags the policy requires — and warn when no provider carries one.
 	Cache *policy.Cache
@@ -202,9 +204,10 @@ func ProvidersPageHandler(opts ProvidersOptions) http.HandlerFunc {
 			Register  []registerRow
 			Required  map[string]bool
 			Missing   []string
+			Live      bool // edits apply without a restart (ISSUE-115)
 		}{opts.Version, views, opts.crudEnabled(),
 			r.URL.Query().Get("ok"), r.URL.Query().Get("err"),
-			riskRegisterTags, rows, required, missing}
+			riskRegisterTags, rows, required, missing, opts.Reloader != nil}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		if err := providersTmpl.Execute(w, data); err != nil {
 			if opts.Logger != nil {
@@ -263,7 +266,8 @@ func ProvidersTagsHandler(opts ProvidersOptions) http.HandlerFunc {
 			Target: id,
 			Reason: "compliance tags set to [" + strings.Join(tags, ", ") + "]",
 		})
-		redirectProviders(w, r, "Tags updated for "+id+" — restart (redeploy) to apply to routing.", "")
+		okMsg, errMsg := applyRosterEdit(r.Context(), opts.Reloader, AdminUserFromContext(r.Context()), "Tags updated for "+id)
+		redirectProviders(w, r, okMsg, errMsg)
 	}
 }
 
@@ -293,7 +297,8 @@ func ProvidersAddHandler(opts ProvidersOptions) http.HandlerFunc {
 			redirectProviders(w, r, "", "save: "+err.Error())
 			return
 		}
-		redirectProviders(w, r, "Provider "+p.ID+" saved — restart (redeploy) to activate it.", "")
+		okMsg, errMsg := applyRosterEdit(r.Context(), opts.Reloader, AdminUserFromContext(r.Context()), "Provider "+p.ID+" saved")
+		redirectProviders(w, r, okMsg, errMsg)
 	}
 }
 
@@ -310,7 +315,8 @@ func ProvidersDeleteHandler(opts ProvidersOptions) http.HandlerFunc {
 			redirectProviders(w, r, "", "save: "+err.Error())
 			return
 		}
-		redirectProviders(w, r, "Provider "+id+" removed — restart (redeploy) to apply.", "")
+		okMsg, errMsg := applyRosterEdit(r.Context(), opts.Reloader, AdminUserFromContext(r.Context()), "Provider "+id+" removed")
+		redirectProviders(w, r, okMsg, errMsg)
 	}
 }
 
@@ -398,9 +404,11 @@ const providersHTML = `<!doctype html>
     <b>A provider is just a connection</b> — an OpenAI-compatible endpoint and the name of
     the env var holding its key. Models (and their tier/price) are curated on
     <a href="/router/models" style="color:#7fd3ff">Models</a>.
-    <b>Keys are set in the environment, never here</b> — changes therefore apply on
-    <b>restart/redeploy</b> (the same moment you add the key). Secrets never leave the
-    app or the database.
+    <b>Keys are set in the environment, never here</b>{{if .Live}} — endpoint, tag and
+    model changes apply <b>immediately</b>; a <b>new key</b> env var needs a
+    restart/redeploy, because the process reads its environment at start.{{else}} — changes
+    therefore apply on <b>restart/redeploy</b> (the same moment you add the key).{{end}}
+    Secrets never leave the app or the database.
     <br><br>
     <b>Your own private AI model (on-prem, DGX, air-gapped)?</b> Add its endpoint like any
     provider and give it the compliance tag <b><code>local</code></b>
@@ -442,7 +450,7 @@ const providersHTML = `<!doctype html>
 
   <div class="rcard">
     <h2 style="margin:0 0 6px;font-size:1rem">Risk register — supply chain</h2>
-    <div class="rnote">Curated compliance facts per provider — what <b>you</b> assert (DPA on file, certifications, residency), never what the router assumes. Policy rules <b>require</b> these tags; a required tag with no provider means those prompts <b>fail closed</b>. Tag changes are audited and apply on restart.</div>
+    <div class="rnote">Curated compliance facts per provider — what <b>you</b> assert (DPA on file, certifications, residency), never what the router assumes. Policy rules <b>require</b> these tags; a required tag with no provider means those prompts <b>fail closed</b>. Tag changes are audited and apply {{if .Live}}immediately{{else}}on restart{{end}}.</div>
     {{if .Missing}}<div class="rwarn">⚠ The active policy requires {{range $i, $t := .Missing}}{{if $i}}, {{end}}<b>{{$t}}</b>{{end}} — no provider carries {{if eq (len .Missing) 1}}it{{else}}them{{end}}. Prompts matching those rules are blocked (fail-closed) until a provider is tagged.</div>{{end}}
     <div style="overflow-x:auto">
     <table class="rtab">
@@ -473,7 +481,7 @@ const providersHTML = `<!doctype html>
   {{if .CRUD}}
   <form class="addf" method="post" action="/router/providers" id="provform">
     <h2 id="provh">Add provider connection</h2>
-    <p id="provhint" style="display:none;font-size:.82rem;color:#8fa1bf;margin:-6px 0 10px">Editing an existing connection — saving replaces its endpoint, key env var and tags (the ID stays). Changes apply on restart.</p>
+    <p id="provhint" style="display:none;font-size:.82rem;color:#8fa1bf;margin:-6px 0 10px">Editing an existing connection — saving replaces its endpoint, key env var and tags (the ID stays). {{if .Live}}Changes apply immediately.{{else}}Changes apply on restart.{{end}}</p>
     <div class="grid">
       <div><label>ID (short name, a–z0–9)</label><input name="id" id="prov_id" placeholder="zai" required></div>
       <div><label>Display name</label><input name="name" id="prov_name" placeholder="Z.ai"></div>

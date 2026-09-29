@@ -40,8 +40,11 @@ type Config struct {
 	Readiness              []ReadyzChecker
 
 	// Routing engine (Sprint 05). Optional — if nil, Provider is used directly.
-	Engine            *engine.Engine
-	Adapters          map[string]provider.Adapter // provider ID → adapter
+	Engine   *engine.Engine
+	Adapters map[string]provider.Adapter // provider ID → adapter
+	// RosterReloader, when set, applies Models/Providers edits live
+	// (ISSUE-115) and owns the live adapter set. Nil → edits need a restart.
+	RosterReloader    *RosterReloader
 	PolicyCache       *policy.Cache
 	ShadowPolicyCache *policy.Cache
 	// PolicyBaselinePath is the ROUTER_POLICY_PATH value (verbatim; "" = built-in
@@ -194,6 +197,7 @@ func New(cfg Config) http.Handler {
 		Logger:                 cfg.Logger,
 		Engine:                 cfg.Engine,
 		Adapters:               cfg.Adapters,
+		AdapterSource:          cfg.adapterSource(),
 		PolicyCache:            cfg.PolicyCache,
 		ShadowPolicyCache:      cfg.ShadowPolicyCache,
 		HealthTracker:          cfg.HealthTracker,
@@ -415,7 +419,7 @@ func New(cfg Config) http.Handler {
 	// re-tier/delete), persisted to the data volume; changes apply on restart.
 	if cfg.Engine != nil {
 		modelOpts := ModelsOptions{Engine: cfg.Engine, Logger: cfg.Logger,
-			Version: cfg.RegistryVersion, Roster: cfg.Roster}
+			Version: cfg.RegistryVersion, Roster: cfg.Roster, Reloader: cfg.RosterReloader}
 		mux.Handle("GET /router/models", dashGuard(ModelsPageHandler(modelOpts)))
 		// Per-row live test (ISSUE-098): works read-only too (registry fallback),
 		// so it is registered regardless of roster CRUD.
@@ -432,7 +436,7 @@ func New(cfg Config) http.Handler {
 	if cfg.Engine != nil {
 		provOpts := ProvidersOptions{Engine: cfg.Engine, Health: cfg.HealthTracker, Logger: cfg.Logger,
 			Version: cfg.RegistryVersion, Roster: cfg.Roster,
-			Cache: cfg.PolicyCache, Auditor: cfg.Auditor}
+			Cache: cfg.PolicyCache, Auditor: cfg.Auditor, Reloader: cfg.RosterReloader}
 		mux.Handle("GET /router/providers", dashGuard(ProvidersPageHandler(provOpts)))
 		if cfg.Roster != nil {
 			mux.Handle("POST /router/providers", dashGuard(ProvidersAddHandler(provOpts)))
@@ -513,4 +517,13 @@ func New(cfg Config) http.Handler {
 	}
 
 	return middleware.RequestID(middleware.Logger(cfg.Logger)(mux))
+}
+
+// adapterSource returns the live adapter accessor when roster hot-reload is
+// wired (ISSUE-115); nil keeps the static Adapters map.
+func (cfg Config) adapterSource() func() map[string]provider.Adapter {
+	if cfg.RosterReloader == nil {
+		return nil
+	}
+	return cfg.RosterReloader.Adapters
 }

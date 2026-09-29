@@ -96,6 +96,9 @@ func main() {
 		primaryProvider provider.Adapter
 		adapters        map[string]provider.Adapter
 		snapErr         error
+		// buildRoster rebuilds registry + adapters from the DB roster (ISSUE-115);
+		// nil in mock mode, where the registry is not roster-driven.
+		buildRoster func(ctx context.Context, version string, startup bool) (server.RosterBuild, error)
 	)
 	// Admin-editable roster (ISSUE-073): the roster — provider connections and
 	// routable models (each carrying a tier, the router's USP) — is owned by the
@@ -177,85 +180,115 @@ func main() {
 				}
 			}
 		}
-		// Build the registry entirely from config providers + models. With no data
-		// dir, fall back to the in-memory seed so the router still runs. This makes
-		// the built-in tiers plain data (re-tierable from the Models page).
-		effProviders, effModels := customProviders, customModels
-		if len(effProviders) == 0 {
-			effProviders = providercfg.SeedProviders()
-		}
-		if len(effModels) == 0 {
-			effModels = providercfg.SeedModels()
-		}
-		regProvs, regModels := providercfg.RegistryEntries(effProviders, effModels)
-		def := registry.Definition{
-			RegistryVersion: "registry-roster-2026-07-04",
-			CreatedAt:       time.Now().UTC(),
-			Providers:       regProvs,
-			Models:          regModels,
-		}
-		def = registry.ApplyProviderModelOverrides(def, overrides)
 		// Sync live per-model prices from OpenRouter's catalog (best-effort) so
-		// estimates/savings/scoring stay honest without manual upkeep. Matches by
-		// slug — also prices any roster-overridden OpenRouter slug. Disable with
+		// estimates/savings/scoring stay honest without manual upkeep. Fetched
+		// ONCE at start; a live roster reload (ISSUE-115) re-applies these cached
+		// prices instead of calling out on the admin path. Disable with
 		// ROUTER_PRICING_SYNC=false.
+		var syncedPrices map[string]pricing.Price
 		if strings.ToLower(strings.TrimSpace(os.Getenv("ROUTER_PRICING_SYNC"))) != "false" {
 			pctx, pcancel := context.WithTimeout(context.Background(), 10*time.Second)
 			if prices, perr := pricing.FetchOpenRouter(pctx, "https://openrouter.ai/api/v1", orKey, &http.Client{Timeout: 10 * time.Second}); perr != nil {
 				logger.Warn("pricing sync failed; using existing prices", "err", perr)
 			} else {
-				// Scope to OpenRouter's own models — custom providers keep their
-				// admin-set (negotiated) prices even if a slug collides.
-				logger.Info("synced pricing from OpenRouter", "models_updated", pricing.ApplyToDefinition(&def, prices, "openrouter"), "catalog_size", len(prices))
+				syncedPrices = prices
 			}
 			pcancel()
 		}
-		snap, snapErr = registry.NewSnapshot(def)
+		// buildRoster is the ONE way a roster becomes a registry + adapter set:
+		// used at startup and by the live reload (ISSUE-115), so both paths
+		// route identically. It re-reads the DB roster on every call.
+		buildRoster = func(ctx context.Context, version string, startup bool) (server.RosterBuild, error) {
+			provs, models := customProviders, customModels
+			if !startup && historyStore != nil {
+				var lerr error
+				if provs, lerr = historyStore.LoadRosterProviders(); lerr != nil {
+					return server.RosterBuild{}, lerr
+				}
+				if models, lerr = historyStore.LoadRosterModels(); lerr != nil {
+					return server.RosterBuild{}, lerr
+				}
+			}
+			// With no data dir, fall back to the in-memory seed so the router
+			// still runs. This makes the built-in tiers plain data.
+			if len(provs) == 0 {
+				provs = providercfg.SeedProviders()
+			}
+			if len(models) == 0 {
+				models = providercfg.SeedModels()
+			}
+			regProvs, regModels := providercfg.RegistryEntries(provs, models)
+			def := registry.Definition{
+				RegistryVersion: version,
+				CreatedAt:       time.Now().UTC(),
+				Providers:       regProvs,
+				Models:          regModels,
+			}
+			def = registry.ApplyProviderModelOverrides(def, overrides)
+			if syncedPrices != nil {
+				// Scope to OpenRouter's own models — custom providers keep their
+				// admin-set (negotiated) prices even if a slug collides.
+				n := pricing.ApplyToDefinition(&def, syncedPrices, "openrouter")
+				if startup {
+					logger.Info("synced pricing from OpenRouter", "models_updated", n, "catalog_size", len(syncedPrices))
+				}
+			}
+			// The OpenRouter connection carries attribution headers; source its
+			// base URL from the (seeded, admin-editable) connection when present.
+			orBaseURL := "https://openrouter.ai/api/v1"
+			for _, cp := range provs {
+				if cp.ID == "openrouter" && cp.BaseURL != "" {
+					orBaseURL = cp.BaseURL
+				}
+			}
+			built := server.RosterBuild{Definition: def, Adapters: map[string]provider.Adapter{}}
+			built.Adapters["openrouter"] = &provider.OpenAIAdapter{
+				BaseURL: orBaseURL,
+				APIKey:  orKey,
+				// OpenRouter attribution (optional but recommended for app ranking).
+				Referer:    envDefault("OPENROUTER_REFERER", "https://github.com/magnusfroste/sluss"),
+				Title:      envDefault("OPENROUTER_TITLE", "tokenizer"),
+				Client:     &http.Client{Timeout: 60 * time.Second},
+				Timeout:    60 * time.Second,
+				ProviderID: "openrouter",
+				Logger:     logger,
+			}
+			// One OpenAI-compatible adapter per provider connection whose key is
+			// present in this process's environment (read at start).
+			for _, cp := range provs {
+				if cp.ID == "openrouter" {
+					continue
+				}
+				if key := strings.TrimSpace(os.Getenv(cp.KeyEnv)); key != "" {
+					built.Adapters[cp.ID] = &provider.OpenAIAdapter{
+						BaseURL: cp.BaseURL, APIKey: key,
+						Client:     &http.Client{Timeout: 60 * time.Second},
+						Timeout:    60 * time.Second,
+						ProviderID: cp.ID,
+						Logger:     logger,
+					}
+					if startup {
+						logger.Info("custom provider enabled", "id", cp.ID, "base_url", cp.BaseURL)
+					}
+				} else if startup {
+					logger.Warn("custom provider missing key; unroutable", "id", cp.ID, "key_env", cp.KeyEnv)
+				}
+			}
+			return built, nil
+		}
+		startBuild, berr := buildRoster(context.Background(), "registry-roster-2026-07-04", true)
+		if berr != nil {
+			snapErr = berr
+		} else {
+			snap, snapErr = registry.NewSnapshot(startBuild.Definition)
+		}
 		for tier, slug := range overrides {
 			if slug != "" {
 				logger.Info("model roster override", "tier", string(tier), "model", slug)
 			}
 		}
-		// The OpenRouter connection carries attribution headers; source its base
-		// URL from the (seeded, admin-editable) connection when present.
-		orBaseURL := "https://openrouter.ai/api/v1"
-		for _, cp := range effProviders {
-			if cp.ID == "openrouter" && cp.BaseURL != "" {
-				orBaseURL = cp.BaseURL
-			}
-		}
-		orAdapter := &provider.OpenAIAdapter{
-			BaseURL: orBaseURL,
-			APIKey:  orKey,
-			// OpenRouter attribution (optional but recommended for app ranking).
-			Referer:    envDefault("OPENROUTER_REFERER", "https://github.com/magnusfroste/sluss"),
-			Title:      envDefault("OPENROUTER_TITLE", "tokenizer"),
-			Client:     &http.Client{Timeout: 60 * time.Second},
-			Timeout:    60 * time.Second,
-			ProviderID: "openrouter",
-			Logger:     logger,
-		}
-		primaryProvider = orAdapter
-		adapters = map[string]provider.Adapter{"openrouter": orAdapter}
-		// One OpenAI-compatible adapter per provider connection whose key is
-		// present (openrouter handled above with its attribution headers).
-		for _, cp := range effProviders {
-			if cp.ID == "openrouter" {
-				continue
-			}
-			if key := strings.TrimSpace(os.Getenv(cp.KeyEnv)); key != "" {
-				adapters[cp.ID] = &provider.OpenAIAdapter{
-					BaseURL: cp.BaseURL, APIKey: key,
-					Client:     &http.Client{Timeout: 60 * time.Second},
-					Timeout:    60 * time.Second,
-					ProviderID: cp.ID,
-					Logger:     logger,
-				}
-				logger.Info("custom provider enabled", "id", cp.ID, "base_url", cp.BaseURL)
-			} else {
-				logger.Warn("custom provider missing key; unroutable", "id", cp.ID, "key_env", cp.KeyEnv)
-			}
-		}
+		adapters = startBuild.Adapters
+		primaryProvider = adapters["openrouter"]
 		logger.Info("using OpenRouter provider", "base_url", "https://openrouter.ai/api/v1")
 	} else {
 		// Build from the default definition so dev/mock can also carry provider
@@ -495,6 +528,22 @@ func main() {
 		logger.Info("council mode enabled", "tasks", council.SortedTasks(councilTasks), "panel_size", parseIntEnv(os.Getenv("ROUTER_COUNCIL_SIZE"), 3))
 	}
 
+	// Live roster reload (ISSUE-115): Models/Providers edits apply without a
+	// restart. Only when the registry is roster-driven (a provider key + a data
+	// dir); mock mode keeps "restart to apply".
+	var rosterReloader *server.RosterReloader
+	if buildRoster != nil && historyStore != nil {
+		rosterReloader = server.NewRosterReloader(adapters)
+		rosterReloader.Build = func(ctx context.Context) (server.RosterBuild, error) {
+			return buildRoster(ctx, "registry-roster-"+time.Now().UTC().Format("20060102T150405.000Z"), false)
+		}
+		rosterReloader.Registry = store
+		rosterReloader.Caches = []*policy.Cache{policyCache, shadowPolicyCache, experimentPolicyCache}
+		rosterReloader.Auditor = auditSink
+		rosterReloader.Logger = logger
+		logger.Info("live roster reload enabled")
+	}
+
 	handler := server.New(server.Config{
 		Logger:                     logger,
 		KeyStore:                   keyStore,
@@ -503,6 +552,7 @@ func main() {
 		PromptAdapter:              buildPromptAdapter(parseBoolEnv(os.Getenv("ROUTER_PROMPT_ADAPTER_ENABLED"))),
 		Engine:                     eng,
 		Adapters:                   adapters,
+		RosterReloader:             rosterReloader,
 		PolicyCache:                policyCache,
 		PolicyBaselinePath:         strings.TrimSpace(os.Getenv("ROUTER_POLICY_PATH")),
 		ShadowPolicyCache:          shadowPolicyCache,
