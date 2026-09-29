@@ -37,7 +37,7 @@ Dry-run a routing decision without calling a provider (also available as the MCP
 curl -X POST http://localhost:8080/router/decision \
   -H "Authorization: Bearer local_router_key" \
   -d '{"messages":[{"role":"user","content":"Summarise this contract"}]}'
-# or: go run ./cmd/routerctl -prompt "Summarise this contract"
+# or: go run ./cmd/routerctl -key local_router_key -message "Summarise this contract"
 ```
 
 ## Architecture

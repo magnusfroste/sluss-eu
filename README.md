@@ -1,167 +1,177 @@
-# Sluss — data-sovereign LLM gateway
+# Sluss — the data-sovereign LLM gateway
 
-**Keep sensitive prompts in the house. Route the rest for less.**
+[![CI](https://github.com/magnusfroste/sluss-eu/actions/workflows/ci.yml/badge.svg)](https://github.com/magnusfroste/sluss-eu/actions/workflows/ci.yml)
+[![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
+[![Go](https://img.shields.io/badge/go-1.25-00ADD8.svg)](go.mod)
+[![Container](https://img.shields.io/badge/ghcr.io-sluss--eu-24292e.svg)](https://github.com/magnusfroste/sluss-eu/pkgs/container/sluss-eu)
 
-Sluss is a deterministic, auditable LLM gateway (OpenAI- **and** Anthropic-compatible)
-for organisations under **NIS2, DORA and GDPR**. It classifies every prompt with
-rules — never an LLM — and routes it by policy: prompts containing personal data
-or possible secrets go to a local/EU model (or are **blocked fail-closed**),
-everything else goes to the cheapest capable model for cost and CO₂. Every
-decision is explainable, and the control plane writes a **tamper-evident,
-hash-chained audit log** an auditor can verify offline.
+**Your teams already use AI. Decide where the data goes — and prove it.**
 
-> Positioning discipline: Sluss sells **control and evidence** for the
-> accountable owner (CISO/DPO/leadership). It is a tool — it makes **no legal
-> compliance claims**.
+Sluss sits between your AI clients and the LLM providers. Every prompt is
+classified with deterministic rules (**no LLM in the decision**), routed under a
+**fail-closed** policy — sensitive data to your own or an EU model, harmless
+traffic to the cheapest capable cloud model — and recorded in a
+**hash-chained audit log** an auditor can verify offline.
 
-## Why
-
-Under NIS2 (directive 2022/2555, transposed across the EU — in Sweden as
-cybersäkerhetslagen, in force 2026) management is personally accountable for
-cyber risk management. AI usage is a data-egress risk: every prompt a developer
-sends to a cloud model is data leaving the house. Sluss is the control point
-where that egress becomes **governed, observable and provable** — with cost and
-CO₂ savings as the built-in ROI.
-
-## How it works
+One static Go binary. SQLite. OpenAI **and** Anthropic wire formats. Runs in
+*your* infrastructure — we never see a prompt.
 
 ```
-Client (model: "auto")
-  → Auth (per-department API keys, hashed at rest)
-  → Classifier (rule-based, <20ms p95, no LLM): task, risk, sensitivity, PII types
-  → Policy engine ("firewall for data egress"): block → force → constraints → defaults
-      constraints accumulate and are FAIL-CLOSED — never a silent cloud fallback
-  → Routing engine: score candidates on quality/cost/latency/health/compliance tags
-  → Provider adapter (OpenAI-compatible, incl. local vLLM/on-prem)
-  → Tamper-evident audit + spend/CO₂ accounting (async, off the hot path)
+Any AI client ──▶ SLUSS (your infra) ──▶ cloud models        (harmless)
+ Cursor, Claude Code,   classify · route · prove   ──▶ your on-prem models (sensitive)
+ OpenWebUI, agents…                                ──▶ BLOCKED, audited   (nothing compliant)
 ```
 
-Key properties:
+Built for organisations under **NIS2, DORA and GDPR** — but useful to anyone
+who wants to say *yes* to AI on their own rules. It sells **control and
+evidence**; it makes no legal-compliance claims.
 
-- **Deterministic** — no LLM in the routing decision, so every choice is
-  reproducible and auditable. Dry-run any prompt (`POST /router/decision`, the
-  Policy console, or MCP `route_explain`) to see which rule fires — before a
-  single provider call.
-- **Fail-closed** — if policy requires a `local`/`eu-resident` provider and none
-  is available, the request is blocked with an audited 403. Client model pins
-  cannot bypass constraints.
-- **Compliance packs** — embedded rulesets selected per market/regime, like a
-  firewall's default rules: `builtin:nis2-baseline`, `builtin:dora-baseline`,
-  `builtin:gdpr-sovereign`, `builtin:pii-local`. The control report and public
-  label follow the active pack (regime profiles).
-- **Monitor mode (the safe start)** — run a pack as the *shadow* policy:
-  nothing blocks, nothing changes, but `GET /router/gap-report` counts what the
-  pack *would* have done with sensitive prompts. Convert to enforcement by
-  moving one env var.
-- **Reasoning control** — mark a model "reasoning-capable" and the router flips
-  vLLM's `enable_thinking` per request: simple tasks answer instantly, hard
-  tasks think. One local model, deterministically controlled.
-
-## Point your clients at it
-
-Sluss speaks both wire formats, so nearly any client connects with three
-values — base URL, API key, `model: auto`:
-
-- **OpenAI-wire** (`/v1/chat/completions`): Cursor, Cline/Continue, Aider,
-  OpenWebUI, AnythingLLM, LibreChat, the OpenAI SDKs…
-- **Anthropic-wire** (`/v1/messages`, incl. tool use + streaming): Claude Code,
-  Codex, the Anthropic SDKs — `ANTHROPIC_BASE_URL=https://your-router`.
-
-See **`/connect`** on a running instance for per-client recipes.
-
-## Quickstart
-
-Requires Go 1.22+. No database needed — the fast path is in-memory.
+## Try it in 60 seconds
 
 ```bash
+git clone https://github.com/magnusfroste/sluss-eu.git && cd sluss-eu
 make build
 
-# Terminal 1: mock provider (answers like an OpenAI-compatible model)
+# Terminal 1 — a mock provider (answers like an OpenAI-compatible model)
 MOCK_PROVIDER_ADDR=:18080 ./bin/mock-provider
 
-# Terminal 2: the router, with the NIS2 pack live
+# Terminal 2 — the gateway with the NIS2 pack live
 LOCAL_API_KEY=local_router_key ROUTER_POLICY_PATH=builtin:nis2-baseline ./bin/router
 ```
 
-Try it:
+Now watch the signature moment — the same client, two prompts, two destinations:
 
 ```bash
-# Routed chat completion (model: auto → the router decides)
-curl -s -X POST http://localhost:8080/v1/chat/completions \
-  -H "Authorization: Bearer local_router_key" \
-  -d '{"model":"auto","messages":[{"role":"user","content":"write a git commit message"}]}'
-
-# Dry-run: which rule fires, which model, local or cloud — no provider call
+# Harmless → routed for cost
 ./bin/routerctl -url http://localhost:8080 -key local_router_key \
-  -message "summarize the case for customer 811218-9876"
+  -message "write a git commit message for this diff"
+
+# Contains a Swedish personal ID (checksum-validated, not just a regex) → LOCAL only
+./bin/routerctl -url http://localhost:8080 -key local_router_key \
+  -message "summarise the case for customer 811218-9876"
 ```
 
-Real models: set `OPENROUTER_API_KEY` (OpenAI-compatible aggregate) and/or add
-your own providers (e.g. an on-prem vLLM box tagged `local`) on the Providers
-admin page. The reproducible end-to-end demo: `make demo-ciso`.
+`routerctl` is a **dry run**: it shows which rule fired, which model was chosen,
+local or cloud, and why — without calling any provider. The same dry-run is in
+the admin console and as the MCP tool `route_explain`.
 
-Tests: `make test` (race), `make test-policy` (golden cases), `make test-eval`,
-`make smoke` (full lifecycle against the mock), `make lint`.
+Then open **http://localhost:8080** — landing, `/connect` (per-client recipes),
+and the admin console (log in with `ROUTER_DASHBOARD_PASSWORD` if set).
 
-## The admin console
+Prefer a container? Every push to `main` publishes
+`ghcr.io/magnusfroste/sluss-eu:latest`; `deploy/docker-compose.yml` is a
+one-service compose with a data volume.
 
-Behind named-user login (PBKDF2, per-person audit attribution, break-glass env
-password): **Dashboard** (egress & compliance, savings vs all-premium, CO₂
-receipt) · **Policy** (active pack, compliance packs, dry-run box) · **Models /
-Providers** (roster with compliance tags, `local`/`eu-resident`/…) · **Keys**
-(per-department, hashed at rest) · **Users** · **Demo prompts + shareable demo
-link** (least-privilege guest session) · **Live chat** (the visible cloud→local
-switch). Reports: `GET /router/compliance/report` (control report, regime-
-flavoured) and `GET /router/gap-report` (monitor mode).
+## What it does
 
-Agents can introspect a running instance via **MCP** (`POST /mcp`, off by
-default): `route_explain`, `provider_probe`, `recent_errors`, spend/roster/
-health, and — behind an explicit write gate — key provisioning for prospect
-trials. See [`docs/mcp.md`](docs/mcp.md).
+| | |
+|---|---|
+| **Classify** | Task type, risk, and data sensitivity per prompt in < 1 ms: `secrets_possible` › `pii` (incl. personnummer) › `security_classified` › `health` › `financial` › `legal` › `source_code`. English + Swedish terms. Attached documents are classified as content; unreadable attachments form their own class. |
+| **Gate agents** | Declared tools are classified `read` ‹ `write` ‹ `external` ‹ `destructive` (unknown → `write`, never `read`). Policy can keep a delete-capable agent on-prem or block it — before any model sees the prompt. |
+| **Route by policy** | Firewall-style rules: `block → force → constraints → defaults`. Constraints accumulate and are **fail-closed**: if no provider carries the required compliance tag, the request is a 403 with an audit entry — never a silent cloud fallback. Client model pins cannot bypass policy. |
+| **Prove it** | Every decision explainable in one line. Hash-chained audit export + offline verifier (`cmd/audit-verify`). Incident evidence for NIS2's 24h/72h windows on one URL. Audited per-tenant GDPR erasure — you can delete data, never the fact that you deleted it. |
+| **Save** | Cheap tasks go to cheap or local models automatically; the dashboard shows spend and estimated CO₂e against an all-premium baseline (and names the baseline model). |
 
-## Deploy (Docker / EasyPanel)
+**Compliance packs** are embedded rulesets you adapt like a firewall's defaults:
+`builtin:nis2-baseline`, `builtin:dora-baseline`, `builtin:gdpr-sovereign`,
+`builtin:pii-local`. Or click rules together in the console — no YAML.
 
-One static binary, one container, configured entirely via env
-(see `.env.example`, `deploy/example.env`).
+**Monitor mode** is the safe start: run a pack as the *shadow* policy for two
+weeks, nothing blocks, and `GET /router/gap-report` tells you how many prompts
+with personal data went to the cloud — and what the policy would have done.
 
-- [ ] Strong `LOCAL_API_KEY` (`openssl rand -hex 24`) and `ROUTER_DASHBOARD_PASSWORD`.
-- [ ] `ROUTER_DATA_DIR=/data` on a mounted volume — durable history, audit chain, roster, keys.
-- [ ] Pick a policy pack: `ROUTER_POLICY_PATH=builtin:nis2-baseline` (or start in
-      monitor mode: `ROUTER_SHADOW_POLICY_PATH=builtin:nis2-baseline`).
-- [ ] `ROUTER_PUBLIC_URL=https://your-domain` (landing/connect links).
-- [ ] Expose port 8080, healthcheck `/healthz`; verify with a routed call and
-      check the `X-Router-*` response headers.
+## Point your clients at it
 
-Details: [`docs/01-architecture/14-deployment-topology.md`](docs/01-architecture/14-deployment-topology.md).
+Three values — base URL, API key, `model: auto`:
 
-## Documentation map
+- **OpenAI wire** (`/v1/chat/completions`): Cursor, Cline, Continue, Aider, OpenWebUI, AnythingLLM, LibreChat, the OpenAI SDKs.
+- **Anthropic wire** (`/v1/messages`, tool use + streaming): Claude Code, Codex, the Anthropic SDKs — `ANTHROPIC_BASE_URL=https://your-gateway`.
+- **Agents**: an MCP surface (`/mcp`) exposes `route_explain`, `incident_report`, `savings_report`, `recent_requests` and more (read-only by default), so an agent can write your morning security brief from the gateway's own evidence.
+
+`/connect` on a running instance has copy-paste recipes per client.
+
+## Why this exists (and why it is open source)
+
+It started as private inference — vLLM on our own GPUs, RAG on internal data,
+everything behind Zero Trust. Then more teams, then finance processes, then a
+fleet of agents. At that point you need one place that decides where every
+prompt is *allowed* to go and proves what happened. Sluss is that place, built
+because we needed it ourselves.
+
+It is open source because a security product should be readable. "No LLM in
+the decision, fail-closed, tamper-evident audit" are claims you can check in
+this repository rather than take on trust. The whole thing is here — code,
+architecture, ADRs, backlog and market research — built in the open.
+
+## How it compares (honestly)
+
+| | LiteLLM | Portkey | SSE / DLP suites | **Sluss** |
+|---|---|---|---|---|
+| Self-hosted, single binary | ✓ (Python) | hybrid | SaaS | ✓ |
+| Content-aware deterministic routing | metadata only | — | per-app, not per-prompt | ✓ |
+| Fail-closed egress per data class | — | — | — | ✓ |
+| Agent capability gating (tool risk) | — | — | — | ✓ |
+| Tamper-evident audit + offline verifier | — | — | — | ✓ |
+| EU regime packs (NIS2 / DORA / GDPR) | — | — | — | ✓ |
+
+If you only need a multi-provider proxy with budgets, LiteLLM is excellent.
+Sluss is for the moment a security lead asks *"where does our AI data go, and
+can you prove it?"*
+
+## Architecture
 
 ```
+POST /v1/chat/completions  (or /v1/messages)
+  → Auth (per-department API keys, hashed at rest)
+  → Feature extractor (rule-based, no LLM) → JobDescriptor
+  → Policy engine (precompiled, in-memory) → constraints or fail-closed block
+  → Routing engine (score on quality · cost · latency · health · compliance tags)
+  → Provider adapter (OpenAI-compatible, Anthropic, local vLLM/on-prem)
+  → Audit chain + spend/CO₂ accounting (async, off the hot path)
+```
+
+Routing overhead target: **p95 < 100 ms** before any provider call. Storage is
+SQLite under `ROUTER_DATA_DIR` — no Postgres, no Redis, nothing else to run.
+
+Start with [`docs/01-architecture/01-system-overview.md`](docs/01-architecture/01-system-overview.md).
+Decisions live in [`docs/02-adr/`](docs/02-adr/); the policy DSL is specified in
+[`docs/06-engineering/01-routing-policy-reference.md`](docs/06-engineering/01-routing-policy-reference.md).
+
+## Repository map
+
+```
+cmd/              router · routerctl (dry-run CLI) · audit-verify · mcp · mock-provider
+internal/         classifier · policy · engine · provider · history (SQLite) · server · audit
 docs/
-  00-product/       CISO positioning, NIS2 routing-controls analysis, EU/global
-                    market analysis, ecosystem map, agent market sweep, product brief
-  01-architecture/  System design (start: 01-system-overview.md)
-  02-adr/           Architecture decisions
-  03-backlog/       Epics · 04-sprints/ Sprint plans · 05-issues/ Implementable issues
-  06-engineering/   Routing policy, classifier, latency, testing references
-  07-operations/    Runbooks, SLO, release checklists
-DECISION_LOG.md     Short product/tech decisions with dates
+  00-product/     positioning, NIS2 controls, market + ecosystem research, product brief
+  01-architecture/  system design       02-adr/   architecture decisions
+  05-issues/      the backlog, as shipped (ISSUE-001 → …)   06-engineering/  references
+  07-operations/  runbooks, SLOs, the open-source release runbook
+DECISION_LOG.md   dated product/tech decisions
 ```
 
-Recommended reading order: `docs/00-product/13-product-brief.md`
-→ `docs/00-product/08-positioning-ciso.md`
-→ `docs/00-product/09-nis2-routing-controls.md` → `docs/01-architecture/01-system-overview.md`.
+## Develop
 
-## Stack
+```bash
+make dev           # go run ./cmd/router on :8080
+make test          # full suite, -race
+make test-policy   # policy golden cases
+make test-eval     # classifier eval smoke
+make demo-ciso     # reproducible end-to-end demo against the mock
+make lint
+```
 
-Go 1.22+, stdlib `net/http`, `log/slog`; pure-Go SQLite (`modernc.org/sqlite`)
-for durable history on a volume — no CGO, one static binary. Prometheus metrics,
-built-in dashboard. Provider adapters in `internal/provider` (OpenAI-compatible,
-mock for dev). See `DECISION_LOG.md` for the storage/architecture decisions.
+Read [`CONTRIBUTING.md`](CONTRIBUTING.md) first — the fast-path rules (no LLM,
+fail-closed, never reorder a classification vocabulary) are non-negotiable.
+Security issues: [`SECURITY.md`](SECURITY.md).
 
 ## Licence
 
-Sluss is open source under the **GNU Affero General Public License v3.0**
-(`LICENSE`). Run it, modify it, self-host it; if you offer a modified version
-as a network service, share your changes under the same terms. See
-`CONTRIBUTING.md` to get involved and `SECURITY.md` to report a vulnerability.
+**AGPL-3.0-only** — run it, modify it, self-host it; if you offer a modified
+version as a network service, share your changes under the same terms.
+See [`LICENSE`](LICENSE).
+
+---
+
+*Sluss (Swedish: lock chamber) — it passes what should pass, holds what should
+not, one chamber at a time, and logs every passage.* · [sluss.eu](https://sluss.eu)
