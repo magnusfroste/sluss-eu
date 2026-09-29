@@ -168,6 +168,29 @@ samma motor, inga providers, ingen statistik.)*
 
 ## LIVE-FACIT
 
+**2026-09-29 kväll, slutgenrep inför demo (gäller):** roster = cheap-general
+(gpt-4o-mini, moln) · balanced-coder (gpt-4o, moln) · **autoversio** (Qwen 27B
+på 2×RTX 5090, lokal, balanced 1.0/4.0) · glm-local (DGX Spark, lokal reserv,
+2.0/8.0). glm-premium/Z.ai borttagen. Lokalpris över gpt-4o-mini är avsiktligt:
+annars vinner lokalt även ofarligt och molnbeatet försvinner.
+
+| Beat | Utfall | Tid |
+|---|---|---|
+| B1 commit-meddelande | moln · cheap-general | 1.6 s |
+| B2 personnummer | **lokal** · autoversio · `pii:personnummer` | 2.6 s |
+| B3 hälsodata | **lokal** · autoversio | 3.9 s |
+| B4 bokslut (sv) | **lokal** · autoversio | 4.7 s |
+| B5 Go-deadlock | **lokal** · autoversio (ändrat, se nedan) | 12 s |
+| B6 säkerhetsgranskning | **403** fail-closed | 0.6 s |
+| B7 NDA | **lokal** · autoversio | 2.2 s |
+| B8 pin + personnummer | **403** (pin rundar inte) | 0.9 s |
+| B9 agent m. delete-verktyg | moln tills regeln skapas live → lokal | 1.2 s |
+
+**B5 nytt utfall:** källkod går nu *lokalt* — autoversio är billigare än
+gpt-4o för balanced-uppgifter. Ny replik: "Svår kod → starkaste modellen
+policyn tillåter, och den är er egen: 12 sekunder, inget lämnade huset."
+Hoppa över det interaktiva "lägg till source_code i regel 1"-momentet.
+
 **2026-09-29, genrep mot sluss.eu (ISSUE-113/114 live, ny DGX-endpoint):**
 lokal modell är nu **glm-local** (glm-5.3-flash på DGX Spark, balanced, 1.0/4.0).
 B1 moln · B2 pii lokal (`pii:personnummer`) · B3 health lokal · B4 financial
