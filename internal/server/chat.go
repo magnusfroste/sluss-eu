@@ -53,8 +53,12 @@ type ChatOptions struct {
 
 	// Routing (Sprint 05). Optional — if Engine is nil the handler uses the
 	// single Provider passed to ChatCompletionsHandler.
-	Engine            *engine.Engine
-	Adapters          map[string]provider.Adapter // provider ID → adapter
+	Engine   *engine.Engine
+	Adapters map[string]provider.Adapter // provider ID → adapter (static)
+	// AdapterSource, when set, supplies the live adapter set instead of
+	// Adapters (ISSUE-115: the roster is swapped without a restart). Each
+	// request reads it once, so one request never mixes two rosters.
+	AdapterSource     func() map[string]provider.Adapter
 	PolicyCache       *policy.Cache
 	ShadowPolicyCache *policy.Cache
 
@@ -144,8 +148,9 @@ func ChatCompletionsHandler(p provider.Adapter, opts ...ChatOptions) http.Handle
 		// Optional prompt logging — off by default, gated per tenant (ISSUE-045).
 		cfg.logPrompt(r.Context(), job, &req)
 
-		// Routing engine path.
-		if cfg.Engine != nil && len(cfg.Adapters) > 0 {
+		// Routing engine path. One adapter-set read per request (ISSUE-115).
+		adapters := cfg.currentAdapters()
+		if cfg.Engine != nil && len(adapters) > 0 {
 			// Budget caps (ISSUE-051): block or downgrade before routing.
 			if !cfg.applyBudget(w, r, job) {
 				return
@@ -234,7 +239,7 @@ func ChatCompletionsHandler(p provider.Adapter, opts ...ChatOptions) http.Handle
 			cfg.setRouteReasonHeaders(w, job, dec)
 
 			if req.Stream {
-				candidates := buildStreamCandidates(dec, cfg.Adapters)
+				candidates := buildStreamCandidates(dec, adapters)
 				// Reasoning-capable candidates get a per-candidate thinking
 				// directive (from requires_reasoning) and a raised timeout.
 				for i := range candidates {
@@ -254,7 +259,7 @@ func ChatCompletionsHandler(p provider.Adapter, opts ...ChatOptions) http.Handle
 				}
 			}
 
-			if adapter, ok := cfg.Adapters[dec.SelectedProvider]; ok {
+			if adapter, ok := adapters[dec.SelectedProvider]; ok {
 				normalized.Model = dec.ProviderModelID
 				normalized.EnableThinking, normalized.TimeoutHint =
 					cfg.reasoningDirective(dec.SelectedModel, job)
@@ -282,7 +287,7 @@ func ChatCompletionsHandler(p provider.Adapter, opts ...ChatOptions) http.Handle
 					estimatedCostUSD: dec.EstimatedCostUSD,
 				}
 				var lastErr error
-				for i, c := range buildCompleteCandidates(dec, cfg.Adapters) {
+				for i, c := range buildCompleteCandidates(dec, adapters) {
 					attemptReq := normalized.Clone()
 					attemptReq.Model = c.providerModelID
 					attemptReq.EnableThinking, attemptReq.TimeoutHint = cfg.reasoningDirective(c.modelID, job)
@@ -1154,6 +1159,15 @@ func (o *ChatOptions) reasoningDirective(modelID string, job *router.JobDescript
 	return &think, reasoningTimeout
 }
 
+// currentAdapters returns the live adapter set when a source is wired
+// (ISSUE-115), else the static map.
+func (o *ChatOptions) currentAdapters() map[string]provider.Adapter {
+	if o.AdapterSource != nil {
+		return o.AdapterSource()
+	}
+	return o.Adapters
+}
+
 // councilEnabled reports whether the request should use council (deliberation
 // panel) mode: the task class is configured for council and the request is not
 // streaming (the panel needs full answers to judge).
@@ -1170,6 +1184,7 @@ func (o *ChatOptions) buildCouncilPanel(dec engine.RouteDecision) []council.Cand
 		size = 3
 	}
 	seen := make(map[string]bool)
+	live := o.currentAdapters()
 	var panel []council.Candidate
 	add := func(providerID, providerModelID, modelID string) {
 		if len(panel) >= size {
@@ -1179,7 +1194,7 @@ func (o *ChatOptions) buildCouncilPanel(dec engine.RouteDecision) []council.Cand
 		if seen[key] {
 			return
 		}
-		adapter, ok := o.Adapters[providerID]
+		adapter, ok := live[providerID]
 		if !ok {
 			return
 		}

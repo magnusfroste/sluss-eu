@@ -25,6 +25,8 @@ type ModelsOptions struct {
 	// supplies the provider connections for the Add-Model picker. Nil (no data
 	// dir) → the Models page is read-only over the live registry.
 	Roster providercfg.RosterStore
+	// Reloader applies edits live (ISSUE-115); nil → restart to apply.
+	Reloader *RosterReloader
 	// ProbeClient overrides the HTTP client used by the per-row Test button
 	// (ISSUE-098); nil uses a default with modelTestTimeout.
 	ProbeClient *http.Client
@@ -199,10 +201,11 @@ func ModelsPageHandler(opts ModelsOptions) http.HandlerFunc {
 			Models    []modelView
 			Providers []providerOption
 			CRUD      bool
+			Live      bool // edits apply without a restart (ISSUE-115)
 			Notice    string
 			Error     string
-		}{opts.Version, opts.buildModelViews(), providerOpts, opts.crudEnabled(),
-			r.URL.Query().Get("ok"), r.URL.Query().Get("err")}
+		}{opts.liveVersion(), opts.buildModelViews(), providerOpts, opts.crudEnabled(),
+			opts.Reloader != nil, r.URL.Query().Get("ok"), r.URL.Query().Get("err")}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		if err := modelsTmpl.Execute(w, data); err != nil {
 			if opts.Logger != nil {
@@ -211,6 +214,17 @@ func ModelsPageHandler(opts ModelsOptions) http.HandlerFunc {
 			http.Error(w, "models render error", http.StatusInternalServerError)
 		}
 	}
+}
+
+// liveVersion is the active registry version (it changes on a live roster
+// reload, ISSUE-115), falling back to the startup version.
+func (o ModelsOptions) liveVersion() string {
+	if o.Engine != nil && o.Engine.Registry != nil {
+		if snap, err := o.Engine.Registry.Active(); err == nil && snap.RegistryVersion() != "" {
+			return snap.RegistryVersion()
+		}
+	}
+	return o.Version
 }
 
 // ModelsAddHandler upserts a model (add / edit / re-tier) and persists it.
@@ -244,7 +258,8 @@ func ModelsAddHandler(opts ModelsOptions) http.HandlerFunc {
 			redirectModels(w, r, "", "save: "+err.Error())
 			return
 		}
-		redirectModels(w, r, "Model "+m.ID+" saved — restart (redeploy) to apply.", "")
+		okMsg, errMsg := applyRosterEdit(r.Context(), opts.Reloader, AdminUserFromContext(r.Context()), "Model "+m.ID+" saved")
+		redirectModels(w, r, okMsg, errMsg)
 	}
 }
 
@@ -261,7 +276,8 @@ func ModelsDeleteHandler(opts ModelsOptions) http.HandlerFunc {
 			redirectModels(w, r, "", "save: "+err.Error())
 			return
 		}
-		redirectModels(w, r, "Model "+id+" removed — restart (redeploy) to apply.", "")
+		okMsg, errMsg := applyRosterEdit(r.Context(), opts.Reloader, AdminUserFromContext(r.Context()), "Model "+id+" removed")
+		redirectModels(w, r, okMsg, errMsg)
 	}
 }
 
@@ -362,7 +378,7 @@ const modelsHTML = `<!doctype html>
   <div class="note">
     <b>Tier is the router's USP.</b> The router picks a model per task automatically (task → tier);
     here you curate the <b>tier per model</b> — not a model per task. A model points at a
-    <a href="/router/providers" style="color:#7fd3ff">provider connection</a>. Changes apply on <b>restart</b>.
+    <a href="/router/providers" style="color:#7fd3ff">provider connection</a>. Changes apply <b>{{if .Live}}immediately{{else}}on restart{{end}}</b>.
   </div>
   <div class="card">
     <table>
