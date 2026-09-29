@@ -178,7 +178,9 @@ func (s *Store) Handle(_ context.Context, e eventlog.Event) {
 			s.insertDecision(e.Decision)
 		}
 	case eventlog.EventTypeAttempt:
-		if e.Attempt != nil && e.Attempt.Success {
+		// Failed attempts are handled too (ISSUE-113): they zero the pre-call
+		// estimate so a dead provider never shows up as spend.
+		if e.Attempt != nil {
 			s.fillAttempt(e.Attempt)
 		}
 	}
@@ -200,9 +202,21 @@ func (s *Store) insertDecision(d *eventlog.DecisionEvent) {
 }
 
 func (s *Store) fillAttempt(a *eventlog.AttemptEvent) {
-	cost := a.ActualCostUSD
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	if !a.Success {
+		// A failed attempt spent nothing we can account for. The decision row
+		// carried the pre-call estimate; leaving it there made failed requests
+		// count as spend (ISSUE-113: a dead provider showed as -8000% savings).
+		// A later successful fallback attempt overwrites this with real cost.
+		_, _ = s.db.Exec(`UPDATE requests SET cost_usd = 0
+			WHERE id = (SELECT MAX(id) FROM requests WHERE request_id = ?)`, a.RequestID)
+		return
+	}
+	cost := a.ActualCostUSD
+	if cost <= 0 {
+		cost = a.EstimatedCostUSD // usage unavailable (e.g. streaming): keep the estimate
+	}
 	_, _ = s.db.Exec(`UPDATE requests SET
 			input_tokens = ?,
 			output_tokens = ?,

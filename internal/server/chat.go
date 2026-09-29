@@ -270,23 +270,53 @@ func ChatCompletionsHandler(p provider.Adapter, opts ...ChatOptions) http.Handle
 					}
 				}
 
-				start := time.Now()
-				resp, err := adapter.Complete(r.Context(), normalized)
-				durationMs := time.Since(start).Milliseconds()
-				cfg.recordAttempt(job.RequestID, dec.SelectedProvider, dec.SelectedModel, 0, resp, err, durationMs, 0, attemptMeta{
+				// Walk the pre-built chain: primary first, then each fallback the
+				// engine allowed under policy (ISSUE-113). Until now only the
+				// streaming path did this; a non-streaming 429/5xx on the primary
+				// went straight to the client even though the chain existed.
+				_ = adapter
+				meta := attemptMeta{
 					tenantID:         job.TenantID,
 					projectID:        job.ProjectID,
 					taskType:         string(job.TaskType),
 					estimatedCostUSD: dec.EstimatedCostUSD,
-				})
-				if err != nil {
-					status, code := mapProviderError(err)
-					writeError(w, status, code, err.Error())
-					return
 				}
-				cfg.setUsageHeaders(w, dec.SelectedModel, dec.SelectedProvider, resp)
-				w.Header().Set("Content-Type", "application/json")
-				_ = json.NewEncoder(w).Encode(resp)
+				var lastErr error
+				for i, c := range buildCompleteCandidates(dec, cfg.Adapters) {
+					attemptReq := normalized.Clone()
+					attemptReq.Model = c.providerModelID
+					attemptReq.EnableThinking, attemptReq.TimeoutHint = cfg.reasoningDirective(c.modelID, job)
+					start := time.Now()
+					resp, err := c.adapter.Complete(r.Context(), attemptReq)
+					durationMs := time.Since(start).Milliseconds()
+					cfg.recordAttempt(job.RequestID, c.providerID, c.modelID, i, resp, err, durationMs, 0, meta)
+					if err == nil {
+						if i > 0 {
+							// The decision headers named the primary; the answer came
+							// from a fallback, and the headers must say who answered.
+							w.Header().Set("X-Router-Selected-Model", c.modelID)
+							w.Header().Set("X-Router-Fallback-Index", strconv.Itoa(i))
+							if cfg.Logger != nil {
+								cfg.Logger.WarnContext(r.Context(), "complete_fallback",
+									"request_id", job.RequestID, "attempt", i,
+									"model", c.modelID, "provider", c.providerID,
+									"primary", dec.SelectedModel, "primary_error", lastErr)
+							}
+						}
+						cfg.setUsageHeaders(w, c.modelID, c.providerID, resp)
+						w.Header().Set("Content-Type", "application/json")
+						_ = json.NewEncoder(w).Encode(resp)
+						return
+					}
+					lastErr = err
+					// The client is gone or the deadline passed: trying the next
+					// provider would only spend money on an answer nobody reads.
+					if r.Context().Err() != nil {
+						break
+					}
+				}
+				status, code := mapProviderError(lastErr)
+				writeError(w, status, code, lastErr.Error())
 				return
 			}
 			// Fall through if adapter not found.
@@ -309,6 +339,42 @@ func ChatCompletionsHandler(p provider.Adapter, opts ...ChatOptions) http.Handle
 		w.Header().Set("X-Router-Selected-Model", resp.Model)
 		_ = json.NewEncoder(w).Encode(resp)
 	}
+}
+
+// completeCandidate is one (adapter, model) pair the non-streaming path may
+// try, in chain order.
+type completeCandidate struct {
+	adapter         provider.Adapter
+	providerID      string
+	providerModelID string
+	modelID         string
+}
+
+// buildCompleteCandidates converts a RouteDecision into the ordered attempt
+// list for non-streaming completions: the selected model first, then the
+// engine's fallbacks — which were built under the same policy constraints, so
+// walking them never widens egress. Pairs without a registered adapter are
+// skipped; duplicates collapse.
+func buildCompleteCandidates(dec engine.RouteDecision, adapters map[string]provider.Adapter) []completeCandidate {
+	var out []completeCandidate
+	seen := make(map[string]bool)
+	add := func(providerID, providerModelID, modelID string) {
+		a, ok := adapters[providerID]
+		if !ok {
+			return
+		}
+		key := providerID + "\x1f" + providerModelID
+		if seen[key] {
+			return
+		}
+		seen[key] = true
+		out = append(out, completeCandidate{adapter: a, providerID: providerID, providerModelID: providerModelID, modelID: modelID})
+	}
+	add(dec.SelectedProvider, dec.ProviderModelID, dec.SelectedModel)
+	for _, fb := range dec.Fallbacks {
+		add(fb.ProviderID, fb.ProviderModelID, fb.ModelID)
+	}
+	return out
 }
 
 // buildStreamCandidates converts a RouteDecision into an ordered attempt list
