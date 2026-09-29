@@ -168,6 +168,25 @@ samma motor, inga providers, ingen statistik.)*
 
 ## LIVE-FACIT
 
+**2026-09-29, genrep mot sluss.eu (ISSUE-113/114 live, ny DGX-endpoint):**
+lokal modell är nu **glm-local** (glm-5.3-flash på DGX Spark, balanced, 1.0/4.0).
+B1 moln · B2 pii lokal (`pii:personnummer`) · B3 health lokal · B4 financial
+lokal · B5 source_code moln · B6 403 · B7 legal lokal · B8 403 (pin rundar
+inte) = **8/8**. B9 verifierat lokalt på main-builden: konsolregeln
+"agent capability: destructive → local" matchar med delete-verktyget, utan
+tools → moln; skapas live i demon.
+
+**Risker inför demo:**
+- **Z.ai ger 429 på varje anrop** (kvot). ISSUE-113-fallbacken räddar B1/B5
+  (svarar via OpenRouter), men dry-run visar glm-premium medan svaret kommer
+  från gpt-4o-mini/gpt-4o. Fixa kvoten eller avaktivera glm-premium.
+- **Lokal latens 20–60 s** (glm-5.3-flash ≈ 22 tok/s, långa svar). B4 tog
+  59,6 s mot 60 s timeout; B5 fastnade 60 s på glm-local innan gpt-4o svarade.
+  Kör lokala beats i **chatten (streaming)** så tokens syns direkt, och visa
+  dry-run (instant) som beviset. Svaren säger korrekt "jag ser inget
+  underlag" — poängen är *vart* prompten gick, inte svaret.
+
+
 **2026-08-15, genrep mot sluss.eu (redeploy m. ISSUE-108/110/111):** beats 1–8
 = 8/8 enligt facit, med rollbyte: **laguna-s-21** (ny DGX-modell) har tagit
 över de lokala beatsen (2/3/4/7) från qwen36-35b — samma egress-utfall, bättre
