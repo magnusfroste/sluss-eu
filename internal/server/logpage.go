@@ -142,14 +142,15 @@ const logPageHTML = `<!doctype html>
 </header>
 <div class="wrap">
 <table>
-<thead><tr><th>Time</th><th>Task</th><th>Risk</th><th>Selected model</th><th>Provider</th>
+<thead><tr><th>Time</th><th>Task</th><th>Risk</th><th>Sensitivity</th><th>Selected model</th><th>Provider</th>
 <th class="num">In</th><th class="num">Out</th><th class="num">Cost</th></tr></thead>
 <tbody>
 {{range .Rows}}
 <tr>
   <td class="mono">{{clock .Time}}</td>
-  <td>{{if .Blocked}}<span class="bad">blocked</span> {{end}}{{.TaskType}}</td>
+  <td>{{if .Blocked}}<span class="bad">blocked</span> {{end}}{{.TaskType}}{{if and .Blocked .BlockCode}}<div class="slug">{{.BlockCode}}</div>{{end}}</td>
   <td class="{{riskClass .RiskLevel}}">{{.RiskLevel}}</td>
+  <td>{{if and .Sensitivity (ne .Sensitivity "none")}}<span class="pill">{{.Sensitivity}}</span>{{else}}<span style="color:#475569">—</span>{{end}}</td>
   <td>{{if .Model}}<span class="pill {{tierClass .Model}}">{{.Model}}</span>{{if .ProviderModelID}}<div class="slug">{{.ProviderModelID}}</div>{{end}}{{end}}</td>
   <td class="mono">{{.Provider}}</td>
   <td class="num">{{.InputTokens}}</td>
@@ -157,7 +158,7 @@ const logPageHTML = `<!doctype html>
   <td class="num mono">{{usd .CostUSD}}</td>
 </tr>
 {{else}}
-<tr><td colspan="8" class="empty">No requests yet — open the <a href="/chat" style="color:#22c58b">live chat</a> and send one.</td></tr>
+<tr><td colspan="9" class="empty">No requests yet — open the <a href="/chat" style="color:#22c58b">live chat</a> and send one.</td></tr>
 {{end}}
 </tbody>
 </table>

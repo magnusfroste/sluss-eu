@@ -32,6 +32,7 @@ const adminShellCSS = `
 
 type navItem struct {
 	key, href, icon, label string // icon is a monochrome inline SVG (currentColor)
+	group                  string // sidebar section: Evidence · Control · Show
 }
 
 // Minimal single-stroke line icons — a corporate, non-emoji nav (matches the
@@ -49,25 +50,31 @@ const (
 	icPolicy    = `<svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.4-3 8-7 10-4-2-7-5.6-7-10V6z"/><path d="M9.5 12l2 2 3.5-4"/></svg>`
 )
 
+// Grouped the way the product is pitched: Evidence (what happened, provably),
+// Control (what is allowed to happen), Show (connect clients, run the demo).
 var adminNavItems = []navItem{
-	{"dashboard", "/router/dashboard", icDashboard, "Dashboard"},
-	{"log", "/router/log", icLog, "Request log"},
-	{"models", "/router/models", icModels, "Models"},
-	{"providers", "/router/providers", icProviders, "Providers"},
-	{"policy", "/router/policy", icPolicy, "Policy"},
-	{"keys", "/router/keys", icKeys, "Keys"},
-	{"users", "/router/users", icUsers, "Users"},
-	{"prompts", "/router/prompts", icPrompts, "Demo prompts"},
-	{"connect", "/connect", icConnect, "Connect"},
-	{"chat", "/chat", icChat, "Live chat"},
+	{"dashboard", "/router/dashboard", icDashboard, "Dashboard", "Evidence"},
+	{"log", "/router/log", icLog, "Request log", "Evidence"},
+	{"policy", "/router/policy", icPolicy, "Policy", "Control"},
+	{"models", "/router/models", icModels, "Models", "Control"},
+	{"providers", "/router/providers", icProviders, "Providers", "Control"},
+	{"keys", "/router/keys", icKeys, "Keys", "Control"},
+	{"users", "/router/users", icUsers, "Users", "Control"},
+	{"prompts", "/router/prompts", icPrompts, "Demo prompts", "Show"},
+	{"chat", "/chat", icChat, "Live chat", "Show"},
+	{"connect", "/connect", icConnect, "Connect", "Show"},
 }
 
 // adminNavHTML renders the left navigation with the given page marked active.
 func adminNavHTML(active string) string {
 	var b strings.Builder
-	b.WriteString(`<nav class="tk-nav"><div class="tk-brand">` + brandLogoSVG + `<span class="tk-bt">sluss</span></div>`)
-	b.WriteString(`<div class="tk-sec">Observability</div>`)
+	b.WriteString(`<nav class="tk-nav"><div class="tk-brand">` + brandLogoSVG + `<span class="tk-bt">Sluss</span></div>`)
+	group := ""
 	for _, it := range adminNavItems {
+		if it.group != group {
+			group = it.group
+			b.WriteString(`<div class="tk-sec">` + group + `</div>`)
+		}
 		cls := "tk-link"
 		if it.key == active {
 			cls += " active"

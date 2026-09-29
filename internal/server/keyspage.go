@@ -183,7 +183,7 @@ input{width:100%;background:#0b1220;border:1px solid #2c4066;border-radius:8px;c
 <div class="tk-shell">
 {{adminNav "keys"}}
 <div class="tk-main">
-<div class="hd"><h1>API-nycklar</h1>
+<div class="hd"><h1>API keys</h1>
 <div class="sub">DB-backed keys per department (tenant/project). The secret is shown <b>once</b>.</div></div>
 <div class="wrap">
 
@@ -231,9 +231,9 @@ input{width:100%;background:#0b1220;border:1px solid #2c4066;border-radius:8px;c
 <form method="post" action="/router/keys">
   <div class="grid">
     <div><label>Tenant ID (department)</label><input name="tenant_id" placeholder="finance" required></div>
-    <div><label>Projekt (valfritt)</label><input name="project_id" placeholder="prod"></div>
+    <div><label>Project (optional)</label><input name="project_id" placeholder="prod"></div>
     <div><label>Role (user/admin)</label><input name="role" placeholder="user"></div>
-    <div><label>Scopes (komma, tomt = alla)</label><input name="scopes" placeholder="chat:completions"></div>
+    <div><label>Scopes (comma-separated, empty = all)</label><input name="scopes" placeholder="chat:completions"></div>
   </div>
   <div style="margin-top:14px"><button class="btn" type="submit">Create key</button></div>
 </form>

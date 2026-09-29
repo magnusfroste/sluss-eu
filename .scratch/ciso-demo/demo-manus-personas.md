@@ -109,10 +109,11 @@ brandväggen."
 
 ### Beat 9 — Agenten (nya kapitlet: kapability, inte bara innehåll)
 
-> **Förutsätter:** deploy med ISSUE-111 (aug 2026) och att `builtin:nis2-baseline`
-> (pv_nis2_baseline_2026_08, regel 4d) är aktiv. Kör beatet i policy-konsolen:
-> aktivera NIS2-packet med ett klick INFÖR CISO:n (bytet auditeras — poäng i
-> sig), kör beatet, växla tillbaka till konsolreglerna efteråt.
+> **Förutsätter:** deploy med ISSUE-114 (sep 2026). Kör beatet i policy-
+> konsolen utan att byta pack: skapa regeln live INFÖR betraktaren —
+> "When agent capability: destructive → Route local", aktivera (bytet
+> auditeras — poäng i sig). Alternativ: aktivera `builtin:nis2-baseline`
+> (regel 4d gör samma sak) och växla tillbaka efteråt.
 
 **Säg först:** "Allt ni sett hittills styr på *innehåll*. Men era agenter har
 snart verktyg — och då är frågan inte bara vad prompten säger, utan vad agenten
