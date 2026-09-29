@@ -250,7 +250,7 @@ footer{border-top:1px solid var(--line);margin-top:72px;padding:26px 0;color:var
 <div class="wrap">
 <nav>
   <span class="brand">{{.Logo}} {{.Name}}</span>
-  <a class="enter" href="/router/dashboard">Sign in</a>
+  <span><a class="enter" href="https://github.com/magnusfroste/sluss-eu" style="margin-right:8px">GitHub</a><a class="enter" href="/router/dashboard">Sign in</a></span>
 </nav>
 
 <section class="hero">
@@ -308,7 +308,7 @@ footer{border-top:1px solid var(--line);margin-top:72px;padding:26px 0;color:var
 
 <footer>
   <span>{{.Name}} — control and evidence for LLM usage.</span>
-  <span>Not a legal compliance certification.</span>
+  <span>Open source · AGPL-3.0 · <a href="https://github.com/magnusfroste/sluss-eu">github.com/magnusfroste/sluss-eu</a> · Not a legal compliance certification.</span>
 </footer>
 </div>
 </body></html>`

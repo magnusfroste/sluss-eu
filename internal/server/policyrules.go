@@ -46,6 +46,10 @@ var consoleTaskTypes = []string{
 
 var consoleRiskLevels = []string{"low", "medium", "high", "critical"}
 
+// consoleToolRisks mirrors policy's validToolRisks (ISSUE-111): the capability an
+// agent declares, ranked read < write < external < destructive.
+var consoleToolRisks = []string{"read", "write", "external", "destructive"}
+
 var tagPattern = regexp.MustCompile(`^[a-z0-9][a-z0-9_-]*$`)
 
 // ConsoleRule is one firewall-style rule authored in the console: at least one
@@ -56,18 +60,24 @@ type ConsoleRule struct {
 	Sensitivities []string `json:"sensitivities,omitempty"` // when.sensitivity in [...]
 	TaskType      string   `json:"task_type,omitempty"`
 	RiskLevel     string   `json:"risk_level,omitempty"`
-	Action        string   `json:"action"`         // "require_tags" | "block"
-	Tags          []string `json:"tags,omitempty"` // for require_tags
+	ToolRisks     []string `json:"tool_risks,omitempty"` // when.tool_risk in [...] (agent capability)
+	Action        string   `json:"action"`               // "require_tags" | "block"
+	Tags          []string `json:"tags,omitempty"`       // for require_tags
 }
 
 // Validate checks vocabulary and shape; inputs come from the admin form.
 func (r ConsoleRule) Validate() error {
-	if len(r.Sensitivities) == 0 && r.TaskType == "" && r.RiskLevel == "" {
+	if len(r.Sensitivities) == 0 && r.TaskType == "" && r.RiskLevel == "" && len(r.ToolRisks) == 0 {
 		return fmt.Errorf("a rule needs at least one condition")
 	}
 	for _, s := range r.Sensitivities {
 		if !inList(consoleSensitivities, s) {
 			return fmt.Errorf("unknown sensitivity %q", s)
+		}
+	}
+	for _, t := range r.ToolRisks {
+		if !inList(consoleToolRisks, t) {
+			return fmt.Errorf("unknown agent capability %q", t)
 		}
 	}
 	if r.TaskType != "" && !inList(consoleTaskTypes, r.TaskType) {
@@ -114,6 +124,9 @@ func (r ConsoleRule) WhenSummary() string {
 	}
 	if r.RiskLevel != "" {
 		parts = append(parts, "risk: "+r.RiskLevel)
+	}
+	if len(r.ToolRisks) > 0 {
+		parts = append(parts, "agent capability: "+strings.Join(r.ToolRisks, ", "))
 	}
 	return strings.Join(parts, " · ")
 }
@@ -202,6 +215,9 @@ func GenerateConsolePolicyYAML(version string, rules []ConsoleRule) string {
 		}
 		if r.RiskLevel != "" {
 			b.WriteString("      risk_level: " + r.RiskLevel + "\n")
+		}
+		if len(r.ToolRisks) > 0 {
+			b.WriteString("      tool_risk: { in: [" + strings.Join(r.ToolRisks, ", ") + "] }\n")
 		}
 		b.WriteString("    route:\n")
 		if r.Action == "block" {
@@ -338,6 +354,8 @@ func PolicyRuleAddHandler(o PolicyRulesOptions) http.HandlerFunc {
 		}
 		rule.Sensitivities = append(rule.Sensitivities, r.Form["sensitivity"]...)
 		sort.Strings(rule.Sensitivities)
+		rule.ToolRisks = append(rule.ToolRisks, r.Form["tool_risk"]...)
+		sort.Strings(rule.ToolRisks)
 		for _, t := range strings.Split(r.FormValue("tags"), ",") {
 			if t = strings.ToLower(strings.TrimSpace(t)); t != "" {
 				rule.Tags = append(rule.Tags, t)

@@ -428,6 +428,7 @@ const providersHTML = `<!doctype html>
       <a class="tag neutral" href="/router/models">{{.ModelN}} models</a>
       <span class="tag neutral">{{.Status}}</span>
       {{if and .Deletable $.CRUD}}
+      <button class="btn" type="button" style="margin:0" onclick="editProvider(this)" data-id="{{.ID}}" data-name="{{.Name}}" data-url="{{.BaseURL}}" data-key="{{.KeyEnv}}" data-tags="{{range $i, $t := .Tags}}{{if $i}}, {{end}}{{$t}}{{end}}">Edit</button>
       <form method="post" action="/router/providers/delete" onsubmit="return confirm('Remove {{.ID}}?')" style="margin:0">
         <input type="hidden" name="id" value="{{.ID}}">
         <button class="btn del" type="submit">Remove</button>
@@ -470,17 +471,30 @@ const providersHTML = `<!doctype html>
   </div>
 
   {{if .CRUD}}
-  <form class="addf" method="post" action="/router/providers">
-    <h2>Add provider connection</h2>
+  <form class="addf" method="post" action="/router/providers" id="provform">
+    <h2 id="provh">Add provider connection</h2>
+    <p id="provhint" style="display:none;font-size:.82rem;color:#8fa1bf;margin:-6px 0 10px">Editing an existing connection — saving replaces its endpoint, key env var and tags (the ID stays). Changes apply on restart.</p>
     <div class="grid">
-      <div><label>ID (short name, a–z0–9)</label><input name="id" placeholder="zai" required></div>
-      <div><label>Display name</label><input name="name" placeholder="Z.ai"></div>
-      <div class="full"><label>Base URL (OpenAI-compatible)</label><input name="base_url" placeholder="https://api.z.ai/api/coding/paas/v4" required></div>
-      <div class="full"><label>Key env var (the value is set in the environment, not here)</label><input name="key_env" placeholder="ZAI_API_KEY" required></div>
-      <div class="full"><label>Compliance tags (comma-separated — policy can require/deny them). Residency: eu-resident, dpa-signed. Private/on-prem model: <b>local</b> (stays in the house)</label><input name="compliance_tags" placeholder="local, on-prem, eu-resident"></div>
+      <div><label>ID (short name, a–z0–9)</label><input name="id" id="prov_id" placeholder="zai" required></div>
+      <div><label>Display name</label><input name="name" id="prov_name" placeholder="Z.ai"></div>
+      <div class="full"><label>Base URL (OpenAI-compatible)</label><input name="base_url" id="prov_url" placeholder="https://api.z.ai/api/coding/paas/v4" required></div>
+      <div class="full"><label>Key env var (the value is set in the environment, not here)</label><input name="key_env" id="prov_key" placeholder="ZAI_API_KEY" required></div>
+      <div class="full"><label>Compliance tags (comma-separated — policy can require/deny them). Residency: eu-resident, dpa-signed. Private/on-prem model: <b>local</b> (stays in the house)</label><input name="compliance_tags" id="prov_tags" placeholder="local, on-prem, eu-resident"></div>
     </div>
-    <div style="margin-top:14px"><button class="btn" type="submit">Save connection</button></div>
+    <div style="margin-top:14px"><button class="btn" type="submit" id="provsave">Save connection</button> <button class="btn" type="button" id="provcancel" style="display:none" onclick="resetProvider()">Cancel</button></div>
   </form>
+  <script>
+  function editProvider(b){var d=b.dataset;
+    document.getElementById('prov_id').value=d.id;document.getElementById('prov_id').readOnly=true;
+    document.getElementById('prov_name').value=d.name;document.getElementById('prov_url').value=d.url;
+    document.getElementById('prov_key').value=d.key;document.getElementById('prov_tags').value=d.tags;
+    document.getElementById('provh').textContent='Edit connection: '+d.id;document.getElementById('provsave').textContent='Save changes';
+    document.getElementById('provhint').style.display='';document.getElementById('provcancel').style.display='';
+    document.getElementById('provform').scrollIntoView({behavior:'smooth'});document.getElementById('prov_url').focus();}
+  function resetProvider(){var f=document.getElementById('provform');f.reset();document.getElementById('prov_id').readOnly=false;
+    document.getElementById('provh').textContent='Add provider connection';document.getElementById('provsave').textContent='Save connection';
+    document.getElementById('provhint').style.display='none';document.getElementById('provcancel').style.display='none';}
+  </script>
   {{end}}
 </div>
 </div>

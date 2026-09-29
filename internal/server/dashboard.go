@@ -307,6 +307,13 @@ var dashboardTmpl = template.Must(template.New("dashboard").Funcs(template.FuncM
 	},
 	"join":   func(s []string) string { return strings.Join(s, ", ") },
 	"hasMap": func(m map[string]int) bool { return len(m) > 0 },
+	"sumMap": func(m map[string]int) int {
+		n := 0
+		for _, v := range m {
+			n += v
+		}
+		return n
+	},
 	"sortedMap": func(m map[string]int) []kvRow {
 		keys := make([]string, 0, len(m))
 		for k := range m {
@@ -376,8 +383,28 @@ section{margin-bottom:2.5rem}
 <div class="tk-shell">
 {{adminNav "dashboard"}}
 <div class="tk-main" style="padding:2rem 2rem 3rem">
-<h1>Sluss Router Dashboard</h1>
-<p class="subtitle">Registry: {{.Version}} &nbsp;·&nbsp; Live aggregation</p>
+<h1>Dashboard</h1>
+<p class="subtitle">Where your AI data went, what the gate stopped, and what routing saved — live.</p>
+
+{{if .Egress.Available}}
+<div class="grid" style="margin-bottom:1rem">
+  <div class="card">
+    <div class="card-label">Blocked fail-closed</div>
+    <div class="card-value">{{sumMap .Egress.BlockedByCode}}</div>
+    <div class="card-sub">audit window · never a silent fallback</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Personal data detected</div>
+    <div class="card-value">{{sumMap .Egress.PIITypeCounts}}</div>
+    <div class="card-sub">types only, never values</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Evidence</div>
+    <div class="card-value" style="font-size:1rem;line-height:1.5"><a href="/router/incident-report?window=24h">incident 24h</a> · <a href="/router/gap-report">gap report</a><br><a href="/router/audit/export">audit chain</a> · <a href="/router/compliance/report">control report</a></div>
+    <div class="card-sub">counts and classes — never prompt content</div>
+  </div>
+</div>
+{{end}}
 
 {{if gt .Savings.PremiumBaselineUSD 0.0}}
 <div class="hero">
@@ -409,6 +436,7 @@ section{margin-bottom:2.5rem}
     <div class="card-value">{{len .SpendByTenant}}</div>
     <div class="card-sub">active</div>
   </div>
+{{if gt .ShadowSummary.Total 0}}
   <div class="card">
     <div class="card-label">Shadow comparisons</div>
     <div class="card-value">{{.ShadowSummary.Total}}</div>
@@ -419,6 +447,7 @@ section{margin-bottom:2.5rem}
     <div class="card-value">{{usd .ShadowSummary.EstimatedCostDeltaUSD}}</div>
     <div class="card-sub">shadow minus actual</div>
   </div>
+{{end}}
 </div>
 
 <section>
@@ -510,7 +539,7 @@ section{margin-bottom:2.5rem}
   </tbody>
   </table>
   {{else}}<p style="font-size:0.78rem;color:#64748b">Bandit active but nothing learned yet (no pulls).</p>{{end}}
-{{else}}<p style="font-size:0.78rem;color:#64748b">Bandit routing is off (ROUTER_BANDIT_ENABLED=false). A/B arms and council outcomes appear in response headers.</p>{{end}}
+{{else}}<p style="font-size:0.78rem;color:#64748b">Bandit routing is off — routes follow policy and scoring only. (Adaptive learning can be enabled with <span class="mono">ROUTER_BANDIT_ENABLED</span>.)</p>{{end}}
 </section>
 
 <section>

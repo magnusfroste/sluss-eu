@@ -174,7 +174,7 @@ input{width:100%;background:#09090b;border:1px solid #2a2a30;border-radius:8px;c
   <td>{{.Role}}</td>
   <td class="mono">{{.Created}}</td>
   <td class="mono">{{if .LastLogin}}{{.LastLogin}}{{else}}—{{end}}</td>
-  <td>{{if .Disabled}}<span class="tag off">inaktiverad</span>{{else}}<span class="tag ok">aktiv</span>{{end}}</td>
+  <td>{{if .Disabled}}<span class="tag off">disabled</span>{{else}}<span class="tag ok">active</span>{{end}}</td>
   <td>
     <form method="post" action="/router/users/disable" style="margin:0">
       <input type="hidden" name="username" value="{{.Username}}">
@@ -195,7 +195,7 @@ input{width:100%;background:#09090b;border:1px solid #2a2a30;border-radius:8px;c
 <form method="post" action="/router/users">
   <div class="grid">
     <div><label>Username</label><input name="username" placeholder="anna.svensson" required></div>
-    <div><label>Roll</label><input name="role" placeholder="admin" value="admin"></div>
+    <div><label>Role</label><input name="role" placeholder="admin" value="admin"></div>
     <div><label>Password (min 8 characters)</label><input name="password" type="password" required></div>
   </div>
   <div style="margin-top:14px"><button class="btn" type="submit">Save user</button></div>

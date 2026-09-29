@@ -148,6 +148,7 @@ type policyPageData struct {
 	ConsoleRules  []ConsoleRule
 	ConsoleActive bool
 	Sensitivities []string
+	ToolRisks     []string // agent capability classes (ISSUE-111)
 	TaskTypes     []string
 	RiskLevels    []string
 	// Data & retention card (ISSUE-096).
@@ -188,6 +189,7 @@ func PolicyPageHandler(o PolicyPageOptions) http.HandlerFunc {
 		d.ConsoleRules = LoadConsoleRules(o.History)
 		d.ConsoleActive = ConsolePolicyActive(o.History)
 		d.Sensitivities = consoleSensitivities
+		d.ToolRisks = consoleToolRisks
 		d.TaskTypes = consoleTaskTypes
 		d.RiskLevels = consoleRiskLevels
 		if o.Retention != nil {
@@ -296,6 +298,10 @@ textarea{width:100%;background:#0b1220;border:1px solid #2c4066;border-radius:8p
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">
       {{range .Sensitivities}}<label style="display:inline-flex;gap:5px;align-items:center;font-size:.85rem;background:#0b1220;border:1px solid #22304d;border-radius:8px;padding:6px 10px;cursor:pointer"><input type="checkbox" name="sensitivity" value="{{.}}">{{.}}</label>{{end}}
     </div>
+    <div style="font-size:.78rem;color:#8fa1bf;margin:2px 0 6px">or the <strong>agent capability</strong> the request declares (its tools, classified read &lt; write &lt; external &lt; destructive):</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+      {{range .ToolRisks}}<label style="display:inline-flex;gap:5px;align-items:center;font-size:.85rem;background:#0b1220;border:1px solid #22304d;border-radius:8px;padding:6px 10px;cursor:pointer"><input type="checkbox" name="tool_risk" value="{{.}}">{{.}}</label>{{end}}
+    </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
       <label style="font-size:.85rem;color:#8fa1bf">task type
         <select name="task_type" style="display:block;background:#0b1220;border:1px solid #22304d;color:#e8eef7;border-radius:8px;padding:7px 9px;margin-top:4px">
@@ -326,15 +332,15 @@ textarea{width:100%;background:#0b1220;border:1px solid #2c4066;border-radius:8p
 </div>
 
 <div class="card">
-  <h2>Compliance-paket (moduler)</h2>
+  <h2>Compliance packs (modules)</h2>
   <div class="note" style="margin-bottom:10px">Embedded rulesets — each market/regime enables the pack it needs. Activate with <span class="mono">ROUTER_POLICY_PATH=builtin:&lt;name&gt;</span> (restart). Same engine; the pack is market-specific.</div>
   <table style="width:100%;border-collapse:collapse">
   {{range .Packs}}
     <tr style="border-top:1px solid #16223b">
       <td style="padding:8px 8px 8px 0;vertical-align:top;white-space:nowrap">
-        <span class="mono">builtin:{{.Name}}</span>{{if .Active}} <span class="badge b-local">aktiv</span>{{end}}
+        <span class="mono">builtin:{{.Name}}</span>{{if .Active}} <span class="badge b-local">active</span>{{end}}
       </td>
-      <td style="padding:8px 0;color:#8fa1bf;font-size:.86rem">{{.Desc}} <span class="chip">{{.Rules}} regler</span></td>
+      <td style="padding:8px 0;color:#8fa1bf;font-size:.86rem">{{.Desc}} <span class="chip">{{.Rules}} rules</span></td>
     </tr>
   {{end}}
   </table>
