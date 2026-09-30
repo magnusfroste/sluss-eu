@@ -411,7 +411,7 @@ func New(cfg Config) http.Handler {
 	}
 
 	// Full request log on its own page (the dashboard keeps stats/insights).
-	logH := LogPageHandler(LogOptions{History: cfg.History, RequestLog: cfg.RequestLog, Logger: cfg.Logger, Version: cfg.RegistryVersion})
+	logH := LogPageHandler(LogOptions{History: cfg.History, RequestLog: cfg.RequestLog, Logger: cfg.Logger, Version: cfg.RegistryVersion, Engine: cfg.Engine})
 	mux.Handle("GET /router/log", dashGuard(logH))
 
 	// Models admin page (ISSUE-072): the primary roster — routable models with

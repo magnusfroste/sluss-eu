@@ -254,6 +254,7 @@ func ChatCompletionsHandler(p provider.Adapter, opts ...ChatOptions) http.Handle
 						taskType:         string(job.TaskType),
 						estimatedCostUSD: dec.EstimatedCostUSD,
 						costFn:           cfg.actualCostUSD,
+						egressFn:         cfg.egressForModel,
 					})
 					return
 				}
@@ -467,6 +468,7 @@ func streamWithFallback(
 					ActualCostUSD:    actualCost,
 					EstimatedCostUSD: meta.estimatedCostUSD,
 					AttemptedAt:      time.Now(),
+					Egress:           streamEgress(meta, c.modelID, err == nil),
 				},
 			})
 		}
@@ -842,6 +844,7 @@ func (o *ChatOptions) enqueueDecision(job *router.JobDescriptor, dec engine.Rout
 		Blocked:               dec.Blocked,
 		BlockCode:             dec.BlockCode,
 		ShadowComparison:      shadowComparison,
+		Egress:                o.decisionEgress(dec),
 		ExperimentArm:         string(arm),
 		DecidedAt:             time.Now(),
 	}
@@ -1026,6 +1029,9 @@ type attemptMeta struct {
 	// costFn computes realized USD from actual token usage (registry pricing).
 	// Used by the streaming path, where usage arrives in a final chunk.
 	costFn func(modelID, providerID string, inTok, outTok int) float64
+	// egressFn classifies a model as "local"/"cloud" (ISSUE-116); used by the
+	// streaming path, which has no ChatOptions receiver.
+	egressFn func(modelID string) string
 }
 
 // recordAttempt updates the health tracker and enqueues an AttemptEvent. When
@@ -1064,6 +1070,9 @@ func (o *ChatOptions) recordAttempt(requestID, providerID, modelID string, attem
 		FirstTokenMs:     firstTokenMs,
 		EstimatedCostUSD: meta.estimatedCostUSD,
 		AttemptedAt:      time.Now(),
+	}
+	if success {
+		a.Egress = o.egressForModel(modelID)
 	}
 	if err != nil {
 		a.ErrorCode = mapProviderErrorCode(err)
@@ -1112,14 +1121,43 @@ func (o *ChatOptions) setRouteReasonHeaders(w http.ResponseWriter, job *router.J
 	if len(tags) > 0 {
 		w.Header().Set("X-Router-Selected-Tags", strings.Join(tags, ", "))
 	}
-	egress := "cloud"
+	w.Header().Set("X-Router-Egress", egressFromTags(tags))
+}
+
+// egressFromTags is the ONE rule for "did the data leave the house": any
+// local-class tag → "local", otherwise "cloud". The response header, the
+// request log and the dashboard all use it (ISSUE-116).
+func egressFromTags(tags []string) string {
 	for _, t := range tags {
 		if localTags[t] {
-			egress = "local"
-			break
+			return "local"
 		}
 	}
-	w.Header().Set("X-Router-Egress", egress)
+	return "cloud"
+}
+
+// egressForModel classifies a routed model by its effective compliance tags.
+// Empty model → "" (nothing was sent).
+func (o *ChatOptions) egressForModel(modelID string) string {
+	if modelID == "" {
+		return ""
+	}
+	return egressFromTags(o.selectedModelTags(modelID))
+}
+
+// decisionEgress is the decision-time egress; blocked requests went nowhere.
+func (o *ChatOptions) decisionEgress(dec engine.RouteDecision) string {
+	if dec.Blocked {
+		return ""
+	}
+	return o.egressForModel(dec.SelectedModel)
+}
+
+func streamEgress(meta attemptMeta, modelID string, success bool) string {
+	if !success || meta.egressFn == nil {
+		return ""
+	}
+	return meta.egressFn(modelID)
 }
 
 // selectedModelTags looks up the effective compliance tags of the selected

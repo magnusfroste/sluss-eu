@@ -25,6 +25,7 @@ type RequestLogRecord struct {
 	CostUSD         float64   `json:"cost_usd"`
 	Blocked         bool      `json:"blocked,omitempty"`
 	BlockCode       string    `json:"block_code,omitempty"`
+	Egress          string    `json:"egress,omitempty"` // "local" | "cloud" | "" (blocked/unknown)
 }
 
 // RequestLogTracker keeps a bounded in-memory ring of recent request records. A
@@ -76,6 +77,7 @@ func (t *RequestLogTracker) addDecision(d *DecisionEvent) {
 		CostUSD:         d.EstimatedCostUSD,
 		Blocked:         d.Blocked,
 		BlockCode:       d.BlockCode,
+		Egress:          d.Egress,
 	}
 	t.mu.Lock()
 	defer t.mu.Unlock()
@@ -100,6 +102,9 @@ func (t *RequestLogTracker) fillAttempt(a *AttemptEvent) {
 			}
 			if a.ProviderID != "" {
 				t.records[i].Provider = a.ProviderID
+			}
+			if a.Egress != "" {
+				t.records[i].Egress = a.Egress
 			}
 			return
 		}

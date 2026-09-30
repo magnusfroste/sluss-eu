@@ -46,7 +46,10 @@ type DecisionEvent struct {
 	RoutingDurationMicros int64
 	Blocked               bool
 	BlockCode             string
-	ShadowComparison      *engine.DecisionComparison
+	// Egress is where the selected model sits: "local" (a local/on-prem tag)
+	// or "cloud" (ISSUE-116). Empty when blocked or unknown.
+	Egress           string
+	ShadowComparison *engine.DecisionComparison
 	// ExperimentArm is the live A/B arm ("control"/"treatment") this request was
 	// bucketed into, or "" when no experiment is running. Lets outcomes be sliced
 	// by arm.
@@ -76,4 +79,7 @@ type AttemptEvent struct {
 	EstimatedCostUSD float64
 	FirstTokenMs     int64
 	AttemptedAt      time.Time
+	// Egress of the model that ANSWERED (ISSUE-116) — after a fallback this
+	// can differ from the decision's primary.
+	Egress string
 }
