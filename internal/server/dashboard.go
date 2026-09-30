@@ -441,7 +441,7 @@ th.num{text-align:right}
 <div class="flow-bar" role="img" aria-label="{{.Local}} local, {{.Cloud}} cloud, {{.Blocked}} blocked">
   {{if gt .Local 0}}<span class="seg seg-local" style="width:{{.Pct .Local}}%"></span>{{end}}{{if gt .Cloud 0}}<span class="seg seg-cloud" style="width:{{.Pct .Cloud}}%"></span>{{end}}{{if gt .Blocked 0}}<span class="seg seg-blocked" style="width:{{.Pct .Blocked}}%"></span>{{end}}
 </div>
-<div class="flow-legend"><span><i class="seg-local"></i>Local {{.Local}}</span><span><i class="seg-cloud"></i>Cloud {{.Cloud}}</span><span><i class="seg-blocked"></i>Blocked {{.Blocked}}</span></div>
+<div class="flow-legend"><span><i class="seg-local"></i>Local {{.Local}}</span><span><i class="seg-cloud"></i>Cloud {{.Cloud}}</span><span><i class="seg-blocked"></i>Blocked {{.Blocked}}</span>{{if gt .Unknown 0}}<span style="color:#94a3b8">Unknown {{.Unknown}} (older rows whose model and provider were removed)</span>{{end}}</div>
 <table class="flow-table">
 <thead><tr><th>Data class</th><th class="num">Local</th><th class="num">Cloud</th><th class="num">Blocked</th><th></th></tr></thead>
 <tbody>

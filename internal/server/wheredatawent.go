@@ -16,10 +16,13 @@ type DataFlowRow struct {
 	Local       int    `json:"local"`
 	Cloud       int    `json:"cloud"`
 	Blocked     int    `json:"blocked"`
+	// Unknown counts old rows whose destination can no longer be derived
+	// (model and provider both gone) — shown honestly, never as cloud.
+	Unknown int `json:"unknown,omitempty"`
 }
 
 // Total is the row's request count.
-func (r DataFlowRow) Total() int { return r.Local + r.Cloud + r.Blocked }
+func (r DataFlowRow) Total() int { return r.Local + r.Cloud + r.Blocked + r.Unknown }
 
 // DataFlowView is the dashboard's lead section (ISSUE-116): the CISO question
 // "where did our AI data go?" answered per sensitivity class. Counts and
@@ -28,6 +31,7 @@ type DataFlowView struct {
 	Local   int           `json:"local"`
 	Cloud   int           `json:"cloud"`
 	Blocked int           `json:"blocked"`
+	Unknown int           `json:"unknown,omitempty"`
 	Rows    []DataFlowRow `json:"rows"`
 	// PII is the personal-data row (zero-valued when none was seen), lifted
 	// out for the "personal data" card.
@@ -35,7 +39,7 @@ type DataFlowView struct {
 }
 
 // Total is the number of classified requests.
-func (v DataFlowView) Total() int { return v.Local + v.Cloud + v.Blocked }
+func (v DataFlowView) Total() int { return v.Local + v.Cloud + v.Blocked + v.Unknown }
 
 // Pct returns n as a whole percentage of the total (0 when empty).
 func (v DataFlowView) Pct(n int) int {
@@ -78,7 +82,7 @@ func buildDataFlow(h *history.Store, recent []eventlog.RequestLogRecord, eng *en
 		rows = h.EgressRows()
 	} else {
 		for _, r := range recent {
-			rows = append(rows, history.EgressRow{Blocked: r.Blocked, Egress: r.Egress, Sensitivity: r.Sensitivity, Model: r.Model, Count: 1})
+			rows = append(rows, history.EgressRow{Blocked: r.Blocked, Egress: r.Egress, Sensitivity: r.Sensitivity, Model: r.Model, Provider: r.Provider, Count: 1})
 		}
 	}
 	legacy := ChatOptions{Engine: eng}
@@ -101,14 +105,18 @@ func buildDataFlow(h *history.Store, recent []eventlog.RequestLogRecord, eng *en
 		default:
 			egress := r.Egress
 			if egress == "" {
-				egress = legacy.egressForModel(r.Model)
+				egress = legacy.legacyEgress(r.Model, r.Provider)
 			}
-			if egress == "local" {
+			switch egress {
+			case "local":
 				row.Local += r.Count
 				v.Local += r.Count
-			} else {
+			case "cloud":
 				row.Cloud += r.Count
 				v.Cloud += r.Count
+			default:
+				row.Unknown += r.Count
+				v.Unknown += r.Count
 			}
 		}
 	}
