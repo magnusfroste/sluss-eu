@@ -1153,6 +1153,27 @@ func (o *ChatOptions) decisionEgress(dec engine.RouteDecision) string {
 	return o.egressForModel(dec.SelectedModel)
 }
 
+// legacyEgress classifies a request row written before egress was stored
+// (ISSUE-116). The model's current tags win; a model since removed from the
+// roster falls back to its provider's tags; when neither is known the answer
+// is "" (unknown) — never a guessed "cloud", which would be a false claim.
+func (o *ChatOptions) legacyEgress(modelID, providerID string) string {
+	if o.Engine == nil || o.Engine.Registry == nil {
+		return ""
+	}
+	snap, err := o.Engine.Registry.Active()
+	if err != nil {
+		return ""
+	}
+	if m, ok := snap.Model(modelID); ok {
+		return egressFromTags(m.ComplianceTags)
+	}
+	if p, ok := snap.Provider(providerID); ok {
+		return egressFromTags(p.ComplianceTags)
+	}
+	return ""
+}
+
 func streamEgress(meta attemptMeta, modelID string, success bool) string {
 	if !success || meta.egressFn == nil {
 		return ""

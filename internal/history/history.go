@@ -583,6 +583,7 @@ type EgressRow struct {
 	Egress      string
 	Sensitivity string
 	Model       string
+	Provider    string
 	Count       int
 }
 
@@ -592,8 +593,8 @@ func (s *Store) EgressRows() []EgressRow {
 	if s == nil {
 		return nil
 	}
-	rows, err := s.db.Query(`SELECT blocked, egress, sensitivity, model, COUNT(*)
-		FROM requests GROUP BY blocked, egress, sensitivity, model`)
+	rows, err := s.db.Query(`SELECT blocked, egress, sensitivity, model, provider, COUNT(*)
+		FROM requests GROUP BY blocked, egress, sensitivity, model, provider`)
 	if err != nil {
 		return nil
 	}
@@ -602,7 +603,7 @@ func (s *Store) EgressRows() []EgressRow {
 	for rows.Next() {
 		var r EgressRow
 		var blocked int
-		if err := rows.Scan(&blocked, &r.Egress, &r.Sensitivity, &r.Model, &r.Count); err != nil {
+		if err := rows.Scan(&blocked, &r.Egress, &r.Sensitivity, &r.Model, &r.Provider, &r.Count); err != nil {
 			continue
 		}
 		r.Blocked = blocked != 0

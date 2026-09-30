@@ -56,7 +56,7 @@ func LogPageHandler(opts LogOptions) http.HandlerFunc {
 		legacy := ChatOptions{Engine: opts.Engine}
 		for i := range rows {
 			if rows[i].Egress == "" && !rows[i].Blocked {
-				rows[i].Egress = legacy.egressForModel(rows[i].Model)
+				rows[i].Egress = legacy.legacyEgress(rows[i].Model, rows[i].Provider)
 			}
 		}
 		data := LogPageData{Version: opts.Version, Rows: rows, Count: len(rows), Durable: durable}

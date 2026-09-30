@@ -22,6 +22,11 @@ func localTaggedEngine(t *testing.T) *engine.Engine {
 			def.Models[i].ComplianceTags = []string{"local", "on-prem"}
 		}
 	}
+	for i := range def.Providers {
+		if def.Providers[i].ID == "anthropic" {
+			def.Providers[i].ComplianceTags = []string{"local"}
+		}
+	}
 	snap, err := registry.NewSnapshot(def)
 	if err != nil {
 		t.Fatal(err)
@@ -43,22 +48,27 @@ func TestDataFlowFromHistory(t *testing.T) {
 	}
 	defer h.Close()
 	ctx := context.Background()
-	add := func(id, model, sens, egress string, blocked bool) {
+	addP := func(id, model, provider, sens, egress string, blocked bool) {
 		h.Handle(ctx, eventlog.Event{Type: eventlog.EventTypeDecision, Decision: &eventlog.DecisionEvent{
-			RequestID: id, SelectedModel: model, Sensitivity: sens, Egress: egress, Blocked: blocked}})
+			RequestID: id, SelectedModel: model, SelectedProvider: provider, Sensitivity: sens, Egress: egress, Blocked: blocked}})
 	}
+	add := func(id, model, sens, egress string, blocked bool) { addP(id, model, "", sens, egress, blocked) }
 	add("a", "premium-reasoning", "pii", "local", false)
 	add("b", "premium-reasoning", "pii", "", false) // legacy row → local via tags
 	add("c", "cheap-general", "none", "cloud", false)
 	add("d", "", "source_code", "", true)
 	add("e", "cheap-general", "legal", "", false) // legacy, cloud via tags
+	// Legacy rows whose model was removed from the roster: the provider's
+	// tags decide; with neither known the row is unknown — never "cloud".
+	addP("f", "removed-model", "anthropic", "pii", "", false)
+	addP("g", "removed-model", "removed-provider", "pii", "", false)
 
 	eng := localTaggedEngine(t)
 	v := buildDataFlow(h, nil, eng)
-	if v.Local != 2 || v.Cloud != 2 || v.Blocked != 1 {
-		t.Fatalf("totals local=%d cloud=%d blocked=%d", v.Local, v.Cloud, v.Blocked)
+	if v.Local != 3 || v.Cloud != 2 || v.Blocked != 1 || v.Unknown != 1 {
+		t.Fatalf("totals local=%d cloud=%d blocked=%d unknown=%d", v.Local, v.Cloud, v.Blocked, v.Unknown)
 	}
-	if v.PII.Total() != 2 || v.PII.Local != 2 || v.PII.Cloud != 0 {
+	if v.PII.Total() != 4 || v.PII.Local != 3 || v.PII.Cloud != 0 || v.PII.Unknown != 1 {
 		t.Fatalf("pii row = %+v", v.PII)
 	}
 	if v.Rows[0].Sensitivity != "pii" || v.Rows[len(v.Rows)-1].Sensitivity != "none" {
@@ -69,7 +79,7 @@ func TestDataFlowFromHistory(t *testing.T) {
 	rec := httptest.NewRecorder()
 	htmlH(rec, httptest.NewRequest(http.MethodGet, "/router/dashboard", nil))
 	body := rec.Body.String()
-	for _, want := range []string{"Where your data went", "2 kept in the house", "Stayed in the house", "left the house — allowed by your policy"} {
+	for _, want := range []string{"Where your data went", "3 kept in the house", "Stayed in the house", "left the house — allowed by your policy"} {
 		if !strings.Contains(body, want) {
 			t.Fatalf("dashboard missing %q", want)
 		}
