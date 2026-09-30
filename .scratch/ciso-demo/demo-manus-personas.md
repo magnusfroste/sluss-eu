@@ -143,7 +143,7 @@ samma motor, inga providers, ingen statistik.)*
 
 ## Finalen — beviset (5 min)
 
-1. **Dashboard**: besparing + CO2 vs all-premium-baseline; Egress & Compliance.
+1. **Dashboard**: börja med **"Where your data went"** — local/cloud/blocked per datakategori ("personnummer: 2 kept in the house"), sedan besparing + CO2 vs all-premium-baseline.
 2. **Policy-konsolen**: aktiva regler läsbart, dry-run, riskregistret
    (leverantörsmatrisen med "required"-kolumner).
 3. **`/router/incident-report?window=24h`**: "om ni måste rapportera en

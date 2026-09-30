@@ -101,6 +101,12 @@ type DashboardData struct {
 	// learning visible, which until now lived only in headers/CLI/logs.
 	Egress   EgressComplianceView `json:"egress_compliance"`
 	Learning LearningRoutingView  `json:"learning_routing"`
+	// DataFlow leads the dashboard (ISSUE-116): where the data went, per
+	// sensitivity class, from durable history.
+	DataFlow DataFlowView `json:"data_flow"`
+	// Durable is true when totals come from SQLite history (they survive
+	// restarts), false for in-memory counters.
+	Durable bool `json:"durable"`
 }
 
 // kvRow is a sorted key/count pair for template rendering.
@@ -187,6 +193,12 @@ func buildDashboardData(opts DashboardOptions, taskFilter string) DashboardData 
 	}
 	d.Egress = buildEgressView(opts)
 	d.Learning = buildLearningView(opts)
+	var memLog []eventlog.RequestLogRecord
+	if opts.History == nil && opts.RequestLog != nil {
+		memLog = opts.RequestLog.Recent(0)
+	}
+	d.DataFlow = buildDataFlow(opts.History, memLog, opts.Engine)
+	d.Durable = opts.History != nil
 	return d
 }
 
@@ -377,6 +389,19 @@ section{margin-bottom:2.5rem}
 .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
 .dot-ok{background:#22c55e}.dot-warn{background:#f59e0b}.dot-bad{background:#ef4444}
 .mono{font-family:ui-monospace,monospace;font-size:0.82rem}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+th.num{text-align:right}
+.ev-links{display:flex;flex-wrap:wrap;gap:6px 14px;margin:6px 0 4px}
+.ev-links a{color:#7fd3ff;text-decoration:none;font-weight:600;font-size:0.92rem;border-bottom:1px solid rgba(127,211,255,.3)}
+.ev-links a:hover{border-bottom-color:#7fd3ff}
+.flow-bar{display:flex;height:14px;border-radius:7px;overflow:hidden;background:#2d3748;margin:0.25rem 0 0.6rem}
+.seg{display:block;height:100%}
+.seg-local{background:#22c55e}.seg-cloud{background:#3b82f6}.seg-blocked{background:#ef4444}
+.flow-legend{display:flex;gap:18px;font-size:0.82rem;color:#cbd5e1;margin-bottom:1rem}
+.flow-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.flow-table{max-width:760px}
+.cls{font-family:ui-monospace,monospace;font-size:0.8rem;background:#1e293b;border:1px solid #334155;border-radius:6px;padding:1px 7px}
+.note{font-size:0.78rem;color:#f59e0b}
 </style>
 </head>
 <body>
@@ -386,24 +411,56 @@ section{margin-bottom:2.5rem}
 <h1>Dashboard</h1>
 <p class="subtitle">Where your AI data went, what the gate stopped, and what routing saved — live.</p>
 
-{{if .Egress.Available}}
+{{with .DataFlow}}
 <div class="grid" style="margin-bottom:1rem">
   <div class="card">
+    <div class="card-label">Stayed in the house</div>
+    <div class="card-value ok">{{.Local}}</div>
+    <div class="card-sub">{{.Pct .Local}}% of requests · local / on-prem models</div>
+  </div>
+  <div class="card">
     <div class="card-label">Blocked fail-closed</div>
-    <div class="card-value">{{sumMap .Egress.BlockedByCode}}</div>
-    <div class="card-sub">audit window · never a silent fallback</div>
+    <div class="card-value{{if gt .Blocked 0}} bad{{end}}">{{.Blocked}}</div>
+    <div class="card-sub">no compliant model · never a silent fallback</div>
   </div>
   <div class="card">
-    <div class="card-label">Personal data detected</div>
-    <div class="card-value">{{sumMap .Egress.PIITypeCounts}}</div>
-    <div class="card-sub">types only, never values</div>
+    <div class="card-label">Personal data (PII)</div>
+    <div class="card-value">{{.PII.Total}}</div>
+    <div class="card-sub">{{if gt .PII.Cloud 0}}<span class="bad">{{.PII.Cloud}} went to the cloud</span>{{else if gt .PII.Total 0}}{{.PII.Local}} kept in the house · {{.PII.Blocked}} blocked{{else}}none seen yet{{end}} · types only, never values</div>
   </div>
-  <div class="card">
+  <div class="card ev">
     <div class="card-label">Evidence</div>
-    <div class="card-value" style="font-size:1rem;line-height:1.5"><a href="/router/incident-report?window=24h">incident 24h</a> · <a href="/router/gap-report">gap report</a><br><a href="/router/audit/export">audit chain</a> · <a href="/router/compliance/report">control report</a></div>
+    <div class="ev-links"><a href="/router/incident-report?window=24h">Incident 24h</a><a href="/router/gap-report">Gap report</a><a href="/router/audit/export">Audit chain</a><a href="/router/compliance/report">Control report</a></div>
     <div class="card-sub">counts and classes — never prompt content</div>
   </div>
 </div>
+
+<section class="flow">
+<h2>Where your data went</h2>
+{{if gt .Total 0}}
+<div class="flow-bar" role="img" aria-label="{{.Local}} local, {{.Cloud}} cloud, {{.Blocked}} blocked">
+  {{if gt .Local 0}}<span class="seg seg-local" style="width:{{.Pct .Local}}%"></span>{{end}}{{if gt .Cloud 0}}<span class="seg seg-cloud" style="width:{{.Pct .Cloud}}%"></span>{{end}}{{if gt .Blocked 0}}<span class="seg seg-blocked" style="width:{{.Pct .Blocked}}%"></span>{{end}}
+</div>
+<div class="flow-legend"><span><i class="seg-local"></i>Local {{.Local}}</span><span><i class="seg-cloud"></i>Cloud {{.Cloud}}</span><span><i class="seg-blocked"></i>Blocked {{.Blocked}}</span></div>
+<table class="flow-table">
+<thead><tr><th>Data class</th><th class="num">Local</th><th class="num">Cloud</th><th class="num">Blocked</th><th></th></tr></thead>
+<tbody>
+{{range .Rows}}
+<tr>
+  <td>{{if eq .Sensitivity "none"}}<span style="color:#94a3b8">no sensitive data</span>{{else}}<span class="cls">{{.Sensitivity}}</span>{{end}}</td>
+  <td class="num ok">{{.Local}}</td>
+  <td class="num{{if and (gt .Cloud 0) (ne .Sensitivity "none")}} warn{{end}}">{{.Cloud}}</td>
+  <td class="num{{if gt .Blocked 0}} bad{{end}}">{{.Blocked}}</td>
+  <td class="note">{{if and (gt .Cloud 0) (ne .Sensitivity "none")}}left the house — allowed by your policy{{end}}</td>
+</tr>
+{{end}}
+</tbody>
+</table>
+<p class="subtitle" style="margin:-1.25rem 0 0">Retained history · classification by deterministic rules, no LLM · a sensitive class in the cloud column is a policy choice you can change on <a href="/router/policy" style="color:#7fd3ff">Policy</a>.</p>
+{{else}}
+<p class="subtitle">No requests yet — send one from <a href="/demo" style="color:#7fd3ff">Live chat</a> or any connected client.</p>
+{{end}}
+</section>
 {{end}}
 
 {{if gt .Savings.PremiumBaselineUSD 0.0}}
@@ -419,7 +476,7 @@ section{margin-bottom:2.5rem}
   <div class="card">
     <div class="card-label">Total requests</div>
     <div class="card-value">{{.TotalRequests}}</div>
-    <div class="card-sub">since last restart</div>
+    <div class="card-sub">{{if .Durable}}routed · retained history{{else}}routed · since last restart{{end}}</div>
   </div>
   <div class="card">
     <div class="card-label">Estimated spend</div>

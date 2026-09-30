@@ -42,7 +42,8 @@ CREATE TABLE IF NOT EXISTS requests (
 	cost_usd REAL NOT NULL DEFAULT 0,
 	blocked INTEGER NOT NULL DEFAULT 0,
 	sensitivity TEXT NOT NULL DEFAULT '',
-	block_code TEXT NOT NULL DEFAULT ''
+	block_code TEXT NOT NULL DEFAULT '',
+	egress TEXT NOT NULL DEFAULT ''
 );
 CREATE INDEX IF NOT EXISTS idx_requests_time ON requests(time);
 CREATE INDEX IF NOT EXISTS idx_requests_request_id ON requests(request_id);
@@ -116,6 +117,9 @@ var migrations = []string{
 	// request row — types/codes only, never content.
 	`ALTER TABLE requests ADD COLUMN sensitivity TEXT NOT NULL DEFAULT ''`,
 	`ALTER TABLE requests ADD COLUMN block_code TEXT NOT NULL DEFAULT ''`,
+	// Where the data went (ISSUE-116): "local" | "cloud" per request, recorded
+	// at decision time and corrected by the answering attempt.
+	`ALTER TABLE requests ADD COLUMN egress TEXT NOT NULL DEFAULT ''`,
 }
 
 // Store is a SQLite-backed request history. It implements eventlog.Handler:
@@ -194,11 +198,11 @@ func (s *Store) insertDecision(d *eventlog.DecisionEvent) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	_, _ = s.db.Exec(`INSERT INTO requests
-		(time, request_id, tenant_id, task_type, risk_level, model, provider_model_id, provider, input_tokens, cost_usd, blocked, sensitivity, block_code)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		(time, request_id, tenant_id, task_type, risk_level, model, provider_model_id, provider, input_tokens, cost_usd, blocked, sensitivity, block_code, egress)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		at.UTC().Format(time.RFC3339Nano), d.RequestID, d.TenantID, d.TaskType, d.RiskLevel,
 		d.SelectedModel, d.ProviderModelID, d.SelectedProvider, d.PromptTokens, d.EstimatedCostUSD, boolToInt(d.Blocked),
-		d.Sensitivity, d.BlockCode)
+		d.Sensitivity, d.BlockCode, d.Egress)
 }
 
 func (s *Store) fillAttempt(a *eventlog.AttemptEvent) {
@@ -222,9 +226,10 @@ func (s *Store) fillAttempt(a *eventlog.AttemptEvent) {
 			output_tokens = ?,
 			cost_usd = CASE WHEN ? > 0 THEN ? ELSE cost_usd END,
 			model = CASE WHEN ? != '' THEN ? ELSE model END,
-			provider = CASE WHEN ? != '' THEN ? ELSE provider END
+			provider = CASE WHEN ? != '' THEN ? ELSE provider END,
+			egress = CASE WHEN ? != '' THEN ? ELSE egress END
 		WHERE id = (SELECT MAX(id) FROM requests WHERE request_id = ?)`,
-		a.InputTokens, a.OutputTokens, cost, cost, a.ModelID, a.ModelID, a.ProviderID, a.ProviderID, a.RequestID)
+		a.InputTokens, a.OutputTokens, cost, cost, a.ModelID, a.ModelID, a.ProviderID, a.ProviderID, a.Egress, a.Egress, a.RequestID)
 }
 
 // Recent returns up to n most recent requests, newest first.
@@ -236,7 +241,7 @@ func (s *Store) Recent(n int) []eventlog.RequestLogRecord {
 		n = 100
 	}
 	rows, err := s.db.Query(`SELECT time, request_id, task_type, risk_level, model, provider_model_id, provider,
-			input_tokens, output_tokens, cost_usd, blocked, sensitivity, block_code
+			input_tokens, output_tokens, cost_usd, blocked, sensitivity, block_code, egress
 		FROM requests ORDER BY id DESC LIMIT ?`, n)
 	if err != nil {
 		return nil
@@ -252,7 +257,7 @@ func scanRequestRows(rows *sql.Rows) []eventlog.RequestLogRecord {
 		var ts string
 		var blocked int
 		if err := rows.Scan(&ts, &r.RequestID, &r.TaskType, &r.RiskLevel, &r.Model, &r.ProviderModelID, &r.Provider,
-			&r.InputTokens, &r.OutputTokens, &r.CostUSD, &blocked, &r.Sensitivity, &r.BlockCode); err != nil {
+			&r.InputTokens, &r.OutputTokens, &r.CostUSD, &blocked, &r.Sensitivity, &r.BlockCode, &r.Egress); err != nil {
 			continue
 		}
 		r.Time, _ = time.Parse(time.RFC3339Nano, ts)
@@ -289,7 +294,7 @@ func (s *Store) Since(t time.Time, limit int) []eventlog.RequestLogRecord {
 		limit = 10_000
 	}
 	rows, err := s.db.Query(`SELECT time, request_id, task_type, risk_level, model, provider_model_id, provider,
-			input_tokens, output_tokens, cost_usd, blocked, sensitivity, block_code
+			input_tokens, output_tokens, cost_usd, blocked, sensitivity, block_code, egress
 		FROM requests WHERE time >= ? ORDER BY id DESC LIMIT ?`,
 		t.UTC().Format(time.RFC3339Nano), limit)
 	if err != nil {
@@ -310,10 +315,10 @@ func (s *Store) ByRequestID(id string) (eventlog.RequestLogRecord, bool) {
 	var ts string
 	var blocked int
 	err := s.db.QueryRow(`SELECT time, request_id, task_type, risk_level, model, provider_model_id, provider,
-			input_tokens, output_tokens, cost_usd, blocked, sensitivity, block_code
+			input_tokens, output_tokens, cost_usd, blocked, sensitivity, block_code, egress
 		FROM requests WHERE request_id = ? ORDER BY id DESC LIMIT 1`, id).Scan(
 		&ts, &r.RequestID, &r.TaskType, &r.RiskLevel, &r.Model, &r.ProviderModelID, &r.Provider,
-		&r.InputTokens, &r.OutputTokens, &r.CostUSD, &blocked, &r.Sensitivity, &r.BlockCode)
+		&r.InputTokens, &r.OutputTokens, &r.CostUSD, &blocked, &r.Sensitivity, &r.BlockCode, &r.Egress)
 	if err != nil {
 		return eventlog.RequestLogRecord{}, false
 	}
@@ -568,4 +573,40 @@ func (s *Store) ResetRequests() (int64, error) {
 	}
 	n, _ := res.RowsAffected()
 	return n, nil
+}
+
+// EgressRow is one bucket of "where the data went" (ISSUE-116): request
+// counts per (blocked, egress, sensitivity, model). Model is kept so rows
+// recorded before the egress column existed can be classified by the caller.
+type EgressRow struct {
+	Blocked     bool
+	Egress      string
+	Sensitivity string
+	Model       string
+	Count       int
+}
+
+// EgressRows aggregates all retained requests into EgressRow buckets.
+// Classifications only — never content.
+func (s *Store) EgressRows() []EgressRow {
+	if s == nil {
+		return nil
+	}
+	rows, err := s.db.Query(`SELECT blocked, egress, sensitivity, model, COUNT(*)
+		FROM requests GROUP BY blocked, egress, sensitivity, model`)
+	if err != nil {
+		return nil
+	}
+	defer rows.Close()
+	var out []EgressRow
+	for rows.Next() {
+		var r EgressRow
+		var blocked int
+		if err := rows.Scan(&blocked, &r.Egress, &r.Sensitivity, &r.Model, &r.Count); err != nil {
+			continue
+		}
+		r.Blocked = blocked != 0
+		out = append(out, r)
+	}
+	return out
 }

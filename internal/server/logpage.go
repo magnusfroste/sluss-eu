@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/magnusfroste/sluss/internal/engine"
 	"github.com/magnusfroste/sluss/internal/eventlog"
 	"github.com/magnusfroste/sluss/internal/history"
 )
@@ -20,6 +21,8 @@ type LogOptions struct {
 	Version    string
 	// Limit caps how many rows the page renders (newest first). 0 → 500.
 	Limit int
+	// Engine classifies rows recorded before egress was stored (ISSUE-116).
+	Engine *engine.Engine
 }
 
 // LogPageData is the template payload for the log page.
@@ -48,6 +51,14 @@ func LogPageHandler(opts LogOptions) http.HandlerFunc {
 		case opts.RequestLog != nil:
 			rows = opts.RequestLog.Recent(limit)
 		}
+		// Rows from before the egress column (ISSUE-116) are classified from
+		// the model's current tags — the same rule the response header uses.
+		legacy := ChatOptions{Engine: opts.Engine}
+		for i := range rows {
+			if rows[i].Egress == "" && !rows[i].Blocked {
+				rows[i].Egress = legacy.egressForModel(rows[i].Model)
+			}
+		}
 		data := LogPageData{Version: opts.Version, Rows: rows, Count: len(rows), Durable: durable}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		if err := logTmpl.Execute(w, data); err != nil {
@@ -63,7 +74,8 @@ var logTmpl = template.Must(template.New("log").Funcs(template.FuncMap{
 	"adminCSS": adminCSSFunc,
 	"adminNav": adminNavFunc,
 	"usd":      func(v float64) string { return fmt.Sprintf("$%.6f", v) },
-	"clock":    func(t time.Time) string { return t.Local().Format("2006-01-02 15:04:05") },
+	"clock":    func(t time.Time) string { return t.Local().Format("15:04:05") },
+	"day":      func(t time.Time) string { return t.Local().Format("2006-01-02") },
 	"tierClass": func(model string) string {
 		switch {
 		case model == "":
@@ -114,9 +126,11 @@ const logPageHTML = `<!doctype html>
   .sub{color:#8fa1bf;font-size:.85rem;margin-top:4px}
   .links a{color:#22c58b;text-decoration:none;font-weight:600;margin-left:18px;font-size:.92rem}
   .links a:hover{text-decoration:underline}
-  .wrap{padding:26px 32px;overflow-x:auto}
-  table{border-collapse:collapse;width:100%;min-width:820px;font-size:13.5px}
-  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid #1a2740;white-space:nowrap;vertical-align:top}
+  .wrap{padding:22px 24px;overflow-x:auto}
+  table{border-collapse:collapse;width:100%;min-width:720px;font-size:13px}
+  th,td{text-align:left;padding:9px 9px;border-bottom:1px solid #1a2740;white-space:nowrap;vertical-align:top}
+  td .slug{white-space:normal;max-width:230px;overflow-wrap:anywhere}
+  th.num{text-align:right}
   thead th{position:sticky;top:0;background:#0e1626;color:#8fa1bf;font-size:11.5px;
     letter-spacing:.06em;text-transform:uppercase;font-weight:600}
   tbody tr:hover{background:#0e1626}
@@ -129,6 +143,11 @@ const logPageHTML = `<!doctype html>
   .ok{color:#22c55e}.warn{color:#f59e0b}.bad{color:#ef4444}
   .empty{color:#64748b;text-align:center;padding:3rem}
   .badge-src{font-size:12px;color:#8fa1bf}
+  .eg{display:inline-block;padding:2px 9px;border-radius:999px;font-weight:700;font-size:12px}
+  .eg-local{background:#0f3a26;color:#4ade80}.eg-cloud{background:#12264a;color:#7fb2ff}
+  .eg-blocked{background:#3b1414;color:#f87171}
+  .cls{font-family:ui-monospace,Menlo,monospace;font-size:12px;background:#111c30;border:1px solid #2a3a58;border-radius:6px;padding:1px 7px}
+  tr.row-blocked td{background:rgba(239,68,68,.05)}
 </style></head>
 <body>
 <div class="tk-shell">
@@ -142,23 +161,22 @@ const logPageHTML = `<!doctype html>
 </header>
 <div class="wrap">
 <table>
-<thead><tr><th>Time</th><th>Task</th><th>Risk</th><th>Sensitivity</th><th>Selected model</th><th>Provider</th>
-<th class="num">In</th><th class="num">Out</th><th class="num">Cost</th></tr></thead>
+<thead><tr><th>Time</th><th>Task</th><th>Risk</th><th>Data class</th><th>Egress</th><th>Model</th>
+<th class="num">Tokens</th><th class="num">Cost</th></tr></thead>
 <tbody>
 {{range .Rows}}
-<tr>
-  <td class="mono">{{clock .Time}}</td>
-  <td>{{if .Blocked}}<span class="bad">blocked</span> {{end}}{{.TaskType}}{{if and .Blocked .BlockCode}}<div class="slug">{{.BlockCode}}</div>{{end}}</td>
+<tr{{if .Blocked}} class="row-blocked"{{end}}>
+  <td class="mono">{{clock .Time}}<div class="slug">{{day .Time}}</div></td>
+  <td>{{.TaskType}}{{if and .Blocked .BlockCode}}<div class="slug">{{.BlockCode}}</div>{{end}}</td>
   <td class="{{riskClass .RiskLevel}}">{{.RiskLevel}}</td>
-  <td>{{if and .Sensitivity (ne .Sensitivity "none")}}<span class="pill">{{.Sensitivity}}</span>{{else}}<span style="color:#475569">—</span>{{end}}</td>
-  <td>{{if .Model}}<span class="pill {{tierClass .Model}}">{{.Model}}</span>{{if .ProviderModelID}}<div class="slug">{{.ProviderModelID}}</div>{{end}}{{end}}</td>
-  <td class="mono">{{.Provider}}</td>
-  <td class="num">{{.InputTokens}}</td>
-  <td class="num">{{.OutputTokens}}</td>
+  <td>{{if and .Sensitivity (ne .Sensitivity "none")}}<span class="cls">{{.Sensitivity}}</span>{{else}}<span style="color:#475569">—</span>{{end}}</td>
+  <td>{{if .Blocked}}<span class="eg eg-blocked">blocked</span>{{else if eq .Egress "local"}}<span class="eg eg-local">local</span>{{else if eq .Egress "cloud"}}<span class="eg eg-cloud">cloud</span>{{else}}<span style="color:#475569">—</span>{{end}}</td>
+  <td>{{if .Model}}<span class="pill {{tierClass .Model}}">{{.Model}}</span><div class="slug">{{.Provider}}{{if .ProviderModelID}} · {{.ProviderModelID}}{{end}}</div>{{else}}<span style="color:#475569">—</span>{{end}}</td>
+  <td class="num mono">{{.InputTokens}} / {{.OutputTokens}}</td>
   <td class="num mono">{{usd .CostUSD}}</td>
 </tr>
 {{else}}
-<tr><td colspan="9" class="empty">No requests yet — open the <a href="/chat" style="color:#22c58b">live chat</a> and send one.</td></tr>
+<tr><td colspan="8" class="empty">No requests yet — open the <a href="/chat" style="color:#22c58b">live chat</a> and send one.</td></tr>
 {{end}}
 </tbody>
 </table>

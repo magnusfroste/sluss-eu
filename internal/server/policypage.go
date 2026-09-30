@@ -142,7 +142,9 @@ type policyPageData struct {
 	RegistryVer   string
 	RuleCount     int
 	HasPolicy     bool
-	Packs         []policyPack
+	// ActiveRules is the active policy in plain words (ISSUE-116).
+	ActiveRules []policy.RuleSummary
+	Packs       []policyPack
 	// Console rules (no-YAML rule editing, ISSUE-093).
 	RulesEnabled  bool
 	ConsoleRules  []ConsoleRule
@@ -182,6 +184,7 @@ func PolicyPageHandler(o PolicyPageOptions) http.HandlerFunc {
 				d.PolicyVersion = p.Version()
 				d.RegistryVer = p.RegistryVersion()
 				d.RuleCount = p.RuleCount()
+				d.ActiveRules = p.Summaries()
 			}
 		}
 		d.Packs = builtinPacks(d.PolicyVersion)
@@ -207,6 +210,7 @@ func PolicyPageHandler(o PolicyPageOptions) http.HandlerFunc {
 var policyTmpl = template.Must(template.New("policy").Funcs(template.FuncMap{
 	"adminCSS": adminCSSFunc,
 	"adminNav": adminNavFunc,
+	"inc":      func(i int) int { return i + 1 },
 }).Parse(policyHTML))
 
 const policyHTML = `<!doctype html>
@@ -221,6 +225,13 @@ body{margin:0;background:#0b1220;color:#e8eef7;font-family:system-ui,-apple-syst
 .hd h1{font-size:1.3rem;margin:0}.hd .sub{color:#8fa1bf;font-size:.85rem;margin-top:4px}
 .wrap{padding:22px 30px;display:flex;flex-direction:column;gap:18px;max-width:900px}
 .card{background:#0e1626;border:1px solid #22304d;border-radius:12px;padding:18px 20px;overflow-x:auto}
+.card.danger{border-color:#5b2330}
+table.rules{width:100%;border-collapse:collapse;margin-top:12px;font-size:.88rem}
+table.rules th{text-align:left;font-size:.7rem;color:#8fa1bf;text-transform:uppercase;letter-spacing:.06em;padding:6px 10px;border-bottom:1px solid #22304d}
+table.rules td{padding:8px 10px;border-bottom:1px solid #16223a;vertical-align:top}
+table.rules .rid{font-family:ui-monospace,Menlo,monospace;font-size:.72rem;color:#64748b;margin-top:2px}
+table.rules .then{font-weight:600}
+tr.k-block .then{color:#f87171}tr.k-require .then{color:#4ade80}tr.k-force .then{color:#f4b740}
 .card h2{margin:0 0 10px;font-size:1rem}
 .kv{display:flex;gap:26px;flex-wrap:wrap;font-size:.9rem}
 .kv b{color:#8fa1bf;font-weight:500}
@@ -256,9 +267,36 @@ textarea{width:100%;background:#0b1220;border:1px solid #2c4066;border-radius:8p
     <span><b>rules</b> {{.RuleCount}}</span>
     <span><b>registry</b> <span class="mono">{{.RegistryVer}}</span></span>
   </div>
+    {{if .ActiveRules}}
+  <table class="rules">
+    <thead><tr><th>#</th><th>When</th><th>Then</th></tr></thead>
+    <tbody>
+    {{range $i, $r := .ActiveRules}}
+    <tr class="k-{{$r.Kind}}">
+      <td class="mono" style="color:#64748b">{{inc $i}}</td>
+      <td>{{$r.When}}<div class="rid">{{$r.ID}}{{if $r.Description}} — {{$r.Description}}{{end}}</div></td>
+      <td class="then">{{$r.Then}}</td>
+    </tr>
+    {{end}}
+    </tbody>
+  </table>
+  <div class="note" style="margin-top:6px">Evaluated top-down: <b>block → force → constraints → hints → defaults</b>. Constraints accumulate and are <b>fail-closed</b> — with no compliant provider the request is blocked, never silently sent to the cloud.</div>
+  {{end}}
   {{else}}<div class="note">No active policy (built-in default). Set <span class="mono">ROUTER_POLICY_PATH=builtin:nis2-baseline</span> for the NIS2 starter ruleset.</div>{{end}}
-  <div class="note" style="margin-top:10px">Evaluation per rule: <b>block → force → constraints → hints → defaults</b>. Constraints accumulate and are <b>fail-closed</b> — with no compliant provider the request is blocked (never a silent cloud fallback). Rules change without a code deploy.</div>
   <div class="note" style="margin-top:8px">Evidence: <a href="/router/compliance/report" style="color:#7fd3ff">control report</a> · <a href="/router/gap-report" style="color:#7fd3ff">shadow-AI gap report</a> · <a href="/router/incident-report?window=24h" style="color:#7fd3ff">incident evidence 24h</a> · <a href="/router/incident-report" style="color:#7fd3ff">72h</a> · <a href="/router/audit/export" style="color:#7fd3ff">audit chain</a></div>
+</div>
+
+<div class="card">
+  <h2>Dry-run — test a prompt</h2>
+  <div class="note" style="margin-bottom:8px">Paste a prompt → see the classification, selected model, tier and egress (or a fail-closed block). No data leaves the router; no provider is called.</div>
+  <textarea id="p" placeholder="e.g. Summarise the case for customer 811218-9876 ..."></textarea>
+  <div class="eg">Examples:
+    <a onclick="ex('Summarise the case for customer 811218-9876 who complained about an invoice.')">personal ID</a> ·
+    <a onclick="ex('security review our SSO login flow for auth bypass and secret leakage')">security review</a> ·
+    <a onclick="ex('write a concise git commit message for a bugfix')">trivial</a>
+  </div>
+  <button class="btn" onclick="run()">Run dry-run</button>
+  <div class="res" id="res"></div>
 </div>
 
 <div class="card">
@@ -266,7 +304,7 @@ textarea{width:100%;background:#0b1220;border:1px solid #2c4066;border-radius:8p
   {{if not .RulesEnabled}}
   <div class="note">Rule editing needs a data dir (<span class="mono">ROUTER_DATA_DIR</span>).</div>
   {{else}}
-  <div class="note" style="margin-bottom:10px">Build the egress firewall like firewall rules: <b>condition → action</b>, evaluated top-down, fail-closed. Activate applies instantly (no restart) and is recorded in the audit chain; rollback returns to the baseline policy (<span class="mono">ROUTER_POLICY_PATH</span>). Test with the dry-run below before and after.</div>
+  <div class="note" style="margin-bottom:10px">Build the egress firewall like firewall rules: <b>condition → action</b>, evaluated top-down, fail-closed. Activate applies instantly (no restart) and is recorded in the audit chain; rollback returns to the baseline policy (<span class="mono">ROUTER_POLICY_PATH</span>). Test with the dry-run above before and after.</div>
   {{if .ConsoleRules}}
   <table style="width:100%;border-collapse:collapse;margin-bottom:12px">
     <tr style="color:#8fa1bf;font-size:.78rem;text-transform:uppercase;letter-spacing:.05em"><td style="padding:4px 0">#</td><td>When</td><td>Then</td><td></td></tr>
@@ -346,8 +384,8 @@ textarea{width:100%;background:#0b1220;border:1px solid #2c4066;border-radius:8p
   </table>
 </div>
 
-<div class="card">
-  <h2>Data &amp; retention</h2>
+<div class="card danger">
+  <h2>Data, retention &amp; danger zone</h2>
   <div class="kv">
     <span><b>retention</b> {{if .RetentionDays}}{{.RetentionDays}} days (automatic sweep){{else}}not set{{end}}</span>
     <span><b>prompt logging</b> {{if .PromptLogging}}on{{else}}off (default){{end}}</span>
@@ -374,19 +412,6 @@ textarea{width:100%;background:#0b1220;border:1px solid #2c4066;border-radius:8p
   {{end}}
 </div>
 
-<div class="card">
-  <h2>Dry-run — test a prompt</h2>
-  <div class="note" style="margin-bottom:8px">Paste a prompt → see the classification, selected model, tier and egress (or a fail-closed block). No data leaves the router; no provider is called.</div>
-  <textarea id="p" placeholder="e.g. Summarise the case for customer 811218-9876 ..."></textarea>
-  <div class="eg">Examples:
-    <a onclick="ex('Summarise the case for customer 811218-9876 who complained about an invoice.')">personal ID</a> ·
-    <a onclick="ex('security review our SSO login flow for auth bypass and secret leakage')">security review</a> ·
-    <a onclick="ex('write a concise git commit message for a bugfix')">trivial</a>
-  </div>
-  <button class="btn" onclick="run()">Run dry-run</button>
-  <div class="res" id="res"></div>
-</div>
-
 </div></div></div>
 <script>
 const ra=document.getElementById('ruleaction');
@@ -397,7 +422,7 @@ async function run(){
   const res=document.getElementById('res');res.style.display='block';res.innerHTML='<span class="note">running…</span>';
   try{
     const r=await fetch('/router/policy/dryrun',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:p})});
-    if(!r.ok){res.innerHTML='<span class="badge b-block">fel</span> '+(await r.text());return;}
+    if(!r.ok){res.innerHTML='<span class="badge b-block">error</span> '+(await r.text());return;}
     const j=await r.json();
     let head='';
     if(j.blocked){head='<span class="badge b-block">BLOCKED (fail-closed)</span>';}
@@ -414,7 +439,7 @@ async function run(){
     h+='<div class="row"><span class="k">Policy</span> <span class="mono">'+(j.policy_version||'')+'</span></div>';
     if(j.reasons&&j.reasons.length){h+='<div class="row"><span class="k">Reasons (routing)</span> <span class="note">'+j.reasons.join(' · ')+'</span></div>';}
     res.innerHTML=h;
-  }catch(e){res.innerHTML='<span class="badge b-block">fel</span> '+e.message;}
+  }catch(e){res.innerHTML='<span class="badge b-block">error</span> '+e.message;}
 }
 </script>
 </body></html>`
