@@ -73,13 +73,23 @@ func TestRiskRegisterGapWarningAndTagUpdate(t *testing.T) {
 	o := registerEnv(t)
 
 	rec := httptest.NewRecorder()
-	ProvidersPageHandler(o)(rec, httptest.NewRequest(http.MethodGet, "/router/providers", nil))
+	RiskRegisterPageHandler(o)(rec, httptest.NewRequest(http.MethodGet, "/router/risk", nil))
 	body := rec.Body.String()
 	for _, want := range []string{"Risk register", "dpa-signed", "iso27001", "subprocessors-vetted",
-		"The active policy requires", "<b>local</b>", "fail-closed"} {
+		"The active policy requires", "<b>local</b>", "fail-closed", `action="/router/providers/tags"`} {
 		if !strings.Contains(body, want) {
 			t.Errorf("register page missing %q", want)
 		}
+	}
+	// Providers keeps only the fail-closed gap warning, linking to the register.
+	prec := httptest.NewRecorder()
+	ProvidersPageHandler(o)(prec, httptest.NewRequest(http.MethodGet, "/router/providers", nil))
+	pb := prec.Body.String()
+	if strings.Contains(pb, `action="/router/providers/tags"`) {
+		t.Error("the tag matrix belongs on the risk register, not on Providers")
+	}
+	if !strings.Contains(pb, "The active policy requires") || !strings.Contains(pb, `href="/router/risk"`) {
+		t.Error("Providers should keep the gap warning with a link to the risk register")
 	}
 
 	// Tag the seeded openrouter provider local (+ extra) via the handler.
@@ -88,8 +98,8 @@ func TestRiskRegisterGapWarningAndTagUpdate(t *testing.T) {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	tr := httptest.NewRecorder()
 	ProvidersTagsHandler(o)(tr, req)
-	if loc := tr.Header().Get("Location"); strings.Contains(loc, "err=") {
-		t.Fatalf("tag update failed: %q", loc)
+	if loc := tr.Header().Get("Location"); strings.Contains(loc, "err=") || !strings.HasPrefix(loc, "/router/risk") {
+		t.Fatalf("tag update should succeed and return to the register: %q", loc)
 	}
 	ps, _ := o.Roster.LoadRosterProviders()
 	var tags []string
@@ -117,7 +127,7 @@ func TestRiskRegisterGapWarningAndTagUpdate(t *testing.T) {
 	// Gap warning clears (roster now covers "local"; the pending provider row
 	// carries the tag even before restart).
 	rec = httptest.NewRecorder()
-	ProvidersPageHandler(o)(rec, httptest.NewRequest(http.MethodGet, "/router/providers", nil))
+	RiskRegisterPageHandler(o)(rec, httptest.NewRequest(http.MethodGet, "/router/risk", nil))
 	if strings.Contains(rec.Body.String(), "The active policy requires") {
 		t.Fatal("gap warning should clear once a provider carries the tag")
 	}

@@ -41,6 +41,7 @@ const (
 	icDashboard = `<svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/></svg>`
 	icLog       = `<svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="20" y2="12"/><line x1="8" y1="18" x2="20" y2="18"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></svg>`
 	icModels    = `<svg viewBox="0 0 24 24"><path d="M12 3 3 8l9 5 9-5z"/><path d="M3 12l9 5 9-5"/><path d="M3 16l9 5 9-5"/></svg>`
+	icRisk      = `<svg viewBox="0 0 24 24"><path d="M12 3.5 L19 6.2 V11.5 C19 15.6 16 18.8 12 20.5 C8 18.8 5 15.6 5 11.5 V6.2 Z"/><path d="M9 12 L11.2 14.2 L15.2 10"/></svg>`
 	icProviders = `<svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="6" rx="1.5"/><rect x="3.5" y="13" width="17" height="6" rx="1.5"/><line x1="7" y1="8" x2="7" y2="8"/><line x1="7" y1="16" x2="7" y2="16"/></svg>`
 	icKeys      = `<svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="3.4"/><path d="M10.4 10.4 20 20"/><path d="M17 17l2.2-2.2"/><path d="M14.6 14.6l2.2-2.2"/></svg>`
 	icUsers     = `<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4"/><path d="M5.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/></svg>`
@@ -58,6 +59,7 @@ var adminNavItems = []navItem{
 	{"policy", "/router/policy", icPolicy, "Policy", "Control"},
 	{"models", "/router/models", icModels, "Models", "Control"},
 	{"providers", "/router/providers", icProviders, "Providers", "Control"},
+	{"risk", "/router/risk", icRisk, "Risk register", "Control"},
 	{"keys", "/router/keys", icKeys, "Keys", "Control"},
 	{"users", "/router/users", icUsers, "Users", "Control"},
 	{"prompts", "/router/prompts", icPrompts, "Demo prompts", "Show"},
