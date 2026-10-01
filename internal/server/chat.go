@@ -215,6 +215,14 @@ func ChatCompletionsHandler(p provider.Adapter, opts ...ChatOptions) http.Handle
 						status = http.StatusForbidden
 					}
 					cfg.auditBlocked(r.Context(), job, dec)
+					// Tell the client what was stopped and why, as stable ASCII
+					// codes (classes only, never content), so a UI can explain a
+					// fail-closed block instead of showing a raw error.
+					w.Header().Set("X-Router-Route-Class", string(job.TaskType))
+					if job.Sensitivity != "" {
+						w.Header().Set("X-Router-Sensitivity", string(job.Sensitivity))
+					}
+					w.Header().Set("X-Router-Blocked", dec.BlockCode)
 					writeError(w, status, dec.BlockCode, dec.BlockReason)
 					return
 				}

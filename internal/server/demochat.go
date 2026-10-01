@@ -155,6 +155,11 @@ const demoChatTemplate = `<!doctype html>
   .msg.user .bubble{background:var(--user);align-self:flex-end;max-width:85%}
   .msg.bot .bubble{background:var(--bot);border:1px solid var(--line)}
   .bubble.errb{color:#f8b4bc;border-color:#5b2330}
+  .bubble.blockb{border-color:#5b2330;background:rgba(239,68,68,.06);line-height:1.55}
+  .bubble.blockb b{color:#fca5a5}
+  .bubble .bnote{margin-top:8px;font-size:12.5px;color:#8fa1bf}
+  .bubble .mono{font-family:ui-monospace,Menlo,monospace;font-size:12px}
+  .pill.blocked{background:#3b1414;color:#f87171}
   .think{display:inline-block;color:var(--muted);font-style:italic;animation:pulse 1.6s ease-in-out infinite}
   @keyframes pulse{0%,100%{opacity:.45}50%{opacity:1}}
   @media (prefers-reduced-motion: reduce){.think{animation:none}}
@@ -265,6 +270,10 @@ function el(cls,html){const d=document.createElement('div');d.className=cls;if(h
 function escapeHtml(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
 function tierClass(m){if(/premium/.test(m))return'premium';if(/balanced/.test(m))return'balanced';return'cheap'}
 function scroll(){const m=document.querySelector('main');m.scrollTop=m.scrollHeight}
+function blockWhy(code,msg){
+  if(code==='residency_no_compliant_provider')return 'This kind of request may only go to a model with specific compliance tags (for example local or air-gapped), and no such model is configured — so it was blocked instead of falling back to another model.';
+  return msg||'The request matched a blocking rule.';
+}
 function badgeHTML(task,model){return '<span class="pill task">'+escapeHtml(task||'route')+'</span>'+
   (model?'<span class="pill '+tierClass(model)+'">'+escapeHtml(model)+'</span>':'')}
 // reasonText turns the ASCII route-reason code from the header into a localized
@@ -352,8 +361,20 @@ async function ask(text){
       headers:{'Content-Type':'application/json'},body:JSON.stringify({model:pick,stream:true,messages:apiMsgs})});
     if(!res.ok){
       // Clean error card — never dump a raw proxy/HTML error page in the chat.
-      let msg='';const raw=await res.text();
-      try{const j=JSON.parse(raw);msg=(j.error&&(j.error.message||j.error.code))||'';}catch(e){}
+      let msg='',code='';const raw=await res.text();
+      try{const j=JSON.parse(raw);msg=(j.error&&(j.error.message||j.error.code))||'';code=(j.error&&j.error.code)||'';}catch(e){}
+      const blocked=res.headers.get('x-router-blocked')||(res.status===403&&code?code:'');
+      if(blocked){
+        // A policy block is the product working, not an error: say what was
+        // stopped, that nothing left, and that it is evidence.
+        const btask=res.headers.get('x-router-route-class')||'',bsens=res.headers.get('x-router-sensitivity')||'';
+        badge.innerHTML=(btask?'<span class="pill task">'+escapeHtml(btask)+'</span>':'')+
+          (bsens&&bsens!=='none'?'<span class="pill task">'+escapeHtml(bsens)+'</span>':'')+
+          '<span class="pill blocked">blocked · fail-closed</span>';
+        bubble.innerHTML='<b>Stopped by your policy — nothing was sent to any model.</b><br>'+escapeHtml(blockWhy(blocked,msg))+
+          '<div class="bnote">Recorded in the tamper-evident audit log as <span class="mono">'+escapeHtml(blocked)+'</span>. An admin can see which rule fired with the dry-run on Policy.</div>';
+        bubble.classList.add('blockb');
+        curEl.remove();send.disabled=false;return;}
       if(!msg)msg=(raw&&raw.trim().charAt(0)!=='<')?raw.slice(0,300):'upstream error — the model did not answer in time. Try again.';
       bubble.textContent='Error ('+res.status+'): '+msg;bubble.classList.add('errb');
       curEl.remove();send.disabled=false;return;}
