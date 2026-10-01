@@ -302,7 +302,7 @@ func computeGreen(rows []spend.ModelRow, whByModel map[string]float64, premiumWh
 var dashboardTmpl = template.Must(template.New("dashboard").Funcs(template.FuncMap{
 	"adminCSS": adminCSSFunc,
 	"adminNav": adminNavFunc,
-	"usd":      func(v float64) string { return fmt.Sprintf("$%.6f", v) },
+	"usd":      readableUSD,
 	"pct":      func(v float64) string { return fmt.Sprintf("%.0f%%", v*100) },
 	"clock":    func(t time.Time) string { return t.Local().Format("15:04:05") },
 	"wh": func(v float64) string {
@@ -402,6 +402,9 @@ th.num{text-align:right}
 .flow-table{max-width:760px}
 .cls{font-family:ui-monospace,monospace;font-size:0.8rem;background:#1e293b;border:1px solid #334155;border-radius:6px;padding:1px 7px}
 .note{font-size:0.78rem;color:#f59e0b}
+details.adv{margin:0 0 2.5rem;border:1px solid #2d3748;border-radius:10px;padding:0.9rem 1.1rem}
+details.adv>summary{cursor:pointer;color:#94a3b8;font-size:0.9rem;font-weight:600}
+details.adv[open]>summary{margin-bottom:1.25rem}
 </style>
 </head>
 <body>
@@ -582,6 +585,8 @@ th.num{text-align:right}
 {{end}}
 </section>
 
+<details class="adv"{{if or .Learning.BanditArms (gt .ShadowSummary.Total 0) (gt .OutcomeCount 0)}} open{{end}}>
+<summary>Advanced — adaptive learning, shadow routing, acceptance feedback</summary>
 <section>
 <h2>Learning &amp; routing</h2>
 {{if .Learning.BanditEnabled}}
@@ -647,6 +652,8 @@ th.num{text-align:right}
 </tbody>
 </table>
 </section>
+
+</details>
 
 <section>
 <h2>Spend by tenant</h2>

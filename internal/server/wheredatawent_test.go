@@ -95,3 +95,11 @@ func TestDataFlowFromHistory(t *testing.T) {
 		}
 	}
 }
+
+func TestReadableUSD(t *testing.T) {
+	for v, want := range map[float64]string{0: "$0", 0.000821: "0.08¢", 0.00001: "<0.01¢", 0.0042: "0.42¢", 0.153510: "$0.154", 12.5: "$12.50"} {
+		if got := readableUSD(v); got != want {
+			t.Errorf("readableUSD(%v) = %q, want %q", v, got, want)
+		}
+	}
+}

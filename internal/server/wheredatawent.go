@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"sort"
 
 	"github.com/magnusfroste/sluss/internal/engine"
@@ -134,4 +135,25 @@ func buildDataFlow(h *history.Store, recent []eventlog.RequestLogRecord, eng *en
 		v.PII = *p
 	}
 	return v
+}
+
+// readableUSD formats spend for people (ISSUE-117): sub-cent amounts in cents
+// ("0.08¢") instead of six decimals, cents to three decimals, dollars to two.
+// Per-request LLM costs are mostly fractions of a cent, so "$0.000821" read as
+// noise; "0.08¢" reads as a number.
+func readableUSD(v float64) string {
+	switch {
+	case v == 0:
+		return "$0"
+	case v < 0:
+		return "-" + readableUSD(-v)
+	case v < 0.00005:
+		return "<0.01¢"
+	case v < 0.01:
+		return fmt.Sprintf("%.2f¢", v*100)
+	case v < 1:
+		return fmt.Sprintf("$%.3f", v)
+	default:
+		return fmt.Sprintf("$%.2f", v)
+	}
 }
