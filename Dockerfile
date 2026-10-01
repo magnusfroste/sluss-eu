@@ -27,9 +27,12 @@ COPY . .
 # MCP server_info). The image workflow passes them; a local build says "dev".
 ARG GIT_SHA=dev
 ARG BUILD_TIME=
+# Builders that pass only GIT_SHA (EasyPanel and other PaaS builders that build
+# from the repo) get the build time from the clock, so it is never empty.
 # Static, stripped binary so the runtime image can stay minimal.
-RUN CGO_ENABLED=0 GOOS=linux go build -trimpath \
-    -ldflags="-s -w -X github.com/magnusfroste/sluss/internal/buildinfo.Commit=${GIT_SHA} -X github.com/magnusfroste/sluss/internal/buildinfo.Built=${BUILD_TIME}" \
+RUN BT="${BUILD_TIME:-$(date -u +%Y-%m-%dT%H:%M:%SZ)}" && \
+    CGO_ENABLED=0 GOOS=linux go build -trimpath \
+    -ldflags="-s -w -X github.com/magnusfroste/sluss/internal/buildinfo.Commit=${GIT_SHA} -X github.com/magnusfroste/sluss/internal/buildinfo.Built=${BT}" \
     -o /out/router ./cmd/router
 
 # --- runtime stage ---

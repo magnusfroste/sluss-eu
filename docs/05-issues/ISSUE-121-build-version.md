@@ -39,3 +39,12 @@ ska visa samma commit som senaste mergen på main.
 
 `TestShortTrimsAndKeepsDirty`; stämplad binär provkörd lokalt — rätt commit i
 `/metrics`, sidfoten, MCP `server_info` och startloggen.
+
+## Uppföljning 2026-10-01 — byggtiden tom live
+
+Live visade rätt commit men tom byggtid, trots att GHCR-bygget skickade
+`BUILD_TIME`. Förklaringen: EasyPanel bygger imagen själv från GitHub och
+skickar bara `GIT_SHA`. Dockerfilen tar nu byggtiden från klockan när
+`BUILD_TIME` saknas, så den är aldrig tom oavsett vem som bygger. Samma
+iakttagelse förklarar troligen de deployer som "inte landade": EasyPanels
+egna byggen, inte GHCR-imagen — se deras byggloggar.
