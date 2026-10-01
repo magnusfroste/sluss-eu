@@ -181,8 +181,6 @@ func New(cfg Config) http.Handler {
 	mux.HandleFunc("GET /favicon.svg", FaviconHandler())
 	mux.HandleFunc("GET /favicon.ico", FaviconICOHandler())
 	mux.HandleFunc("GET /robots.txt", RobotsHandler(landingOpts))
-	mux.HandleFunc("GET /sitemap.xml", SitemapHandler(landingOpts))
-	mux.HandleFunc("GET /llms.txt", LLMSHandler(landingOpts))
 
 	mux.HandleFunc("GET /healthz", HealthzHandler())
 	mux.HandleFunc("GET /readyz", ReadyzHandler(cfg.Readiness...))
