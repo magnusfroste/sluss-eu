@@ -450,18 +450,19 @@ const loginHTML = `<!doctype html>
 <title>Sluss — Sign in</title>
 {{FAVICON}}
 <style>
-:root{--bg:#09090b;--panel:#101013;--line:#1e1e22;--ink:#f4f4f5;--muted:#8a8a92;--accent:#3fb27f}
+:root{--bg:#081328;--panel:#101c34;--line:rgba(255,255,255,.09);--ink:#eaeff5;--muted:#9aa5b8;--accent:#fad100}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  background-image:radial-gradient(60% 50% at 70% 0%,rgba(250,209,0,.10),transparent 70%);
   display:flex;min-height:100vh;align-items:center;justify-content:center}
 .box{width:340px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:28px 26px}
 .brand{display:flex;align-items:center;gap:9px;font-weight:600;margin-bottom:20px}
 label{display:block;font-size:12px;color:var(--muted);margin:14px 0 5px;letter-spacing:.02em}
 input{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:10px 12px;font-size:14px}
-input:focus{outline:none;border-color:var(--muted)}
-button{width:100%;margin-top:20px;background:var(--accent);color:#05130c;border:0;border-radius:8px;padding:11px;font-weight:600;font-size:14px;cursor:pointer}
+input:focus{outline:none;border-color:var(--accent)}
+button{width:100%;margin-top:20px;background:var(--accent);color:#081328;border:0;border-radius:6px;padding:11px;font-weight:600;font-size:14px;cursor:pointer}
 .err{background:#3a1620;border:1px solid #7a2b39;color:#f8b4bc;border-radius:8px;padding:9px 12px;font-size:13px;margin-bottom:6px}
-.sub{color:#5c5c63;font-size:12px;margin-top:16px;text-align:center}
+.sub{color:#6b7891;font-size:12px;margin-top:16px;text-align:center}
 </style></head>
 <body>
 <form class="box" method="post" action="/router/login?next={{NEXT}}">

@@ -78,26 +78,30 @@ const landingHTML = `<!doctype html>
 <title>{{.Name}} — {{.Tagline}}</title>
 {{.FaviconLinks}}
 <style>
-:root{--bg:#09090b;--panel:#101013;--line:#1e1e22;--ink:#f4f4f5;--muted:#8a8a92;--faint:#5c5c63;--accent:#3fb27f}
+:root{--bg:#081328;--panel:#101c34;--card:#16243c;--line:rgba(255,255,255,.09);--ink:#eaeff5;--muted:#9aa5b8;--faint:#6b7891;--accent:#fad100;--accent-ink:#081328;
+  --sans:"IBM Plex Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;--display:"Instrument Serif",Georgia,"Times New Roman",serif}
 *{box-sizing:border-box}
 html{-webkit-font-smoothing:antialiased}
 body{margin:0;background:var(--bg);color:var(--ink);min-height:100vh;display:flex;flex-direction:column;
-  font-family:ui-sans-serif,system-ui,-apple-system,"Inter","Segoe UI",Roboto,sans-serif;line-height:1.6;letter-spacing:-0.01em}
+  background-image:radial-gradient(60% 50% at 70% 0%,rgba(250,209,0,.10),transparent 70%);
+  font-family:var(--sans);line-height:1.6;letter-spacing:-0.005em}
 .wrap{width:100%;max-width:640px;margin:0 auto;padding:0 24px}
 main{flex:1;display:flex;align-items:center}
 .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:18px}
-.lbl{display:inline-block;margin-top:28px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
-h1{font-size:2rem;line-height:1.15;margin:10px 0 14px;font-weight:600;letter-spacing:-0.02em}
+.lbl{display:inline-block;margin-top:28px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+h1{font-family:var(--display);font-size:2.6rem;line-height:1.08;margin:10px 0 16px;font-weight:400;letter-spacing:-0.01em}
+h1 em{font-style:italic;color:var(--accent)}
 .sub{color:var(--muted);font-size:1.02rem;margin:0}
 .cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
-.btn{display:inline-block;padding:11px 22px;border-radius:8px;font-weight:500;font-size:15px;text-decoration:none}
-.btn.primary{background:var(--accent);color:#05130c}.btn.primary:hover{background:#4cc78e}
+.btn{display:inline-block;padding:11px 22px;border-radius:6px;font-weight:500;font-size:15px;text-decoration:none}
+.btn.primary{background:var(--accent);color:var(--accent-ink);font-weight:600}.btn.primary:hover{background:#fddc5b}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .btn.ghost{border:1px solid var(--line);color:var(--ink)}.btn.ghost:hover{border-color:var(--faint)}
-.start{margin-top:40px;border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:18px 22px}
-.start h2{font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:0 0 8px;font-weight:600}
+.start{margin-top:40px;border:1px solid var(--line);border-radius:8px;background:var(--panel);padding:18px 22px}
+.start h2{font-family:var(--mono);font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:0 0 8px;font-weight:500}
 .start ol{margin:0;padding-left:20px;color:var(--muted);font-size:.93rem}
 .start li{margin:4px 0}.start b{color:var(--ink);font-weight:500}
-.start code{font-family:ui-monospace,Menlo,monospace;font-size:.85rem;color:var(--ink)}
+.start code{font-family:var(--mono);font-size:.85rem;color:var(--accent)}
 .start a{color:var(--ink)}
 footer{border-top:1px solid var(--line);padding:20px 0;color:var(--faint);font-size:13px}
 footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
@@ -108,7 +112,7 @@ footer a{color:var(--muted);text-decoration:none}footer a:hover{color:var(--ink)
 <main><div class="wrap">
   <div class="brand">{{.Logo}} {{.Name}}</div>
   <span class="lbl">{{.Label}}</span>
-  <h1>Decide where your AI data goes — and prove it.</h1>
+  <h1>Decide where your AI data goes — <em>and prove it.</em></h1>
   <p class="sub">{{.OneLiner}}</p>
   <div class="cta">
     <a class="btn primary" href="/router/dashboard">Sign in</a>
