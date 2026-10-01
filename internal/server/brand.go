@@ -7,15 +7,16 @@ package server
 
 import "net/http"
 
-// brandFaviconSVG is the standalone favicon document: a dark rounded tile, a
-// green shield, and a routing split cut into it.
+// brandFaviconSVG is the standalone favicon document: a navy rounded tile, an
+// EU-yellow shield, and a routing split cut into it (EU palette, matching the
+// product site www.sluss.eu).
 const brandFaviconSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Sluss">
-<rect width="32" height="32" rx="7" fill="#0b1220"/>
-<path d="M16 5 L25 8.4 V15.5 C25 20.6 21 24.6 16 26.6 C11 24.6 7 20.6 7 15.5 V8.4 Z" fill="#22c58b"/>
-<g fill="none" stroke="#0b1220" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+<rect width="32" height="32" rx="7" fill="#081328"/>
+<path d="M16 5 L25 8.4 V15.5 C25 20.6 21 24.6 16 26.6 C11 24.6 7 20.6 7 15.5 V8.4 Z" fill="#fad100"/>
+<g fill="none" stroke="#081328" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
   <path d="M16 20.5 V16 M16 16 C16 13.6 13.4 13.4 12.4 11.6 M16 16 C16 13.6 18.6 13.4 19.6 11.6"/>
 </g>
-<g fill="#0b1220">
+<g fill="#081328">
   <circle cx="16" cy="21" r="1.5"/><circle cx="12" cy="11" r="1.5"/><circle cx="20" cy="11" r="1.5"/>
 </g>
 </svg>`
@@ -23,11 +24,11 @@ const brandFaviconSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32
 // brandLogoSVG is the inline nav logo (18px), same mark without the tile so it
 // sits on the panel background.
 const brandLogoSVG = `<svg width="18" height="18" viewBox="0 0 32 32" aria-hidden="true" style="flex-shrink:0">
-<path d="M16 3 L26 6.8 V15.5 C26 21.2 21.6 25.6 16 27.8 C10.4 25.6 6 21.2 6 15.5 V6.8 Z" fill="#22c58b"/>
-<g fill="none" stroke="#0b1220" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+<path d="M16 3 L26 6.8 V15.5 C26 21.2 21.6 25.6 16 27.8 C10.4 25.6 6 21.2 6 15.5 V6.8 Z" fill="#fad100"/>
+<g fill="none" stroke="#081328" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
   <path d="M16 21 V16 M16 16 C16 13.4 13.2 13.2 12.2 11.2 M16 16 C16 13.4 18.8 13.2 19.8 11.2"/>
 </g>
-<g fill="#0b1220">
+<g fill="#081328">
   <circle cx="16" cy="21.4" r="1.6"/><circle cx="12" cy="10.6" r="1.6"/><circle cx="20" cy="10.6" r="1.6"/>
 </g>
 </svg>`
