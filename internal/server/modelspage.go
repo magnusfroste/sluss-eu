@@ -42,13 +42,14 @@ type modelView struct {
 	Tier         string
 	InPerMTok    float64
 	OutPerMTok   float64
-	Enabled      bool // admin toggle (from config)
-	Routable     bool // enabled AND provider key present in the live registry
-	Synced       bool // price is auto-synced (openrouter) vs manual
-	Editable     bool // config-backed → can re-tier / re-price / delete
-	Pending      bool // config edit not yet applied to the live registry
-	Builtin      bool // one of the three seeded tier models
-	Reasoning    bool // switchable thinking mode; router controls it per task
+	Enabled      bool   // admin toggle (from config)
+	Routable     bool   // enabled AND provider key present in the live registry
+	Synced       bool   // price is auto-synced (openrouter) vs manual
+	Editable     bool   // config-backed → can re-tier / re-price / delete
+	Pending      bool   // config edit not yet applied to the live registry
+	Builtin      bool   // one of the three seeded tier models
+	Reasoning    bool   // switchable thinking mode; router controls it per task
+	Egress       string // "local" | "cloud" | "" — from the live registry's tags (ISSUE-117)
 }
 
 type providerOption struct {
@@ -162,6 +163,12 @@ func (o ModelsOptions) buildModelViews() []modelView {
 				}
 			}
 		}
+	}
+	// Where a prompt routed to this model goes (ISSUE-117): the same tag rule
+	// as X-Router-Egress, so the roster says "local" exactly when routing does.
+	classify := ChatOptions{Engine: o.Engine}
+	for i := range views {
+		views[i].Egress = classify.legacyEgress(views[i].ID, views[i].ProviderID)
 	}
 	return views
 }
@@ -327,7 +334,8 @@ const modelsHTML = `<!doctype html>
   .card{background:#0e1626;border:1px solid #22304d;border-radius:12px;overflow-x:auto}
   form.addf{max-width:1100px}
   table{border-collapse:collapse;width:100%;font-size:13.5px}
-  th,td{text-align:left;padding:10px 16px;border-bottom:1px solid #16223b;white-space:nowrap}
+  th,td{text-align:left;padding:10px 11px;border-bottom:1px solid #16223b;white-space:nowrap;vertical-align:top}
+  .psrc{font-size:10.5px;color:#64748b;font-family:ui-monospace,Menlo,monospace}
   thead th{color:#8fa1bf;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:600}
   tbody tr:last-child td{border-bottom:none}
   .pill{display:inline-block;padding:2px 9px;border-radius:999px;font-weight:600;font-size:12px;font-family:ui-monospace,Menlo,monospace}
@@ -363,6 +371,11 @@ const modelsHTML = `<!doctype html>
   .rowf input.price{width:70px}
   .actions{display:flex;gap:8px;align-items:center}
   @media(max-width:820px){.grid{grid-template-columns:1fr 1fr}}
+.tag.eg-local{background:#0f3a26;color:#4ade80}.tag.eg-cloud{background:#12264a;color:#7fb2ff}
+tr.editrow td{background:#0a1322;padding:12px 16px}
+tr.editrow .delf{margin-top:10px}
+.editf{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.editf .fl{font-size:11px;color:#8fa1bf;text-transform:uppercase;letter-spacing:.05em;margin-left:4px}
 </style></head>
 <body>
 <div class="tk-shell">
@@ -384,60 +397,63 @@ const modelsHTML = `<!doctype html>
     <table>
       <thead><tr>
         <th>Model</th><th>Provider</th><th>Provider model</th><th>Tier</th>
-        <th class="num">In $/Mtok</th><th class="num">Out $/Mtok</th><th>Price</th><th>Status</th><th>Test</th>
+        <th class="num">In $/Mtok</th><th class="num">Out $/Mtok</th><th>Status</th>
         {{if .CRUD}}<th>Actions</th>{{end}}
       </tr></thead>
       <tbody>
       {{range .Models}}
       <tr>
-        <td>{{.ID}}{{if .Builtin}} <span class="tag neutral">built-in</span>{{end}}</td>
-        <td>{{.ProviderName}}</td>
+        <td>{{.ID}}{{if .Builtin}}<br><span class="tag neutral">built-in</span>{{end}}</td>
+        <td>{{.ProviderName}}{{if eq .Egress "local"}}<br><span class="tag eg-local" title="Carries a local/on-prem tag — prompts routed here stay in the house">local</span>{{else if eq .Egress "cloud"}}<br><span class="tag eg-cloud" title="No local tag — prompts routed here leave the house">cloud</span>{{end}}</td>
         <td class="slug">{{.Slug}}</td>
         <td><span class="pill {{tierClass .Tier}}">{{.Tier}}</span></td>
         <td class="num">{{usd .InPerMTok}}</td>
-        <td class="num">{{usd .OutPerMTok}}</td>
-        <td>{{if .Synced}}<span class="tag neutral">synced</span>{{else}}<span class="tag neutral">manual</span>{{end}}</td>
+        <td class="num">{{usd .OutPerMTok}}<div class="psrc" title="{{if .Synced}}Price synced from the provider catalog{{else}}Price set by you{{end}}">{{if .Synced}}synced{{else}}manual{{end}}</div></td>
         <td>
           {{if .Routable}}<span class="tag ok">routable</span>
           {{else if not .Enabled}}<span class="tag warn">disabled</span>
           {{else}}<span class="tag bad">key missing</span>{{end}}
           {{if .Pending}}<span class="tag warn">⏳ restart</span>{{end}}
-        </td>
-        <td>
           <button class="btn sm test" type="button" data-model="{{.ID}}"
             title="Live-test this row from the router: a 1-token completion with this exact slug against its provider. Catches a wrong slug before production does.">Test</button>
-          <span class="tres" id="tres-{{.ID}}"></span>
+          <div class="tres" id="tres-{{.ID}}"></div>
         </td>
         {{if $.CRUD}}
         <td>
           {{if .Editable}}
           <div class="actions">
-          <form class="rowf" method="post" action="/router/models">
-            <input type="hidden" name="id" value="{{.ID}}">
-            <input type="hidden" name="provider_id" value="{{.ProviderID}}">
-            <input name="provider_model_id" value="{{.Slug}}" style="width:150px;font-family:ui-monospace,Menlo,monospace"
-              title="Provider model slug — must be exactly what the provider's own /models returns (e.g. glm-5.2, not zai/glm-5.2). Use the Test button after saving.">
-            <select name="tier">
-              <option value="cheap"{{tierSelected "cheap" .Tier}}>cheap</option>
-              <option value="balanced"{{tierSelected "balanced" .Tier}}>balanced</option>
-              <option value="premium"{{tierSelected "premium" .Tier}}>premium</option>
-            </select>
-            <input class="price" name="input_usd_per_mtok" value="{{printf "%.4f" .InPerMTok}}" title="in $/Mtok">
-            <input class="price" name="output_usd_per_mtok" value="{{printf "%.4f" .OutPerMTok}}" title="out $/Mtok">
-            <label style="margin:0;display:inline-flex;gap:4px;align-items:center;color:#b7c4dc"><input type="checkbox" name="enabled" style="width:auto"{{if .Enabled}} checked{{end}}>on</label>
-            <label style="margin:0;display:inline-flex;gap:4px;align-items:center;color:#b7c4dc" title="The model has a switchable thinking mode (Qwen3-style). The router enables thinking for hard tasks and disables it for simple ones — per request."><input type="checkbox" name="reasoning" style="width:auto"{{if .Reasoning}} checked{{end}}>thinking</label>
-            <button class="btn sm" type="submit">Save</button>
-          </form>
-          <form class="rowf" method="post" action="/router/models/delete" onsubmit="return confirm('Remove {{.ID}}?')">
-            <input type="hidden" name="id" value="{{.ID}}">
-            <button class="btn del" type="submit">Remove</button>
-          </form>
+          <button class="btn sm" type="button" onclick="editRow(this)" aria-expanded="false">Edit</button>
+
           </div>
           {{else}}<span class="muted">read-only</span>{{end}}
         </td>
         {{end}}
       </tr>
-      {{else}}<tr><td colspan="{{if .CRUD}}10{{else}}9{{end}}" class="empty">No models.</td></tr>
+      {{if and $.CRUD .Editable}}
+      <tr class="editrow" hidden><td colspan="8">
+          <form class="rowf editf" method="post" action="/router/models">
+            <input type="hidden" name="id" value="{{.ID}}">
+            <input type="hidden" name="provider_id" value="{{.ProviderID}}">
+            <span class="fl">Slug</span><input name="provider_model_id" value="{{.Slug}}" aria-label="Provider model slug" style="width:150px;font-family:ui-monospace,Menlo,monospace"
+              title="Provider model slug — must be exactly what the provider's own /models returns (e.g. glm-5.2, not zai/glm-5.2). Use the Test button after saving.">
+            <span class="fl">Tier</span><select name="tier" aria-label="Tier">
+              <option value="cheap"{{tierSelected "cheap" .Tier}}>cheap</option>
+              <option value="balanced"{{tierSelected "balanced" .Tier}}>balanced</option>
+              <option value="premium"{{tierSelected "premium" .Tier}}>premium</option>
+            </select>
+            <span class="fl">In $/Mtok</span><input class="price" name="input_usd_per_mtok" aria-label="Input price per million tokens" value="{{printf "%.4f" .InPerMTok}}" title="in $/Mtok">
+            <span class="fl">Out $/Mtok</span><input class="price" name="output_usd_per_mtok" aria-label="Output price per million tokens" value="{{printf "%.4f" .OutPerMTok}}" title="out $/Mtok">
+            <label style="margin:0;display:inline-flex;gap:4px;align-items:center;color:#b7c4dc"><input type="checkbox" name="enabled" style="width:auto"{{if .Enabled}} checked{{end}}>on</label>
+            <label style="margin:0;display:inline-flex;gap:4px;align-items:center;color:#b7c4dc" title="The model has a switchable thinking mode (Qwen3-style). The router enables thinking for hard tasks and disables it for simple ones — per request."><input type="checkbox" name="reasoning" style="width:auto"{{if .Reasoning}} checked{{end}}>thinking</label>
+            <button class="btn sm" type="submit">Save</button>
+          </form>
+          <form class="rowf delf" method="post" action="/router/models/delete" onsubmit="return confirm('Remove {{.ID}}?')">
+            <input type="hidden" name="id" value="{{.ID}}">
+            <button class="btn del" type="submit">Remove</button>
+          </form>
+      </td></tr>
+      {{end}}
+      {{else}}<tr><td colspan="{{if .CRUD}}8{{else}}7{{end}}" class="empty">No models.</td></tr>
       {{end}}
       </tbody>
     </table>
@@ -495,5 +511,8 @@ document.querySelectorAll('button.test').forEach(function(btn){
     btn.disabled=false;
   });
 });
+</script>
+<script>
+function editRow(b){var r=b.closest('tr').nextElementSibling;if(!r||!r.classList.contains('editrow'))return;r.hidden=!r.hidden;b.setAttribute('aria-expanded',String(!r.hidden));b.textContent=r.hidden?'Edit':'Close';}
 </script>
 </body></html>`
