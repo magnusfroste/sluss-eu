@@ -55,8 +55,11 @@ Now watch the signature moment — the same client, two prompts, two destination
 local or cloud, and why — without calling any provider. The same dry-run is in
 the admin console and as the MCP tool `route_explain`.
 
-Then open **http://localhost:8080** — landing, `/connect` (per-client recipes),
-and the admin console (log in with `ROUTER_DASHBOARD_PASSWORD` if set).
+Then open **http://localhost:8080** — a short home page with **Sign in** and
+getting-started steps, `/connect` (per-client recipes), and the admin console
+(log in with `ROUTER_DASHBOARD_PASSWORD` if set). Product information lives on
+[www.sluss.eu](https://www.sluss.eu); a running instance tells search engines
+not to index it.
 
 Prefer a container? Every push to `main` publishes
 `ghcr.io/magnusfroste/sluss-eu:latest`; `deploy/docker-compose.yml` is a

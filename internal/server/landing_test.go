@@ -7,86 +7,47 @@ import (
 	"testing"
 )
 
-func TestLandingHasSEOAndAEO(t *testing.T) {
+// The instance home page (marketing moved to the product site): what this is,
+// sign in, connect a client, getting started — and nothing for search engines.
+func TestLandingIsInstanceHome(t *testing.T) {
 	rec := httptest.NewRecorder()
-	LandingHandler(LandingOptions{PublicURL: "https://tok.example.com"})(rec, httptest.NewRequest(http.MethodGet, "/", nil))
+	LandingHandler(LandingOptions{PublicURL: "https://sluss.example.com"})(rec, httptest.NewRequest(http.MethodGet, "/", nil))
 	if rec.Code != http.StatusOK {
 		t.Fatalf("status=%d", rec.Code)
+	}
+	if got := rec.Header().Get("X-Robots-Tag"); !strings.Contains(got, "noindex") {
+		t.Fatalf("X-Robots-Tag = %q, want noindex", got)
 	}
 	body := rec.Body.String()
 	for _, want := range []string{
 		`<title>Sluss`,
-		`<meta name="description"`,
-		`<link rel="canonical" href="https://tok.example.com/">`,
-		`property="og:title"`,
-		`property="og:image" content="https://tok.example.com/favicon.svg"`,
-		`name="twitter:card"`,
-		`application/ld+json`,
-		`"@type":"SoftwareApplication"`,
-		`"@type":"FAQPage"`,
+		`<meta name="robots" content="noindex, nofollow">`,
 		`rel="icon" type="image/svg+xml"`,
+		`class="btn primary" href="/router/dashboard">Sign in`, // sign-in is THE action now
+		`href="/connect"`,
+		"Getting started",
+		"fail-closed",
+		"https://www.sluss.eu", // product info lives on the product site
 	} {
 		if !strings.Contains(body, want) {
-			t.Fatalf("landing missing %q", want)
+			t.Fatalf("instance home missing %q", want)
 		}
 	}
-	// Corporate tone: no emoji in the landing copy.
+	// Marketing/SEO surface is gone from the instance.
+	for _, gone := range []string{"application/ld+json", "og:title", "twitter:card", "FAQ", `rel="canonical"`} {
+		if strings.Contains(body, gone) {
+			t.Fatalf("instance home should not carry marketing/SEO markup %q", gone)
+		}
+	}
+	// Corporate tone: no emoji.
 	for _, emoji := range []string{"🛡️", "💸", "🌱", "🔀", "🧾", "🎛️"} {
 		if strings.Contains(body, emoji) {
-			t.Fatalf("landing should be emoji-free (corporate tone), found %q", emoji)
+			t.Fatalf("home should be emoji-free, found %q", emoji)
 		}
 	}
-	// FAQ answers are present (AEO content, not just JSON-LD).
-	if !strings.Contains(body, "NIS2") || !strings.Contains(body, "hash-chained") {
-		t.Fatal("FAQ content missing from the page body")
-	}
-}
-
-// Buyer positioning (ISSUE-101): the page leads with the risk removed, names
-// the USPs as differences, and never links a visitor into a login wall.
-func TestLandingBuyerPositioning(t *testing.T) {
-	rec := httptest.NewRecorder()
-	LandingHandler(LandingOptions{})(rec, httptest.NewRequest(http.MethodGet, "/", nil))
-	body := rec.Body.String()
-	for _, want := range []string{
-		"Decide where the data goes",               // hero: outcome first
-		"Say yes to AI — on your rules",            // enablement framing
-		"Blocking AI creates shadow AI",            // the cost of saying no
-		"Where does our AI data go?",               // the auditor question
-		"decides where your data is allowed to go", // the unlike sentence
-		"Runs in your infrastructure",              // self-hosted USP
-		"Never a silent fallback",                  // fail-closed USP
-		"Measure before you enforce",               // monitor-mode-first USP
-	} {
-		if !strings.Contains(body, want) {
-			t.Fatalf("landing missing buyer message %q", want)
-		}
-	}
-	// CTAs must not send an anonymous visitor into the login wall; sign-in
-	// lives in the nav only. CRM/lead capture deliberately absent (an external CRM).
+	// The gated chat is never linked from the public page.
 	if strings.Contains(body, `href="/chat"`) {
-		t.Fatal("landing must not link the gated /chat as a CTA")
-	}
-	if strings.Count(body, "/router/dashboard") > 1 {
-		t.Fatal("dashboard link belongs in the nav only")
-	}
-	// llms.txt carries the same positioning for answer engines.
-	lrec := httptest.NewRecorder()
-	LLMSHandler(LandingOptions{})(lrec, httptest.NewRequest(http.MethodGet, "/llms.txt", nil))
-	if !strings.Contains(lrec.Body.String(), "allowed to go") || !strings.Contains(lrec.Body.String(), "Self-hosted") {
-		t.Fatal("llms.txt missing the unlike/self-hosted positioning")
-	}
-}
-
-func TestLandingWithoutPublicURLOmitsCanonical(t *testing.T) {
-	rec := httptest.NewRecorder()
-	LandingHandler(LandingOptions{})(rec, httptest.NewRequest(http.MethodGet, "/", nil))
-	body := rec.Body.String()
-	if strings.Contains(body, "<link rel=\"canonical\"") {
-		t.Fatal("no PublicURL → canonical must be omitted")
-	}
-	if !strings.Contains(body, "application/ld+json") {
-		t.Fatal("JSON-LD should still render without a public URL")
+		t.Fatal("home must not link the gated /chat")
 	}
 }
 
@@ -109,28 +70,10 @@ func TestFaviconICORedirects(t *testing.T) {
 	}
 }
 
-func TestRobotsAndSitemapAndLLMs(t *testing.T) {
-	opts := LandingOptions{PublicURL: "https://tok.example.com"}
-
-	rrec := httptest.NewRecorder()
-	RobotsHandler(opts)(rrec, httptest.NewRequest(http.MethodGet, "/robots.txt", nil))
-	robots := rrec.Body.String()
-	if !strings.Contains(robots, "Disallow: /router/") || !strings.Contains(robots, "Sitemap: https://tok.example.com/sitemap.xml") {
-		t.Fatalf("robots.txt wrong:\n%s", robots)
-	}
-
-	srec := httptest.NewRecorder()
-	SitemapHandler(opts)(srec, httptest.NewRequest(http.MethodGet, "/sitemap.xml", nil))
-	if !strings.Contains(srec.Body.String(), "<loc>https://tok.example.com/</loc>") {
-		t.Fatalf("sitemap wrong:\n%s", srec.Body.String())
-	}
-
-	lrec := httptest.NewRecorder()
-	LLMSHandler(opts)(lrec, httptest.NewRequest(http.MethodGet, "/llms.txt", nil))
-	llms := lrec.Body.String()
-	for _, want := range []string{"# Sluss", "## What it does", "## FAQ", "control and evidence"} {
-		if !strings.Contains(llms, want) {
-			t.Fatalf("llms.txt missing %q", want)
-		}
+func TestRobotsKeepsInstanceOutOfIndex(t *testing.T) {
+	rec := httptest.NewRecorder()
+	RobotsHandler(LandingOptions{PublicURL: "https://sluss.example.com"})(rec, httptest.NewRequest(http.MethodGet, "/robots.txt", nil))
+	if got := rec.Body.String(); got != "User-agent: *\nDisallow: /\n" {
+		t.Fatalf("robots.txt = %q", got)
 	}
 }

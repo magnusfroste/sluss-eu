@@ -7,8 +7,9 @@ import (
 	"testing"
 )
 
-// The bare root now serves the public landing page (SEO/AEO surface), not a
-// redirect to the gated dashboard.
+// The bare root serves the instance home page (sign in, connect, getting
+// started), not a redirect to the gated dashboard. Marketing lives on the
+// product site, so the SEO/AEO endpoints are gone.
 func TestRootServesLandingPage(t *testing.T) {
 	h := New(Config{})
 	rec := httptest.NewRecorder()
@@ -17,15 +18,21 @@ func TestRootServesLandingPage(t *testing.T) {
 		t.Fatalf("GET / want 200 (landing), got %d", rec.Code)
 	}
 	body := rec.Body.String()
-	if !strings.Contains(body, "<title>Sluss") || !strings.Contains(body, "application/ld+json") {
-		t.Fatalf("root should serve the landing page with SEO/AEO metadata")
+	if !strings.Contains(body, "<title>Sluss") || !strings.Contains(body, "Sign in") {
+		t.Fatalf("root should serve the instance home page")
 	}
-	// Public SEO/AEO endpoints are reachable without auth.
-	for _, path := range []string{"/favicon.svg", "/robots.txt", "/sitemap.xml", "/llms.txt"} {
+	for _, path := range []string{"/favicon.svg", "/robots.txt"} {
 		r := httptest.NewRecorder()
 		h.ServeHTTP(r, httptest.NewRequest(http.MethodGet, path, nil))
 		if r.Code != http.StatusOK {
 			t.Fatalf("GET %s want 200, got %d", path, r.Code)
+		}
+	}
+	for _, path := range []string{"/sitemap.xml", "/llms.txt"} {
+		r := httptest.NewRecorder()
+		h.ServeHTTP(r, httptest.NewRequest(http.MethodGet, path, nil))
+		if r.Code == http.StatusOK && strings.Contains(r.Body.String(), "Sluss") {
+			t.Fatalf("GET %s should no longer serve marketing content", path)
 		}
 	}
 }
