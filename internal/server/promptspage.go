@@ -157,23 +157,23 @@ const promptsHTML = `<!doctype html>
 <style>
 {{adminCSS}}
 *{box-sizing:border-box}
-body{margin:0;background:#0b1220;color:#e8eef7;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-.hd{padding:20px 26px;border-bottom:1px solid #22304d}
+body{margin:0;background:#081328;color:#e8eef7;font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.hd{padding:20px 26px;border-bottom:1px solid #22324f}
 .hd h1{font-size:1.3rem;margin:0}
 .hd .sub{color:#8fa1bf;font-size:.85rem;margin-top:4px}
 .wrap{padding:22px 30px;display:flex;flex-direction:column;gap:18px}
-.card{background:#0e1626;border:1px solid #22304d;border-radius:12px;padding:18px 20px;overflow-x:auto}
+.card{background:#101c34;border:1px solid #22324f;border-radius:12px;padding:18px 20px;overflow-x:auto}
 table{width:100%;border-collapse:collapse}
-th{text-align:left;font-size:.72rem;color:#5f6e87;text-transform:uppercase;letter-spacing:.05em;padding:8px 10px;border-bottom:1px solid #22304d}
-td{padding:9px 10px;border-bottom:1px solid #16223b;font-size:.86rem;vertical-align:top}
-.tag{display:inline-block;padding:2px 9px;border-radius:20px;font-size:.72rem;background:#12203a;color:#b7c4dc;white-space:nowrap}
+th{text-align:left;font-size:.72rem;color:#5f6e87;text-transform:uppercase;letter-spacing:.05em;padding:8px 10px;border-bottom:1px solid #22324f}
+td{padding:9px 10px;border-bottom:1px solid #17253f;font-size:.86rem;vertical-align:top}
+.tag{display:inline-block;padding:2px 9px;border-radius:20px;font-size:.72rem;background:#182a4a;color:#b7c4dc;white-space:nowrap}
 .note{color:#8fa1bf;font-size:.8rem}
 .mono{font-family:ui-monospace,monospace;font-size:.82rem}
 .btn{background:#1a2a49;color:#e8eef7;border:1px solid #2c4066;border-radius:8px;padding:8px 14px;font-size:.85rem;cursor:pointer}
 .btn.del{background:#3a1620;border-color:#5b2330;color:#f8b4bc}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
 label{display:block;font-size:.75rem;color:#8fa1bf;margin-bottom:4px}
-input,textarea{width:100%;background:#0b1220;border:1px solid #2c4066;border-radius:8px;color:#e8eef7;padding:8px 10px;font-size:.85rem;font-family:inherit}
+input,textarea{width:100%;background:#081328;border:1px solid #2c4066;border-radius:8px;color:#e8eef7;padding:8px 10px;font-size:.85rem;font-family:inherit}
 .notice{background:#0f2f22;border:1px solid #1f6b45;color:#a7f3d0;border-radius:8px;padding:10px 14px;font-size:.85rem}
 .err{background:#3a1620;border:1px solid #7a2b39;color:#f8b4bc;border-radius:8px;padding:10px 14px;font-size:.85rem}
 .ro{background:#33290f;border:1px solid #7a5a1f;color:#f4d38a;border-radius:8px;padding:10px 14px;font-size:.85rem}

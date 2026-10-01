@@ -385,12 +385,12 @@ const providersHTML = `<!doctype html>
 <style>
   {{adminCSS}}
   *,*::before,*::after{box-sizing:border-box}
-  body{margin:0;background:#0b1220;color:#e8eef7;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-  header{padding:20px 26px;border-bottom:1px solid #22304d}
+  body{margin:0;background:#081328;color:#e8eef7;font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  header{padding:20px 26px;border-bottom:1px solid #22324f}
   h1{font-size:1.3rem;margin:0}
   .sub{color:#8fa1bf;font-size:.85rem;margin-top:4px}
   .wrap{padding:26px 32px;display:flex;flex-direction:column;gap:18px}
-  .card{background:#0e1626;border:1px solid #22304d;border-radius:12px;overflow:hidden}
+  .card{background:#101c34;border:1px solid #22324f;border-radius:12px;overflow:hidden}
   .card.pending{border-color:#4a3a12}
   .chead{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:16px 20px}
   .pname{font-weight:700;font-size:1.05rem}
@@ -400,33 +400,33 @@ const providersHTML = `<!doctype html>
   .tag.ok{background:#13351f;color:#4fd08a}.tag.bad{background:#361525;color:#f07ab0}
   .tag.warn{background:#33290f;color:#f4b740}.tag.neutral{background:#16233c;color:#9db4dc}
   a.tag.neutral{text-decoration:none}
-  .note{color:#8fa1bf;font-size:13px;line-height:1.6;background:#0e1626;border:1px dashed #22304d;border-radius:10px;padding:16px 20px}
+  .note{color:#8fa1bf;font-size:13px;line-height:1.6;background:#101c34;border:1px dashed #22324f;border-radius:10px;padding:16px 20px}
   .note b{color:#e8eef7}
   .banner{padding:12px 18px;border-radius:10px;font-size:13.5px}
   .banner.ok{background:#13351f;color:#8ff0bf;border:1px solid #1f5c38}
   .banner.err{background:#361525;color:#ffb4d4;border:1px solid #5c1f3a}
   .empty{color:#64748b;padding:1.2rem 20px;text-align:center}
-  form.addf{background:#0e1626;border:1px solid #22304d;border-radius:12px;padding:20px;max-width:1100px}
+  form.addf{background:#101c34;border:1px solid #22324f;border-radius:12px;padding:20px;max-width:1100px}
   form.addf h2{margin:0 0 14px;font-size:1rem}
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   label{display:block;font-size:12px;color:#8fa1bf;margin-bottom:5px}
-  input{width:100%;background:#0b1220;border:1px solid #22304d;color:#e8eef7;border-radius:8px;
+  input{width:100%;background:#081328;border:1px solid #22324f;color:#e8eef7;border-radius:8px;
     padding:10px 12px;font-size:13.5px;font-family:inherit;outline:none}
-  input:focus{border-color:#22c58b}
+  input:focus{border-color:#fad100}
   .full{grid-column:1 / -1}
-  .btn{background:#22c58b;color:#0b1220;border:0;border-radius:8px;padding:10px 18px;font-weight:700;font-size:14px;cursor:pointer}
+  .btn{background:#fad100;color:#081328;border:0;border-radius:8px;padding:10px 18px;font-weight:700;font-size:14px;cursor:pointer}
   .btn.del{background:transparent;color:#f07ab0;border:1px solid #4a1c33;padding:5px 12px;font-size:12px}
   .btn.sm{padding:5px 14px;font-size:12px}
   .pacts{display:inline-flex;gap:8px;align-items:center;white-space:nowrap}
   .btn.del:hover{background:#2a1424}
-  .rcard{background:#0e1626;border:1px solid #22304d;border-radius:12px;padding:18px 20px}
+  .rcard{background:#101c34;border:1px solid #22324f;border-radius:12px;padding:18px 20px}
   .rnote{color:#8fa1bf;font-size:13px;line-height:1.6;margin-bottom:10px}
   .rnote b{color:#e8eef7}
   .rwarn{background:#33270e;border:1px solid #7a5a1f;color:#f4d38a;border-radius:10px;padding:11px 14px;font-size:13px;margin-bottom:12px}
   .rtab{border-collapse:collapse;font-size:13px;min-width:100%}
   .rtab th{color:#8fa1bf;font-size:10.5px;letter-spacing:.03em;text-transform:uppercase;font-weight:600;
-    padding:8px 6px;text-align:center;border-bottom:1px solid #22304d;cursor:help;vertical-align:bottom}
-  .rtab td{padding:8px 6px;text-align:center;border-bottom:1px solid #16223b}
+    padding:8px 6px;text-align:center;border-bottom:1px solid #22324f;cursor:help;vertical-align:bottom}
+  .rtab td{padding:8px 6px;text-align:center;border-bottom:1px solid #17253f}
   .rtab tbody tr:last-child td{border-bottom:none}
   .rtab .req{color:#f4b740;font-size:10px;letter-spacing:.03em;margin-top:2px}
 </style></head>
@@ -537,12 +537,12 @@ const riskHTML = `<!doctype html>
 <style>
   {{adminCSS}}
   *,*::before,*::after{box-sizing:border-box}
-  body{margin:0;background:#0b1220;color:#e8eef7;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-  header{padding:20px 26px;border-bottom:1px solid #22304d}
+  body{margin:0;background:#081328;color:#e8eef7;font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  header{padding:20px 26px;border-bottom:1px solid #22324f}
   h1{font-size:1.3rem;margin:0}
   .sub{color:#8fa1bf;font-size:.85rem;margin-top:4px}
   .wrap{padding:26px 32px;display:flex;flex-direction:column;gap:18px}
-  .card{background:#0e1626;border:1px solid #22304d;border-radius:12px;overflow:hidden}
+  .card{background:#101c34;border:1px solid #22324f;border-radius:12px;overflow:hidden}
   .card.pending{border-color:#4a3a12}
   .chead{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:16px 20px}
   .pname{font-weight:700;font-size:1.05rem}
@@ -552,31 +552,31 @@ const riskHTML = `<!doctype html>
   .tag.ok{background:#13351f;color:#4fd08a}.tag.bad{background:#361525;color:#f07ab0}
   .tag.warn{background:#33290f;color:#f4b740}.tag.neutral{background:#16233c;color:#9db4dc}
   a.tag.neutral{text-decoration:none}
-  .note{color:#8fa1bf;font-size:13px;line-height:1.6;background:#0e1626;border:1px dashed #22304d;border-radius:10px;padding:16px 20px}
+  .note{color:#8fa1bf;font-size:13px;line-height:1.6;background:#101c34;border:1px dashed #22324f;border-radius:10px;padding:16px 20px}
   .note b{color:#e8eef7}
   .banner{padding:12px 18px;border-radius:10px;font-size:13.5px}
   .banner.ok{background:#13351f;color:#8ff0bf;border:1px solid #1f5c38}
   .banner.err{background:#361525;color:#ffb4d4;border:1px solid #5c1f3a}
   .empty{color:#64748b;padding:1.2rem 20px;text-align:center}
-  form.addf{background:#0e1626;border:1px solid #22304d;border-radius:12px;padding:20px;max-width:1100px}
+  form.addf{background:#101c34;border:1px solid #22324f;border-radius:12px;padding:20px;max-width:1100px}
   form.addf h2{margin:0 0 14px;font-size:1rem}
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   label{display:block;font-size:12px;color:#8fa1bf;margin-bottom:5px}
-  input{width:100%;background:#0b1220;border:1px solid #22304d;color:#e8eef7;border-radius:8px;
+  input{width:100%;background:#081328;border:1px solid #22324f;color:#e8eef7;border-radius:8px;
     padding:10px 12px;font-size:13.5px;font-family:inherit;outline:none}
-  input:focus{border-color:#22c58b}
+  input:focus{border-color:#fad100}
   .full{grid-column:1 / -1}
-  .btn{background:#22c58b;color:#0b1220;border:0;border-radius:8px;padding:10px 18px;font-weight:700;font-size:14px;cursor:pointer}
+  .btn{background:#fad100;color:#081328;border:0;border-radius:8px;padding:10px 18px;font-weight:700;font-size:14px;cursor:pointer}
   .btn.del{background:transparent;color:#f07ab0;border:1px solid #4a1c33;padding:5px 12px;font-size:12px}
   .btn.del:hover{background:#2a1424}
-  .rcard{background:#0e1626;border:1px solid #22304d;border-radius:12px;padding:18px 20px}
+  .rcard{background:#101c34;border:1px solid #22324f;border-radius:12px;padding:18px 20px}
   .rnote{color:#8fa1bf;font-size:13px;line-height:1.6;margin-bottom:10px}
   .rnote b{color:#e8eef7}
   .rwarn{background:#33270e;border:1px solid #7a5a1f;color:#f4d38a;border-radius:10px;padding:11px 14px;font-size:13px;margin-bottom:12px}
   .rtab{border-collapse:collapse;font-size:13px;min-width:100%}
   .rtab th{color:#8fa1bf;font-size:11px;letter-spacing:.04em;text-transform:uppercase;font-weight:600;
-    padding:8px 10px;text-align:center;border-bottom:1px solid #22304d;cursor:help}
-  .rtab td{padding:8px 10px;text-align:center;border-bottom:1px solid #16223b}
+    padding:8px 10px;text-align:center;border-bottom:1px solid #22324f;cursor:help}
+  .rtab td{padding:8px 10px;text-align:center;border-bottom:1px solid #17253f}
   .rtab tbody tr:last-child td{border-bottom:none}
   .rtab .req{color:#f4b740;font-size:10px;letter-spacing:.03em;margin-top:2px}
 </style></head>
@@ -605,7 +605,7 @@ const riskHTML = `<!doctype html>
         {{if .Editable}}
         <td style="text-align:left;white-space:nowrap">{{.Name}}</td>
         {{$row := .}}{{range $.RiskTags}}<td><input form="tags-{{$row.ID}}" type="checkbox" name="tag" value="{{.Tag}}"{{if index $row.Has .Tag}} checked{{end}}></td>{{end}}
-        <td><input form="tags-{{.ID}}" name="extra_tags" value="{{.Extra}}" placeholder="e.g. dev-only" style="width:110px;background:#0b1220;border:1px solid #22304d;color:#e8eef7;border-radius:6px;padding:4px 7px;font-size:12px"></td>
+        <td><input form="tags-{{.ID}}" name="extra_tags" value="{{.Extra}}" placeholder="e.g. dev-only" style="width:110px;background:#081328;border:1px solid #22324f;color:#e8eef7;border-radius:6px;padding:4px 7px;font-size:12px"></td>
         <td><button form="tags-{{.ID}}" class="btn" style="padding:4px 12px;font-size:12px" type="submit">Save</button></td>
         {{else}}
         <td style="text-align:left;white-space:nowrap">{{.Name}} <span class="tag neutral">read-only</span></td>

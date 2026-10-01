@@ -200,12 +200,12 @@ const logPageHTML = `<!doctype html>
 <title>Sluss — Request log</title>
 <style>
   {{adminCSS}}
-  body{margin:0;background:#0b1220;color:#e8eef7;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  body{margin:0;background:#081328;color:#e8eef7;font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
   header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
-    padding:20px 26px;border-bottom:1px solid #22304d}
+    padding:20px 26px;border-bottom:1px solid #22324f}
   h1{font-size:1.3rem;margin:0}
   .sub{color:#8fa1bf;font-size:.85rem;margin-top:4px}
-  .links a{color:#22c58b;text-decoration:none;font-weight:600;margin-left:18px;font-size:.92rem}
+  .links a{color:#fad100;text-decoration:none;font-weight:600;margin-left:18px;font-size:.92rem}
   .links a:hover{text-decoration:underline}
   .wrap{padding:22px 24px;overflow-x:auto}
   table{border-collapse:collapse;width:100%;min-width:720px;font-size:13px}
@@ -213,9 +213,9 @@ const logPageHTML = `<!doctype html>
   td .slug{white-space:normal;max-width:230px;overflow-wrap:anywhere}
   th.num{text-align:right}
   td .slug.code{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
-  thead th{position:sticky;top:0;background:#0e1626;color:#8fa1bf;font-size:11.5px;
+  thead th{position:sticky;top:0;background:#101c34;color:#8fa1bf;font-size:11.5px;
     letter-spacing:.06em;text-transform:uppercase;font-weight:600}
-  tbody tr:hover{background:#0e1626}
+  tbody tr:hover{background:#101c34}
   .mono{font-family:ui-monospace,Menlo,monospace}
   .num{text-align:right;font-variant-numeric:tabular-nums}
   .slug{color:#64748b;font-size:11.5px;font-family:ui-monospace,Menlo,monospace}
@@ -231,15 +231,15 @@ const logPageHTML = `<!doctype html>
   .cls{font-family:ui-monospace,Menlo,monospace;font-size:12px;background:#111c30;border:1px solid #2a3a58;border-radius:6px;padding:1px 7px}
   tr.row-blocked td{background:rgba(239,68,68,.05)}
   tr.main{cursor:pointer}
-  tr.main.open td{background:#0e1626}
-  tr.why td{white-space:normal;background:#0a1322;border-bottom:1px solid #22304d;padding:12px 16px 14px;font-size:13px;line-height:1.55}
+  tr.main.open td{background:#101c34}
+  tr.why td{white-space:normal;background:#0a1322;border-bottom:1px solid #22324f;padding:12px 16px 14px;font-size:13px;line-height:1.55}
   .why-head{margin-bottom:6px}.why-cls{color:#b7c4dc}
   .why-rules{margin-top:8px;color:#b7c4dc}.why-rules ol{margin:4px 0 0 18px;padding:0}
   .why-rules .rid{color:#64748b;font-size:11px;margin-left:6px}
   .k-block{color:#f87171}.k-require{color:#4ade80}.k-force{color:#f4b740}
   .why-note{margin-top:8px;color:#64748b;font-size:12px}
   .filters{display:flex;gap:8px;flex-wrap:wrap}
-  .filters a{color:#b7c4dc;text-decoration:none;font-size:13px;padding:5px 11px;border:1px solid #22304d;border-radius:999px}
+  .filters a{color:#b7c4dc;text-decoration:none;font-size:13px;padding:5px 11px;border:1px solid #22324f;border-radius:999px}
   .filters a span{color:#64748b;margin-left:3px}
   .filters a.on{background:#12305a;border-color:#2c5aa0;color:#e8eef7}
   .hint{color:#64748b;font-size:12.5px;margin:0 0 10px}
@@ -284,7 +284,7 @@ const logPageHTML = `<!doctype html>
   <div class="why-note">Re-evaluated from the stored classification — the prompt itself is never stored. Rules on agent tools or prompt terms are not re-checked here; the dry-run on Policy shows the full decision for a new prompt.</div>
 </td></tr>
 {{else}}
-<tr><td colspan="8" class="empty">No requests yet — open the <a href="/chat" style="color:#22c58b">live chat</a> and send one.</td></tr>
+<tr><td colspan="8" class="empty">No requests yet — open the <a href="/chat" style="color:#fad100">live chat</a> and send one.</td></tr>
 {{end}}
 </tbody>
 </table>

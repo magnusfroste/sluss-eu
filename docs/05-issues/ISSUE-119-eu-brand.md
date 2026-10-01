@@ -43,3 +43,15 @@ de bär betydelse).
   (`/favicon.svg?v=<commit>`), så varje ny build tvingar fram ny ikon.
 - CI: byggtiden i `sluss_build_info` kom ut tom (`head_commit.timestamp`
   saknas vid vissa merge-händelser); den tas nu från commitens egen tidsstämpel.
+
+## Uppföljning 2026-10-01 — konsolen i EU-tema
+
+Hela adminkonsolen (sidomeny, dashboard, logg, policy, modeller, providers,
+riskregister, nycklar, användare, demoprompter, chatt) har bytt till
+produktsajtens marinblå ytor: bakgrund `#081328`, paneler `#101c34`, linjer
+`#22324f`. EU-gult `#fad100` är accent för primärknappar, fokusram,
+markören i chatten och aktiv menypost (gul ikon + gul kant). Statusfärger
+behåller sin betydelse och är oförändrade: grönt = lokalt/OK/besparing, rött
+= blockerat, gult/orange = varning, och nyckel-avslöjandet behåller sin
+gröna "lyckades"-ram. IBM Plex Sans används om det finns lokalt (inga
+Google Fonts).

@@ -365,11 +365,11 @@ var dashboardTmpl = template.Must(template.New("dashboard").Funcs(template.FuncM
 <style>
 {{adminCSS}}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:system-ui,sans-serif;background:#0f1117;color:#e2e8f0}
+body{font-family:"IBM Plex Sans",system-ui,sans-serif;background:#081328;color:#e2e8f0}
 h1{font-size:1.5rem;font-weight:700;margin-bottom:0.25rem;color:#f8fafc}
 .subtitle{font-size:0.85rem;color:#64748b;margin-bottom:2rem}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:2rem}
-.card{background:#1e2330;border:1px solid #2d3748;border-radius:10px;padding:1.25rem}
+.card{background:#101c34;border:1px solid #22324f;border-radius:10px;padding:1.25rem}
 .card-label{font-size:0.75rem;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:0.35rem}
 .card-value{font-size:1.75rem;font-weight:700;color:#f8fafc}
 .card-sub{font-size:0.78rem;color:#94a3b8;margin-top:0.2rem}
@@ -378,10 +378,10 @@ h1{font-size:1.5rem;font-weight:700;margin-bottom:0.25rem;color:#f8fafc}
 .hero-value{font-size:2.6rem;font-weight:800;color:#34d399;line-height:1.1;margin:0.15rem 0}
 .hero-sub{font-size:0.95rem;color:#d1fae5}
 table{width:100%;border-collapse:collapse;margin-bottom:2rem}
-th{text-align:left;font-size:0.72rem;color:#64748b;text-transform:uppercase;letter-spacing:.05em;padding:0.6rem 0.75rem;border-bottom:1px solid #2d3748}
-td{padding:0.6rem 0.75rem;border-bottom:1px solid #1e2330;font-size:0.88rem}
-tr:hover td{background:#1e2330}
-.bar-bg{background:#2d3748;border-radius:4px;height:6px;width:120px;display:inline-block;vertical-align:middle;margin-left:0.5rem}
+th{text-align:left;font-size:0.72rem;color:#64748b;text-transform:uppercase;letter-spacing:.05em;padding:0.6rem 0.75rem;border-bottom:1px solid #22324f}
+td{padding:0.6rem 0.75rem;border-bottom:1px solid #101c34;font-size:0.88rem}
+tr:hover td{background:#101c34}
+.bar-bg{background:#22324f;border-radius:4px;height:6px;width:120px;display:inline-block;vertical-align:middle;margin-left:0.5rem}
 .bar-fill{background:#3b82f6;border-radius:4px;height:6px;display:block}
 h2{font-size:1rem;font-weight:600;margin-bottom:0.75rem;color:#cbd5e1}
 section{margin-bottom:2.5rem}
@@ -394,7 +394,7 @@ th.num{text-align:right}
 .ev-links{display:flex;flex-wrap:wrap;gap:6px 14px;margin:6px 0 4px}
 .ev-links a{color:#7fd3ff;text-decoration:none;font-weight:600;font-size:0.92rem;border-bottom:1px solid rgba(127,211,255,.3)}
 .ev-links a:hover{border-bottom-color:#7fd3ff}
-.flow-bar{display:flex;height:14px;border-radius:7px;overflow:hidden;background:#2d3748;margin:0.25rem 0 0.6rem}
+.flow-bar{display:flex;height:14px;border-radius:7px;overflow:hidden;background:#22324f;margin:0.25rem 0 0.6rem}
 .seg{display:block;height:100%}
 .seg-local{background:#22c55e}.seg-cloud{background:#3b82f6}.seg-blocked{background:#ef4444}
 .flow-legend{display:flex;gap:18px;font-size:0.82rem;color:#cbd5e1;margin-bottom:1rem}
@@ -402,7 +402,7 @@ th.num{text-align:right}
 .flow-table{max-width:760px}
 .cls{font-family:ui-monospace,monospace;font-size:0.8rem;background:#1e293b;border:1px solid #334155;border-radius:6px;padding:1px 7px}
 .note{font-size:0.78rem;color:#f59e0b}
-details.adv{margin:0 0 2.5rem;border:1px solid #2d3748;border-radius:10px;padding:0.9rem 1.1rem}
+details.adv{margin:0 0 2.5rem;border:1px solid #22324f;border-radius:10px;padding:0.9rem 1.1rem}
 details.adv>summary{cursor:pointer;color:#94a3b8;font-size:0.9rem;font-weight:600}
 details.adv[open]>summary{margin-bottom:1.25rem}
 </style>

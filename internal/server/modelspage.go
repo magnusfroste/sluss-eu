@@ -326,15 +326,15 @@ const modelsHTML = `<!doctype html>
 <title>Sluss — Models</title>
 <style>
   {{adminCSS}}
-  body{margin:0;background:#0b1220;color:#e8eef7;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-  header{padding:20px 26px;border-bottom:1px solid #22304d}
+  body{margin:0;background:#081328;color:#e8eef7;font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  header{padding:20px 26px;border-bottom:1px solid #22324f}
   h1{font-size:1.3rem;margin:0}
   .sub{color:#8fa1bf;font-size:.85rem;margin-top:4px}
   .wrap{padding:26px 32px;display:flex;flex-direction:column;gap:18px}
-  .card{background:#0e1626;border:1px solid #22304d;border-radius:12px;overflow-x:auto}
+  .card{background:#101c34;border:1px solid #22324f;border-radius:12px;overflow-x:auto}
   form.addf{max-width:1100px}
   table{border-collapse:collapse;width:100%;font-size:13.5px}
-  th,td{text-align:left;padding:10px 11px;border-bottom:1px solid #16223b;white-space:nowrap;vertical-align:top}
+  th,td{text-align:left;padding:10px 11px;border-bottom:1px solid #17253f;white-space:nowrap;vertical-align:top}
   .psrc{font-size:10.5px;color:#64748b;font-family:ui-monospace,Menlo,monospace}
   thead th{color:#8fa1bf;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:600}
   tbody tr:last-child td{border-bottom:none}
@@ -352,17 +352,17 @@ const modelsHTML = `<!doctype html>
   .banner.ok{background:#13351f;color:#8ff0bf;border:1px solid #1f5c38}
   .banner.err{background:#361525;color:#ffb4d4;border:1px solid #5c1f3a}
   .empty{color:#64748b;padding:1.2rem 16px;text-align:center}
-  .note{color:#8fa1bf;font-size:13px;line-height:1.6;background:#0e1626;border:1px dashed #22304d;border-radius:10px;padding:16px 20px}
+  .note{color:#8fa1bf;font-size:13px;line-height:1.6;background:#101c34;border:1px dashed #22324f;border-radius:10px;padding:16px 20px}
   .note b{color:#e8eef7}
-  form.addf{background:#0e1626;border:1px solid #22304d;border-radius:12px;padding:20px}
+  form.addf{background:#101c34;border:1px solid #22324f;border-radius:12px;padding:20px}
   form.addf h2{margin:0 0 14px;font-size:1rem}
   .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
   label{display:block;font-size:12px;color:#8fa1bf;margin-bottom:5px}
-  input,select{width:100%;background:#0b1220;border:1px solid #22304d;color:#e8eef7;border-radius:8px;
+  input,select{width:100%;background:#081328;border:1px solid #22324f;color:#e8eef7;border-radius:8px;
     padding:9px 11px;font-size:13.5px;font-family:inherit;outline:none;box-sizing:border-box}
-  input:focus,select:focus{border-color:#22c58b}
+  input:focus,select:focus{border-color:#fad100}
   .full{grid-column:1 / -1}
-  .btn{background:#22c58b;color:#0b1220;border:0;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer}
+  .btn{background:#fad100;color:#081328;border:0;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer}
   .btn.sm{padding:5px 10px;font-size:12px}
   .btn.del{background:transparent;color:#f07ab0;border:1px solid #4a1c33;padding:5px 10px;font-size:12px}
   .btn.del:hover{background:#2a1424}
