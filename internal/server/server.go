@@ -436,6 +436,7 @@ func New(cfg Config) http.Handler {
 			Version: cfg.RegistryVersion, Roster: cfg.Roster,
 			Cache: cfg.PolicyCache, Auditor: cfg.Auditor, Reloader: cfg.RosterReloader}
 		mux.Handle("GET /router/providers", dashGuard(ProvidersPageHandler(provOpts)))
+		mux.Handle("GET /router/risk", dashGuard(RiskRegisterPageHandler(provOpts)))
 		if cfg.Roster != nil {
 			mux.Handle("POST /router/providers", dashGuard(ProvidersAddHandler(provOpts)))
 			mux.Handle("POST /router/providers/delete", dashGuard(ProvidersDeleteHandler(provOpts)))
