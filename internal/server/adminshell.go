@@ -12,20 +12,20 @@ import (
 // are tk- prefixed to avoid colliding with per-page styles.
 const adminShellCSS = `
 .tk-shell{display:flex;min-height:100vh}
-.tk-nav{width:212px;flex-shrink:0;background:#080e1a;border-right:1px solid #22304d;
+.tk-nav{width:212px;flex-shrink:0;background:#060f22;border-right:1px solid #22324f;
   display:flex;flex-direction:column;padding:14px 10px;gap:3px;position:sticky;top:0;height:100vh}
 .tk-brand{display:flex;align-items:center;gap:9px;font-weight:700;color:#e8eef7;
   padding:6px 12px 16px;font-size:15px}
-.tk-brand .tk-dot{width:11px;height:11px;border-radius:3px;background:#22c58b;flex-shrink:0}
+.tk-brand .tk-dot{width:11px;height:11px;border-radius:3px;background:#fad100;flex-shrink:0}
 .tk-link{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:9px;
   color:#b7c4dc;text-decoration:none;font-size:14px;font-weight:500;transition:.12s}
-.tk-link:hover{background:#0e1626;color:#fff}
-.tk-link.active{background:#12203a;color:#fff}
+.tk-link:hover{background:#101c34;color:#fff}
+.tk-link.active{background:#182a4a;color:#fff;box-shadow:inset 3px 0 0 #fad100}
 .tk-link .tk-ic{width:18px;height:18px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#7f90ad}
-.tk-link:hover .tk-ic,.tk-link.active .tk-ic{color:#cfe0ff}
+.tk-link:hover .tk-ic{color:#cfe0ff}.tk-link.active .tk-ic{color:#fad100}
 .tk-link .tk-ic svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 .tk-sec{color:#5f6e87;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;padding:14px 12px 6px}
-.tk-foot{margin-top:auto;color:#5f6e87;font-size:11px;padding:12px 12px 4px;border-top:1px solid #16223b}
+.tk-foot{margin-top:auto;color:#5f6e87;font-size:11px;padding:12px 12px 4px;border-top:1px solid #17253f}
 .tk-build{color:inherit;text-decoration:none;font-family:ui-monospace,Menlo,monospace}.tk-build:hover{text-decoration:underline}
 .tk-main{flex:1;min-width:0;display:flex;flex-direction:column}
 @media(max-width:760px){.tk-nav{width:58px;padding:12px 8px}

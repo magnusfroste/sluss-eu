@@ -220,14 +220,14 @@ const policyHTML = `<!doctype html>
 <style>
 {{adminCSS}}
 *{box-sizing:border-box}
-body{margin:0;background:#0b1220;color:#e8eef7;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-.hd{padding:20px 26px;border-bottom:1px solid #22304d}
+body{margin:0;background:#081328;color:#e8eef7;font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.hd{padding:20px 26px;border-bottom:1px solid #22324f}
 .hd h1{font-size:1.3rem;margin:0}.hd .sub{color:#8fa1bf;font-size:.85rem;margin-top:4px}
 .wrap{padding:22px 30px;display:flex;flex-direction:column;gap:18px;max-width:900px}
-.card{background:#0e1626;border:1px solid #22304d;border-radius:12px;padding:18px 20px;overflow-x:auto}
+.card{background:#101c34;border:1px solid #22324f;border-radius:12px;padding:18px 20px;overflow-x:auto}
 .card.danger{border-color:#5b2330}
 table.rules{width:100%;border-collapse:collapse;margin-top:12px;font-size:.88rem}
-table.rules th{text-align:left;font-size:.7rem;color:#8fa1bf;text-transform:uppercase;letter-spacing:.06em;padding:6px 10px;border-bottom:1px solid #22304d}
+table.rules th{text-align:left;font-size:.7rem;color:#8fa1bf;text-transform:uppercase;letter-spacing:.06em;padding:6px 10px;border-bottom:1px solid #22324f}
 table.rules td{padding:8px 10px;border-bottom:1px solid #16223a;vertical-align:top}
 table.rules .rid{font-family:ui-monospace,Menlo,monospace;font-size:.72rem;color:#64748b;margin-top:2px}
 table.rules .then{font-weight:600}
@@ -236,15 +236,15 @@ tr.k-block .then{color:#f87171}tr.k-require .then{color:#4ade80}tr.k-force .then
 .kv{display:flex;gap:26px;flex-wrap:wrap;font-size:.9rem}
 .kv b{color:#8fa1bf;font-weight:500}
 .note{color:#8fa1bf;font-size:.85rem;line-height:1.6}
-textarea{width:100%;background:#0b1220;border:1px solid #2c4066;border-radius:8px;color:#e8eef7;padding:11px 13px;font-size:.9rem;font-family:inherit;min-height:70px}
-.btn{background:#22c58b;color:#0b1220;border:0;border-radius:8px;padding:10px 18px;font-weight:700;font-size:14px;cursor:pointer;margin-top:10px}
+textarea{width:100%;background:#081328;border:1px solid #2c4066;border-radius:8px;color:#e8eef7;padding:11px 13px;font-size:.9rem;font-family:inherit;min-height:70px}
+.btn{background:#fad100;color:#081328;border:0;border-radius:8px;padding:10px 18px;font-weight:700;font-size:14px;cursor:pointer;margin-top:10px}
 .res{margin-top:14px;display:none}
 .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.78rem;font-weight:600;margin-right:6px}
 .b-local{background:#13351f;color:#4fd08a}.b-cloud{background:#33290f;color:#f4b740}.b-block{background:#361525;color:#f07ab0}
-.b-neutral{background:#12203a;color:#b7c4dc}
+.b-neutral{background:#182a4a;color:#b7c4dc}
 .res .row{margin:6px 0;font-size:.9rem}.res .k{color:#8fa1bf;display:inline-block;min-width:130px}
 .mono{font-family:ui-monospace,monospace}
-.chip{display:inline-block;padding:2px 8px;border-radius:6px;background:#12203a;color:#b7c4dc;font-size:.78rem;margin:2px}
+.chip{display:inline-block;padding:2px 8px;border-radius:6px;background:#182a4a;color:#b7c4dc;font-size:.78rem;margin:2px}
 .eg{color:#5f6e87;font-size:.82rem;margin-top:6px}
 .eg a{color:#7fd3ff;cursor:pointer}
 </style></head>
@@ -309,7 +309,7 @@ textarea{width:100%;background:#0b1220;border:1px solid #2c4066;border-radius:8p
   <table style="width:100%;border-collapse:collapse;margin-bottom:12px">
     <tr style="color:#8fa1bf;font-size:.78rem;text-transform:uppercase;letter-spacing:.05em"><td style="padding:4px 0">#</td><td>When</td><td>Then</td><td></td></tr>
     {{range $i, $r := .ConsoleRules}}
-    <tr style="border-top:1px solid #16223b">
+    <tr style="border-top:1px solid #17253f">
       <td style="padding:8px 8px 8px 0;color:#8fa1bf">{{$i}}</td>
       <td style="padding:8px 8px 8px 0"><span class="chip">{{$r.WhenSummary}}</span>{{if $r.Note}}<div class="note">{{$r.Note}}</div>{{end}}</td>
       <td style="padding:8px 8px 8px 0;font-size:.86rem">{{$r.ActionSummary}}</td>
@@ -331,23 +331,23 @@ textarea{width:100%;background:#0b1220;border:1px solid #2c4066;border-radius:8p
     {{end}}
   </div>
   {{end}}
-  <form method="post" action="/router/policy/rules" style="margin-top:14px;border-top:1px solid #16223b;padding-top:12px">
+  <form method="post" action="/router/policy/rules" style="margin-top:14px;border-top:1px solid #17253f;padding-top:12px">
     <div style="font-size:.82rem;color:#8fa1bf;margin-bottom:6px">WHEN (at least one condition)</div>
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">
-      {{range .Sensitivities}}<label style="display:inline-flex;gap:5px;align-items:center;font-size:.85rem;background:#0b1220;border:1px solid #22304d;border-radius:8px;padding:6px 10px;cursor:pointer"><input type="checkbox" name="sensitivity" value="{{.}}">{{.}}</label>{{end}}
+      {{range .Sensitivities}}<label style="display:inline-flex;gap:5px;align-items:center;font-size:.85rem;background:#081328;border:1px solid #22324f;border-radius:8px;padding:6px 10px;cursor:pointer"><input type="checkbox" name="sensitivity" value="{{.}}">{{.}}</label>{{end}}
     </div>
     <div style="font-size:.78rem;color:#8fa1bf;margin:2px 0 6px">or the <strong>agent capability</strong> the request declares (its tools, classified read &lt; write &lt; external &lt; destructive):</div>
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">
-      {{range .ToolRisks}}<label style="display:inline-flex;gap:5px;align-items:center;font-size:.85rem;background:#0b1220;border:1px solid #22304d;border-radius:8px;padding:6px 10px;cursor:pointer"><input type="checkbox" name="tool_risk" value="{{.}}">{{.}}</label>{{end}}
+      {{range .ToolRisks}}<label style="display:inline-flex;gap:5px;align-items:center;font-size:.85rem;background:#081328;border:1px solid #22324f;border-radius:8px;padding:6px 10px;cursor:pointer"><input type="checkbox" name="tool_risk" value="{{.}}">{{.}}</label>{{end}}
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
       <label style="font-size:.85rem;color:#8fa1bf">task type
-        <select name="task_type" style="display:block;background:#0b1220;border:1px solid #22304d;color:#e8eef7;border-radius:8px;padding:7px 9px;margin-top:4px">
+        <select name="task_type" style="display:block;background:#081328;border:1px solid #22324f;color:#e8eef7;border-radius:8px;padding:7px 9px;margin-top:4px">
           <option value="">any</option>
           {{range .TaskTypes}}<option value="{{.}}">{{.}}</option>{{end}}
         </select></label>
       <label style="font-size:.85rem;color:#8fa1bf">risk level
-        <select name="risk_level" style="display:block;background:#0b1220;border:1px solid #22304d;color:#e8eef7;border-radius:8px;padding:7px 9px;margin-top:4px">
+        <select name="risk_level" style="display:block;background:#081328;border:1px solid #22324f;color:#e8eef7;border-radius:8px;padding:7px 9px;margin-top:4px">
           <option value="">any</option>
           {{range .RiskLevels}}<option value="{{.}}">{{.}}</option>{{end}}
         </select></label>
@@ -355,14 +355,14 @@ textarea{width:100%;background:#0b1220;border:1px solid #2c4066;border-radius:8p
     <div style="font-size:.82rem;color:#8fa1bf;margin-bottom:6px">THEN</div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:10px">
       <label style="font-size:.85rem;color:#8fa1bf">action
-        <select name="action" id="ruleaction" style="display:block;background:#0b1220;border:1px solid #22304d;color:#e8eef7;border-radius:8px;padding:7px 9px;margin-top:4px">
+        <select name="action" id="ruleaction" style="display:block;background:#081328;border:1px solid #22324f;color:#e8eef7;border-radius:8px;padding:7px 9px;margin-top:4px">
           <option value="require_tags">require provider tags (stay in the house / EU)</option>
           <option value="block">block (fail-closed)</option>
         </select></label>
       <label style="font-size:.85rem;color:#8fa1bf" id="tagslabel">provider tags (comma-separated)
-        <input name="tags" value="local" style="display:block;background:#0b1220;border:1px solid #22304d;color:#e8eef7;border-radius:8px;padding:7px 9px;margin-top:4px;min-width:220px"></label>
+        <input name="tags" value="local" style="display:block;background:#081328;border:1px solid #22324f;color:#e8eef7;border-radius:8px;padding:7px 9px;margin-top:4px;min-width:220px"></label>
       <label style="font-size:.85rem;color:#8fa1bf">note (optional)
-        <input name="note" placeholder="why this rule exists" style="display:block;background:#0b1220;border:1px solid #22304d;color:#e8eef7;border-radius:8px;padding:7px 9px;margin-top:4px;min-width:220px"></label>
+        <input name="note" placeholder="why this rule exists" style="display:block;background:#081328;border:1px solid #22324f;color:#e8eef7;border-radius:8px;padding:7px 9px;margin-top:4px;min-width:220px"></label>
     </div>
     <button class="btn" style="margin:0" type="submit">Add rule</button>
   </form>
@@ -374,7 +374,7 @@ textarea{width:100%;background:#0b1220;border:1px solid #2c4066;border-radius:8p
   <div class="note" style="margin-bottom:10px">Embedded rulesets — each market/regime enables the pack it needs. Activate with <span class="mono">ROUTER_POLICY_PATH=builtin:&lt;name&gt;</span> (restart). Same engine; the pack is market-specific.</div>
   <table style="width:100%;border-collapse:collapse">
   {{range .Packs}}
-    <tr style="border-top:1px solid #16223b">
+    <tr style="border-top:1px solid #17253f">
       <td style="padding:8px 8px 8px 0;vertical-align:top;white-space:nowrap">
         <span class="mono">builtin:{{.Name}}</span>{{if .Active}} <span class="badge b-local">active</span>{{end}}
       </td>
@@ -405,7 +405,7 @@ textarea{width:100%;background:#0b1220;border:1px solid #2c4066;border-radius:8p
   spend attribution, optionally revoking its API keys. The audit chain is never selectively deleted — the erasure itself
   is recorded in it.</div>
   <form method="post" action="/router/data/erase-tenant" onsubmit="return confirm('Erase all request data for this tenant? The erasure is recorded in the audit chain.')" style="margin:8px 0 0;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-    <input name="tenant_id" placeholder="tenant id (e.g. prospect_acme)" required style="background:#0b1220;border:1px solid #2c4066;border-radius:8px;color:#e8eef7;padding:9px 12px;font-size:.88rem;min-width:240px">
+    <input name="tenant_id" placeholder="tenant id (e.g. prospect_acme)" required style="background:#081328;border:1px solid #2c4066;border-radius:8px;color:#e8eef7;padding:9px 12px;font-size:.88rem;min-width:240px">
     <label style="display:inline-flex;gap:6px;align-items:center;font-size:.85rem;color:#8fa1bf"><input type="checkbox" name="revoke_keys" checked style="width:auto">also revoke the tenant's API keys</label>
     <button class="btn" style="margin:0;background:#3a1620;color:#f8b4bc;border:1px solid #5b2330" type="submit">Erase tenant data</button>
   </form>

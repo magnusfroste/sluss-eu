@@ -99,14 +99,14 @@ const demoChatTemplate = `<!doctype html>
 <style>
   /*ADMIN_CSS*/
   :root{
-    --bg:#0b1220; --panel:#111a2e; --panel2:#0e1626; --side:#0a1120; --line:#22304d;
-    --ink:#e8eef7; --muted:#8fa1bf; --accent:#22c58b; --accent2:#f4b740;
-    --user:#1d2b47; --bot:#0e1626;
+    --bg:#081328; --panel:#13213c; --panel2:#101c34; --side:#071125; --line:#22324f;
+    --ink:#e8eef7; --muted:#8fa1bf; --accent:#fad100; --accent2:#f4b740;
+    --user:#1d2b47; --bot:#101c34;
   }
   *{box-sizing:border-box}
   html,body{height:100%}
   body{margin:0;background:var(--bg);color:var(--ink);
-    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+    font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
   .chatrow{flex:1;display:flex;min-height:0}
   /* ---- session sidebar (now on the RIGHT) ---- */
   aside.sessions{width:256px;flex-shrink:0;background:var(--side);border-left:1px solid var(--line);
@@ -183,7 +183,7 @@ const demoChatTemplate = `<!doctype html>
   .composer input{flex:1;background:var(--panel2);border:1px solid var(--line);color:var(--ink);
     border-radius:10px;padding:13px 15px;font-size:15px;outline:none}
   .composer input:focus{border-color:var(--accent)}
-  .composer button{background:var(--accent);color:#0b1220;border:0;border-radius:10px;
+  .composer button{background:var(--accent);color:#081328;border:0;border-radius:10px;
     padding:0 20px;font-weight:700;font-size:15px;cursor:pointer}
   .composer button:disabled{opacity:.5;cursor:not-allowed}
   .hint{max-width:760px;margin:8px auto 0;color:var(--muted);font-size:12px;text-align:center}
