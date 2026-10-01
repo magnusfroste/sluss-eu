@@ -39,6 +39,12 @@ jobs:
             type=ref,event=tag
             type=sha,format=short
 
+      - name: Build time
+        id: when
+        # head_commit.timestamp is empty for some merge events; the commit's
+        # own timestamp is always there.
+        run: echo "ts=$(git log -1 --format=%cI)" >> "$GITHUB_OUTPUT"
+
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
@@ -50,6 +56,6 @@ jobs:
           # which build it runs (sluss_build_info on /metrics, console footer).
           build-args: |
             GIT_SHA=${{ github.sha }}
-            BUILD_TIME=${{ github.event.head_commit.timestamp }}
+            BUILD_TIME=${{ steps.when.outputs.ts }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
