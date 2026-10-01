@@ -31,3 +31,15 @@ produkt.
 Adminkonsolen behåller sin nuvarande blå-gröna palett tills vidare —
 egen issue om den ska följa med (status-färger grön/röd behålls oavsett,
 de bär betydelse).
+
+## Uppföljning 2026-10-01 — stjärnan och favicon-cachen
+
+- Skölden bär nu **en** marinblå stjärna i stället för routing-grenen —
+  läsbar i 16 px. Medvetet en stjärna, inte EU-emblemets krans av tolv:
+  emblemet får inte användas så att det ser ut som att EU står bakom en
+  produkt.
+- Faviconen serverades med 24 h cache på en fast URL, så webbläsare visade
+  den gamla gröna efter deployen. URL:en bär nu buildens commit
+  (`/favicon.svg?v=<commit>`), så varje ny build tvingar fram ny ikon.
+- CI: byggtiden i `sluss_build_info` kom ut tom (`head_commit.timestamp`
+  saknas vid vissa merge-händelser); den tas nu från commitens egen tidsstämpel.
