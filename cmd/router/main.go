@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"github.com/magnusfroste/sluss/internal/buildinfo"
 	"log/slog"
 	"net/http"
 	"os"
@@ -544,6 +545,8 @@ func main() {
 		logger.Info("live roster reload enabled")
 	}
 
+	buildinfo.Register()
+
 	handler := server.New(server.Config{
 		Logger:                     logger,
 		KeyStore:                   keyStore,
@@ -618,7 +621,7 @@ func main() {
 	defer stop()
 
 	go func() {
-		logger.Info("router starting", "addr", addr, "mock_provider", mockURL)
+		logger.Info("router starting", "addr", addr, "mock_provider", mockURL, "commit", buildinfo.FullCommit(), "built", buildinfo.BuiltAt())
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			logger.Error("server failed", "err", err)
 			os.Exit(1)

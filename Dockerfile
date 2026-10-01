@@ -22,8 +22,15 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
+# The commit and build time are stamped into the binary so a running instance
+# can say exactly which build it is (/metrics sluss_build_info, console footer,
+# MCP server_info). The image workflow passes them; a local build says "dev".
+ARG GIT_SHA=dev
+ARG BUILD_TIME=
 # Static, stripped binary so the runtime image can stay minimal.
-RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/router ./cmd/router
+RUN CGO_ENABLED=0 GOOS=linux go build -trimpath \
+    -ldflags="-s -w -X github.com/magnusfroste/sluss/internal/buildinfo.Commit=${GIT_SHA} -X github.com/magnusfroste/sluss/internal/buildinfo.Built=${BUILD_TIME}" \
+    -o /out/router ./cmd/router
 
 # --- runtime stage ---
 FROM alpine:3.20

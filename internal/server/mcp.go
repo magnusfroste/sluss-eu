@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/magnusfroste/sluss/internal/buildinfo"
 	"io"
 	"net/http"
 	"os"
@@ -774,6 +775,8 @@ func (o MCPOptions) serverInfo(_ context.Context, _ json.RawMessage) (any, error
 	return map[string]any{
 		"name":             MCPName,
 		"mcp_version":      MCPVersion,
+		"build_commit":     buildinfo.FullCommit(),
+		"build_time":       buildinfo.BuiltAt(),
 		"registry_version": registryVersion,
 		"roster_source":    rosterSource,
 		"providers":        providers,

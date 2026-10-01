@@ -3,6 +3,8 @@ package server
 import (
 	"html/template"
 	"strings"
+
+	"github.com/magnusfroste/sluss/internal/buildinfo"
 )
 
 // adminShellCSS styles the shared admin frame: a fixed left navigation panel
@@ -24,6 +26,7 @@ const adminShellCSS = `
 .tk-link .tk-ic svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 .tk-sec{color:#5f6e87;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;padding:14px 12px 6px}
 .tk-foot{margin-top:auto;color:#5f6e87;font-size:11px;padding:12px 12px 4px;border-top:1px solid #16223b}
+.tk-build{color:inherit;text-decoration:none;font-family:ui-monospace,Menlo,monospace}.tk-build:hover{text-decoration:underline}
 .tk-main{flex:1;min-width:0;display:flex;flex-direction:column}
 @media(max-width:760px){.tk-nav{width:58px;padding:12px 8px}
   .tk-lbl,.tk-brand .tk-bt,.tk-sec,.tk-foot{display:none}
@@ -83,7 +86,7 @@ func adminNavHTML(active string) string {
 		}
 		b.WriteString(`<a class="` + cls + `" href="` + it.href + `"><span class="tk-ic">` + it.icon + `</span><span class="tk-lbl">` + it.label + `</span></a>`)
 	}
-	b.WriteString(`<div class="tk-foot"><a class="tk-link" href="/router/logout" style="padding:6px 12px"><span class="tk-lbl">Sign out</span></a>admin · v1.0</div></nav>`)
+	b.WriteString(`<div class="tk-foot"><a class="tk-link" href="/router/logout" style="padding:6px 12px"><span class="tk-lbl">Sign out</span></a>admin · <a class="tk-build" href="https://github.com/magnusfroste/sluss-eu/commit/` + template.HTMLEscapeString(buildinfo.FullCommit()) + `" title="Built ` + template.HTMLEscapeString(buildinfo.BuiltAt()) + `">` + template.HTMLEscapeString(buildinfo.Short()) + `</a></div></nav>`)
 	return b.String()
 }
 
