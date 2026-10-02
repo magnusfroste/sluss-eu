@@ -165,7 +165,29 @@ func GapReportHandler(o GapReportOptions) http.HandlerFunc {
 			_ = json.NewEncoder(w).Encode(rep)
 			return
 		}
+		md := RenderGapMarkdown(rep)
+		if reportWantsHTML(r) {
+			d := reportPageData{
+				Title:       "Shadow AI — gap report",
+				Subtitle:    "Monitor mode: nothing is blocked and nothing changes for users — this shows what the compliance pack would have done. No prompt text is stored.",
+				Body:        markdownToHTML(md),
+				DownloadURL: "/router/gap-report?format=md",
+				JSONURL:     "/router/gap-report?format=json",
+			}
+			if rep.MonitorMode {
+				acted := rep.Gap.SensitiveRouteChanged + rep.Gap.SensitiveShadowBlocked
+				d.Stats = []reportStat{
+					{Label: "Requests compared", Value: fmtInt(int(rep.TotalCompared)), Sub: "since restart"},
+					{Label: "Sensitive prompts", Value: fmtInt(int(rep.Gap.SensitiveTotal))},
+					{Label: "Would re-route", Value: fmtInt(int(rep.Gap.SensitiveRouteChanged)), Tone: toneIf(rep.Gap.SensitiveRouteChanged > 0, "warn")},
+					{Label: "Would block", Value: fmtInt(int(rep.Gap.SensitiveShadowBlocked)), Tone: toneIf(rep.Gap.SensitiveShadowBlocked > 0, "bad")},
+					{Label: "Handled differently", Value: fmtInt(int(acted)), Sub: "under the pack"},
+				}
+			}
+			renderReportPage(w, d)
+			return
+		}
 		w.Header().Set("Content-Type", "text/markdown; charset=utf-8")
-		_, _ = w.Write([]byte(RenderGapMarkdown(rep)))
+		_, _ = w.Write([]byte(md))
 	}
 }

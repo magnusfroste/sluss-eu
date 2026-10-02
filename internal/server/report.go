@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"net/http"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -319,9 +320,34 @@ func ComplianceReportHandler(opts ReportOptions) http.HandlerFunc {
 			_ = json.NewEncoder(w).Encode(report)
 			return
 		}
+		md := RenderComplianceMarkdown(report)
+		if reportWantsHTML(r) {
+			title := report.ProfileTitle
+			if title == "" {
+				title = "Control report — LLM routing"
+			}
+			sub := "Active controls and observed events"
+			if report.ProfileName != "" {
+				sub += " · regime profile " + report.ProfileName + " · " + report.ProfileStatute
+			}
+			renderReportPage(w, reportPageData{
+				Title:    title,
+				Subtitle: sub,
+				Stats: []reportStat{
+					{Label: "Requests", Value: strconv.FormatInt(report.TotalRequests, 10), Sub: "retained history"},
+					{Label: "Blocked by policy", Value: strconv.FormatInt(report.BlockedRequests, 10), Sub: "before any provider call", Tone: toneIf(report.BlockedRequests > 0, "bad")},
+					{Label: "Active policy", Value: orDash(report.PolicyVersion), Sub: fmtInt(report.PolicyRuleCount) + " rules"},
+					{Label: "Providers", Value: fmtInt(len(report.Providers)), Sub: "the egress surface"},
+				},
+				Body:        markdownToHTML(md),
+				DownloadURL: "/router/compliance/report?format=md",
+				JSONURL:     "/router/compliance/report?format=json",
+			})
+			return
+		}
 		w.Header().Set("Content-Type", "text/markdown; charset=utf-8")
-		w.Header().Set("Content-Disposition", `attachment; filename="kontrollrapport.md"`)
-		_, _ = w.Write([]byte(RenderComplianceMarkdown(report)))
+		w.Header().Set("Content-Disposition", `attachment; filename="control-report.md"`)
+		_, _ = w.Write([]byte(md))
 	}
 }
 

@@ -223,6 +223,7 @@ func ChatCompletionsHandler(p provider.Adapter, opts ...ChatOptions) http.Handle
 						w.Header().Set("X-Router-Sensitivity", string(job.Sensitivity))
 					}
 					w.Header().Set("X-Router-Blocked", dec.BlockCode)
+					setSensitivitySourceHeader(w, job, &req)
 					writeError(w, status, dec.BlockCode, dec.BlockReason)
 					return
 				}
@@ -245,6 +246,7 @@ func ChatCompletionsHandler(p provider.Adapter, opts ...ChatOptions) http.Handle
 			// when it routed to a local-tagged provider. Types/reasons only —
 			// never PII values.
 			cfg.setRouteReasonHeaders(w, job, dec)
+			setSensitivitySourceHeader(w, job, &req)
 
 			if req.Stream {
 				candidates := buildStreamCandidates(dec, adapters)
@@ -310,6 +312,7 @@ func ChatCompletionsHandler(p provider.Adapter, opts ...ChatOptions) http.Handle
 							// from a fallback, and the headers must say who answered.
 							w.Header().Set("X-Router-Selected-Model", c.modelID)
 							w.Header().Set("X-Router-Fallback-Index", strconv.Itoa(i))
+							w.Header().Set("X-Router-Primary-Model", dec.SelectedModel)
 							if cfg.Logger != nil {
 								cfg.Logger.WarnContext(r.Context(), "complete_fallback",
 									"request_id", job.RequestID, "attempt", i,
@@ -550,6 +553,12 @@ func streamWithFallback(
 		w.Header().Set("Cache-Control", "no-cache")
 		w.Header().Set("Connection", "keep-alive")
 		w.Header().Set("X-Router-Selected-Model", c.modelID)
+		if i > 0 {
+			// The answer came from a fallback: say so, and who the primary was,
+			// so a client can show "fallback from X" (ISSUE-122).
+			w.Header().Set("X-Router-Fallback-Index", strconv.Itoa(i))
+			w.Header().Set("X-Router-Primary-Model", candidates[0].modelID)
+		}
 		w.Header().Set("X-Router-First-Token-Sent", "true")
 		w.Header().Set("X-Router-First-Token-Ms", strconv.FormatInt(firstTokenMs, 10))
 		started := time.Now()
@@ -1130,6 +1139,36 @@ func (o *ChatOptions) setRouteReasonHeaders(w http.ResponseWriter, job *router.J
 		w.Header().Set("X-Router-Selected-Tags", strings.Join(tags, ", "))
 	}
 	w.Header().Set("X-Router-Egress", egressFromTags(tags))
+}
+
+// setSensitivitySourceHeader tells a client WHERE the sensitivity came from
+// (ISSUE-122). The whole conversation is classified, so a harmless follow-up
+// ("write a commit message") after a message with a personal ID is still
+// routed locally — correct, but confusing unless the UI can say "earlier in
+// this conversation". Value: "message" (the latest user message carries it)
+// or "conversation" (only earlier turns do). Classification only, never content.
+func setSensitivitySourceHeader(w http.ResponseWriter, job *router.JobDescriptor, req *openai.ChatRequest) {
+	if job == nil || req == nil || job.Sensitivity == router.SensitivityNone || len(req.Messages) < 2 {
+		return
+	}
+	last := -1
+	for i := len(req.Messages) - 1; i >= 0; i-- {
+		if req.Messages[i].Role == "user" {
+			last = i
+			break
+		}
+	}
+	if last < 0 {
+		return
+	}
+	only := *req
+	only.Messages = []openai.Message{req.Messages[last]}
+	alone := router.NewJobDescriptor(router.JobDescriptorInput{Request: &only})
+	src := "message"
+	if alone.Sensitivity == router.SensitivityNone {
+		src = "conversation"
+	}
+	w.Header().Set("X-Router-Sensitivity-Source", src)
 }
 
 // egressFromTags is the ONE rule for "did the data leave the house": any

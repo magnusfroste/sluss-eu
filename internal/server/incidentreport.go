@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"net/http"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -204,7 +205,34 @@ func IncidentReportHandler(o IncidentReportOptions) http.HandlerFunc {
 			_ = json.NewEncoder(w).Encode(rep)
 			return
 		}
+		md := RenderIncidentMarkdown(rep)
+		if reportWantsHTML(r) {
+			q := "?window=" + rep.Window
+			renderReportPage(w, reportPageData{
+				Title:    "Incident evidence — last " + rep.Window,
+				Subtitle: "LLM-traffic evidence for the NIS2 reporting timeline (early warning 24h, notification 72h) · profile " + rep.ProfileName + " · active policy " + firstNonEmpty(rep.PolicyVersion, "built-in default"),
+				Stats: []reportStat{
+					{Label: "Requests in window", Value: fmtInt(rep.Total)},
+					{Label: "Blocked fail-closed", Value: fmtInt(rep.Blocked), Tone: toneIf(rep.Blocked > 0, "bad")},
+					{Label: "Sensitive kept local", Value: fmtInt(rep.SensitiveLocal), Sub: "of " + fmtInt(rep.SensitiveTotal) + " sensitive prompts", Tone: "ok"},
+					{Label: "Sensitive to cloud", Value: fmtInt(rep.SensitiveCloud), Tone: toneIf(rep.SensitiveCloud > 0, "warn")},
+				},
+				Body:        markdownToHTML(md),
+				DownloadURL: "/router/incident-report" + q + "&format=md",
+				JSONURL:     "/router/incident-report" + q + "&format=json",
+			})
+			return
+		}
 		w.Header().Set("Content-Type", "text/markdown; charset=utf-8")
-		_, _ = w.Write([]byte(RenderIncidentMarkdown(rep)))
+		_, _ = w.Write([]byte(md))
 	}
+}
+
+func fmtInt(n int) string { return strconv.Itoa(n) }
+
+func toneIf(cond bool, tone string) string {
+	if cond {
+		return tone
+	}
+	return ""
 }
