@@ -140,6 +140,7 @@ const demoChatTemplate = `<!doctype html>
     border-radius:8px;padding:6px 9px;font-size:12.5px;max-width:280px;outline:none}
   .modelpick select:focus{border-color:var(--accent)}
   .pill.pinned{background:#2a2140;color:#c4a7f7}
+  .pill.fallback{background:#33290f;color:#f4b740;cursor:help}
   main{flex:1;overflow-y:auto;padding:22px 16px}
   .wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
   .intro{color:var(--muted);text-align:center;font-size:15px;line-height:1.5;padding:8px 0 4px}
@@ -187,8 +188,13 @@ const demoChatTemplate = `<!doctype html>
     padding:0 20px;font-weight:700;font-size:15px;cursor:pointer}
   .composer button:disabled{opacity:.5;cursor:not-allowed}
   .hint{max-width:760px;margin:8px auto 0;color:var(--muted);font-size:12px;text-align:center}
-  @media (max-width:760px){aside.sessions{width:64px}.newbtn span,.slabel,.srow .title,.side-foot{display:none}
-    .newbtn{justify-content:center}}
+  @media (max-width:760px){
+    aside.sessions{display:none}
+    header{flex-wrap:wrap;padding:10px 12px;gap:8px}
+    .brand small{display:none}
+    .modelpick{width:100%}.modelpick select{flex:1;min-width:0;max-width:100%}
+    main{padding:14px 10px}.msg{max-width:100%}.bubble{max-width:100%}
+    footer{padding:10px 10px}.composer button{padding:0 14px}.hint{display:none}}
 </style>
 </head>
 <body>
@@ -290,13 +296,16 @@ function reasonText(reason){
 // sensitivity (PII), show what happened and — if it went to a local-tagged
 // provider — that the data stayed in the house. If it still went to the cloud,
 // flag it (amber) so a reviewer sees the residual exposure.
-function switchHTML(reason,egress,model){
-  const rt=reasonText(reason);
+function switchHTML(reason,egress,model,src){
+  let rt=reasonText(reason);
   if(!rt)return'';
   const local=egress==='local';
   const cls='switch'+(local?'':' cloud');
   const head=local?'🔀 Routed to a <b>local model</b>':'⚠️ Flagged — routed to cloud';
-  const tail=local?' — the data never left the house.':' (no local model configured).';
+  // The whole conversation is classified: a harmless follow-up after a
+  // message with personal data still stays local — say why.
+  if(src==='conversation')rt+=' earlier in this conversation';
+  const tail=local?(src==='conversation'?' — the whole conversation stays in the house.':' — the data never left the house.'):' (no local model configured).';
   return '<div class="'+cls+'">'+head+' ('+escapeHtml(model||'')+') — '+rt+tail+'</div>';
 }
 
@@ -380,8 +389,11 @@ async function ask(text){
       curEl.remove();send.disabled=false;return;}
     model=res.headers.get('x-router-selected-model')||'';task=res.headers.get('x-router-route-class')||'';
     reason=res.headers.get('x-router-route-reason')||'';egress=res.headers.get('x-router-egress')||'';
-    badge.innerHTML=badgeHTML(task,model)+(pinned?'<span class="pill pinned" title="Model pinned by the admin — classification bypassed, policy still enforced.">pinned</span>':'');
-    if(reason){const c=el('');c.innerHTML=switchHTML(reason,egress,model);if(c.firstElementChild)bm.insertBefore(c.firstElementChild,bubble);}
+    const primary=res.headers.get('x-router-primary-model')||'',fbIdx=res.headers.get('x-router-fallback-index')||'';
+    const sensSrc=res.headers.get('x-router-sensitivity-source')||'';
+    badge.innerHTML=badgeHTML(task,model)+(pinned?'<span class="pill pinned" title="Model pinned by the admin — classification bypassed, policy still enforced.">pinned</span>':'')+
+      (fbIdx?'<span class="pill fallback" title="The primary model ('+escapeHtml(primary)+') did not answer — the policy-approved fallback chain, built before the first call, took over. The fallback never widens egress.">fallback · from '+escapeHtml(primary||'primary')+'</span>':'');
+    if(reason){const c=el('');c.innerHTML=switchHTML(reason,egress,model,sensSrc);if(c.firstElementChild)bm.insertBefore(c.firstElementChild,bubble);}
     const reader=res.body.getReader(),dec=new TextDecoder();let buf='';let thinking=false;
     while(true){const {done,value}=await reader.read();if(done)break;
       buf+=dec.decode(value,{stream:true});const lines=buf.split('\n');buf=lines.pop();

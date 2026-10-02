@@ -400,6 +400,8 @@ th.num{text-align:right}
 .flow-legend{display:flex;gap:18px;font-size:0.82rem;color:#cbd5e1;margin-bottom:1rem}
 .flow-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
 .flow-table{max-width:760px}
+.flow-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+@media(max-width:760px){table{display:block;overflow-x:auto;max-width:100%;-webkit-overflow-scrolling:touch}.hero-value{font-size:2rem}}
 .cls{font-family:ui-monospace,monospace;font-size:0.8rem;background:#1e293b;border:1px solid #334155;border-radius:6px;padding:1px 7px}
 .note{font-size:0.78rem;color:#f59e0b}
 details.adv{margin:0 0 2.5rem;border:1px solid #22324f;border-radius:10px;padding:0.9rem 1.1rem}
@@ -445,7 +447,7 @@ details.adv[open]>summary{margin-bottom:1.25rem}
   {{if gt .Local 0}}<span class="seg seg-local" style="width:{{.Pct .Local}}%"></span>{{end}}{{if gt .Cloud 0}}<span class="seg seg-cloud" style="width:{{.Pct .Cloud}}%"></span>{{end}}{{if gt .Blocked 0}}<span class="seg seg-blocked" style="width:{{.Pct .Blocked}}%"></span>{{end}}
 </div>
 <div class="flow-legend"><span><i class="seg-local"></i>Local {{.Local}}</span><span><i class="seg-cloud"></i>Cloud {{.Cloud}}</span><span><i class="seg-blocked"></i>Blocked {{.Blocked}}</span>{{if gt .Unknown 0}}<span style="color:#94a3b8">Unknown {{.Unknown}} (older rows whose model and provider were removed)</span>{{end}}</div>
-<table class="flow-table">
+<div class="flow-scroll"><table class="flow-table">
 <thead><tr><th>Data class</th><th class="num">Local</th><th class="num">Cloud</th><th class="num">Blocked</th><th></th></tr></thead>
 <tbody>
 {{range .Rows}}
@@ -458,7 +460,7 @@ details.adv[open]>summary{margin-bottom:1.25rem}
 </tr>
 {{end}}
 </tbody>
-</table>
+</table></div>
 <p class="subtitle" style="margin:-1.25rem 0 0">Retained history · classification by deterministic rules, no LLM · a sensitive class in the cloud column is a policy choice you can change on <a href="/router/policy" style="color:#7fd3ff">Policy</a>.</p>
 {{else}}
 <p class="subtitle">No requests yet — send one from <a href="/demo" style="color:#7fd3ff">Live chat</a> or any connected client.</p>
