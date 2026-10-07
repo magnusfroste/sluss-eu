@@ -198,6 +198,7 @@ func buildDashboardData(opts DashboardOptions, taskFilter string) DashboardData 
 		memLog = opts.RequestLog.Recent(0)
 	}
 	d.DataFlow = buildDataFlow(opts.History, memLog, opts.Engine)
+	d.DataFlow.Days = buildTimeline(opts.History, opts.Engine, 7, time.Now())
 	d.Durable = opts.History != nil
 	return d
 }
@@ -319,6 +320,7 @@ var dashboardTmpl = template.Must(template.New("dashboard").Funcs(template.FuncM
 	},
 	"join":   func(s []string) string { return strings.Join(s, ", ") },
 	"hasMap": func(m map[string]int) bool { return len(m) > 0 },
+	"neg":    func(v float64) float64 { return -v },
 	"sumMap": func(m map[string]int) int {
 		n := 0
 		for _, v := range m {
@@ -377,6 +379,7 @@ h1{font-size:1.5rem;font-weight:700;margin-bottom:0.25rem;color:#f8fafc}
 .hero-label{font-size:0.78rem;color:#a7f3d0;text-transform:uppercase;letter-spacing:.06em}
 .hero-value{font-size:2.6rem;font-weight:800;color:#34d399;line-height:1.1;margin:0.15rem 0}
 .hero-sub{font-size:0.95rem;color:#d1fae5}
+.hero.hero-warn{background:linear-gradient(135deg,#3a2a08,#33260a);border-color:#b7791f}.hero.hero-warn .hero-label,.hero.hero-warn .hero-sub{color:#fde9b8}
 table{width:100%;border-collapse:collapse;margin-bottom:2rem}
 th{text-align:left;font-size:0.72rem;color:#64748b;text-transform:uppercase;letter-spacing:.05em;padding:0.6rem 0.75rem;border-bottom:1px solid #22324f}
 td{padding:0.6rem 0.75rem;border-bottom:1px solid #101c34;font-size:0.88rem}
@@ -396,11 +399,17 @@ th.num{text-align:right}
 .ev-links a:hover{border-bottom-color:#7fd3ff}
 .flow-bar{display:flex;height:14px;border-radius:7px;overflow:hidden;background:#22324f;margin:0.25rem 0 0.6rem}
 .seg{display:block;height:100%}
-.seg-local{background:#22c55e}.seg-cloud{background:#3b82f6}.seg-blocked{background:#ef4444}
+.seg-local{background:#1fb054}.seg-cloud{background:#3b82f6}.seg-blocked{background:#ef4444}
 .flow-legend{display:flex;gap:18px;font-size:0.82rem;color:#cbd5e1;margin-bottom:1rem}
 .flow-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
 .flow-table{max-width:760px}
 .flow-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.chart{max-width:760px;margin:0.25rem 0 0.6rem;overflow-x:auto;-webkit-overflow-scrolling:touch}.chart svg{width:100%;height:auto;display:block}
+@media(max-width:760px){.chart svg{min-width:560px}}
+.chart .col{cursor:default}.chart .col:hover rect,.chart .col:hover path{filter:brightness(1.15)}
+details.tview{margin:0.25rem 0 1.5rem;max-width:760px}details.tview>summary{cursor:pointer;color:#8fa1bf;font-size:0.82rem}
+details.tview table{margin-top:0.5rem}
+#ctip{position:fixed;pointer-events:none;background:#0b1528;border:1px solid #22324f;color:#e8eef7;font-size:12.5px;padding:6px 9px;border-radius:7px;box-shadow:0 6px 20px rgba(0,0,0,.4);display:none;z-index:50;max-width:320px}
 @media(max-width:760px){table{display:block;overflow-x:auto;max-width:100%;-webkit-overflow-scrolling:touch}.hero-value{font-size:2rem}}
 .cls{font-family:ui-monospace,monospace;font-size:0.8rem;background:#1e293b;border:1px solid #334155;border-radius:6px;padding:1px 7px}
 .note{font-size:0.78rem;color:#f59e0b}
@@ -443,9 +452,7 @@ details.adv[open]>summary{margin-bottom:1.25rem}
 <section class="flow">
 <h2>Where your data went</h2>
 {{if gt .Total 0}}
-<div class="flow-bar" role="img" aria-label="{{.Local}} local, {{.Cloud}} cloud, {{.Blocked}} blocked">
-  {{if gt .Local 0}}<span class="seg seg-local" style="width:{{.Pct .Local}}%"></span>{{end}}{{if gt .Cloud 0}}<span class="seg seg-cloud" style="width:{{.Pct .Cloud}}%"></span>{{end}}{{if gt .Blocked 0}}<span class="seg seg-blocked" style="width:{{.Pct .Blocked}}%"></span>{{end}}
-</div>
+<div class="chart">{{.FlowSVG}}</div>
 <div class="flow-legend"><span><i class="seg-local"></i>Local {{.Local}}</span><span><i class="seg-cloud"></i>Cloud {{.Cloud}}</span><span><i class="seg-blocked"></i>Blocked {{.Blocked}}</span>{{if gt .Unknown 0}}<span style="color:#94a3b8">Unknown {{.Unknown}} (older rows whose model and provider were removed)</span>{{end}}</div>
 <div class="flow-scroll"><table class="flow-table">
 <thead><tr><th>Data class</th><th class="num">Local</th><th class="num">Cloud</th><th class="num">Blocked</th><th></th></tr></thead>
@@ -466,13 +473,28 @@ details.adv[open]>summary{margin-bottom:1.25rem}
 <p class="subtitle">No requests yet — send one from <a href="/demo" style="color:#7fd3ff">Live chat</a> or any connected client.</p>
 {{end}}
 </section>
+{{if .Days}}
+<section class="flow">
+<h2>Last 7 days</h2>
+{{if gt .DaysTotal 0}}
+<div class="flow-legend"><span><i class="seg-local"></i>Local</span><span><i class="seg-cloud"></i>Cloud</span><span><i class="seg-blocked"></i>Blocked</span><span style="color:#64748b">· hover a day for the numbers</span></div>
+<div class="chart">{{.TimelineSVG}}</div>
+<details class="tview"><summary>Show as table</summary>
+<table class="flow-table"><thead><tr><th>Day (UTC)</th><th class="num">Local</th><th class="num">Cloud</th><th class="num">Blocked</th><th class="num">Total</th></tr></thead><tbody>
+{{range .Days}}<tr><td>{{.Day}}</td><td class="num">{{.Local}}</td><td class="num">{{.Cloud}}</td><td class="num">{{.Blocked}}</td><td class="num">{{.Total}}</td></tr>{{end}}
+</tbody></table></details>
+{{else}}<p class="subtitle">No requests in the last 7 days.</p>{{end}}
+</section>
+{{end}}
 {{end}}
 
 {{if gt .Savings.PremiumBaselineUSD 0.0}}
-<div class="hero">
+<div class="hero{{if lt .Savings.SavedPct 0.0}} hero-warn{{end}}">
   <div class="hero-label">Saved vs all-premium</div>
-  <div class="hero-value">{{printf "%.1f%%" .Savings.SavedPct}} cheaper</div>
+  {{if ge .Savings.SavedPct 0.0}}<div class="hero-value">{{printf "%.1f%%" .Savings.SavedPct}} cheaper</div>
   <div class="hero-sub">Saved <strong>{{usd .Savings.SavedUSD}}</strong> — you paid {{usd .Savings.ActualUSD}}; routing everything to the premium model{{with .Savings.BaselineModel}} ({{.}}){{end}} would have cost {{usd .Savings.PremiumBaselineUSD}}.</div>
+  {{else}}<div class="hero-value" style="color:#f4b740">{{printf "%.1f%%" (neg .Savings.SavedPct)}} more expensive</div>
+  <div class="hero-sub">You paid {{usd .Savings.ActualUSD}} — more than routing everything to the premium model{{with .Savings.BaselineModel}} ({{.}}){{end}} would have cost ({{usd .Savings.PremiumBaselineUSD}}). Check model prices on Models: a local or cheap model priced above the premium one makes routing cost more, not less.</div>{{end}}
   {{if gt .Green.SavedWh 0.0}}<div class="hero-sub" style="margin-top:6px">Also saved ≈ <strong>{{wh .Green.SavedWh}}</strong> of energy ({{co2 .Green.SavedCO2eGrams}} CO₂e) vs all-premium — estimated from per-tier energy figures.</div>{{end}}
 </div>
 {{end}}
@@ -680,6 +702,16 @@ details.adv[open]>summary{margin-bottom:1.25rem}
 </p>
 </div>
 </div>
+<div id="ctip" role="tooltip"></div>
+<script>
+(function(){var t=document.getElementById('ctip');if(!t)return;
+document.querySelectorAll('.chart .col').forEach(function(g){
+ g.addEventListener('mousemove',function(e){t.textContent=g.getAttribute('data-tip');t.style.display='block';
+  var x=e.clientX+14,y=e.clientY+14;if(x+t.offsetWidth>window.innerWidth-8)x=e.clientX-t.offsetWidth-14;t.style.left=x+'px';t.style.top=y+'px';});
+ g.addEventListener('mouseleave',function(){t.style.display='none';});});
+ // On a narrow screen the timeline scrolls; start at the most recent day.
+ document.querySelectorAll('.chart').forEach(function(c){c.scrollLeft=c.scrollWidth;});})();
+</script>
 </body>
 </html>
 `))

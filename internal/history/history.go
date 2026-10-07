@@ -611,3 +611,36 @@ func (s *Store) EgressRows() []EgressRow {
 	}
 	return out
 }
+
+// DayEgressRow is EgressRow bucketed per UTC day (ISSUE-123): the dashboard's
+// "last 7 days" timeline. Day is "YYYY-MM-DD".
+type DayEgressRow struct {
+	Day string
+	EgressRow
+}
+
+// EgressRowsSince aggregates requests decided at or after t into per-day
+// EgressRow buckets. Classifications only — never content.
+func (s *Store) EgressRowsSince(t time.Time) []DayEgressRow {
+	if s == nil {
+		return nil
+	}
+	rows, err := s.db.Query(`SELECT substr(time,1,10), blocked, egress, sensitivity, model, provider, COUNT(*)
+		FROM requests WHERE time >= ? GROUP BY 1, blocked, egress, sensitivity, model, provider`,
+		t.UTC().Format(time.RFC3339Nano))
+	if err != nil {
+		return nil
+	}
+	defer rows.Close()
+	var out []DayEgressRow
+	for rows.Next() {
+		var r DayEgressRow
+		var blocked int
+		if err := rows.Scan(&r.Day, &blocked, &r.Egress, &r.Sensitivity, &r.Model, &r.Provider, &r.Count); err != nil {
+			continue
+		}
+		r.Blocked = blocked != 0
+		out = append(out, r)
+	}
+	return out
+}
