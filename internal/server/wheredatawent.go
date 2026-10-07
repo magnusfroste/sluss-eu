@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"html/template"
 	"sort"
 
 	"github.com/magnusfroste/sluss/internal/engine"
@@ -34,9 +35,24 @@ type DataFlowView struct {
 	Blocked int           `json:"blocked"`
 	Unknown int           `json:"unknown,omitempty"`
 	Rows    []DataFlowRow `json:"rows"`
+	// Days is the last 7 UTC days, oldest first (ISSUE-123); nil without history.
+	Days []DayFlow `json:"days,omitempty"`
 	// PII is the personal-data row (zero-valued when none was seen), lifted
 	// out for the "personal data" card.
 	PII DataFlowRow `json:"pii"`
+}
+
+// FlowSVG and TimelineSVG render the dashboard charts (ISSUE-123).
+func (v DataFlowView) FlowSVG() template.HTML     { return flowSVG(v) }
+func (v DataFlowView) TimelineSVG() template.HTML { return timelineSVG(v.Days) }
+
+// DaysTotal is the number of requests in the timeline window.
+func (v DataFlowView) DaysTotal() int {
+	n := 0
+	for _, d := range v.Days {
+		n += d.Total()
+	}
+	return n
 }
 
 // Total is the number of classified requests.
