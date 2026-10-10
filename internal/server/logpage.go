@@ -30,6 +30,9 @@ type LogOptions struct {
 // logRow is a request row plus its explanation for the expandable detail.
 type logRow struct {
 	eventlog.RequestLogRecord
+	// DayBreak, when set, starts a new day group above this row ("Today",
+	// "Yesterday" or the date).
+	DayBreak string
 	// Why lists the active-policy rules that match the row's stored
 	// classification (task, risk, data class) — re-evaluated, never stored.
 	Why []policy.RuleSummary
@@ -124,11 +127,16 @@ func LogPageHandler(opts LogOptions) http.HandlerFunc {
 			}
 		}
 		view := make([]logRow, 0, len(rows))
+		lastDay := ""
 		for _, row := range rows {
 			if filter != "" && !logRowMatches(row, filter) {
 				continue
 			}
 			lr := logRow{RequestLogRecord: row}
+			if d := row.Time.Local().Format("2006-01-02"); d != lastDay {
+				lastDay = d
+				lr.DayBreak = dayLabel(row.Time, time.Now())
+			}
 			if active != nil {
 				ev := active.Evaluate(policy.EvaluationInput{TaskType: row.TaskType, RiskLevel: row.RiskLevel, Sensitivity: row.Sensitivity})
 				for _, id := range ev.MatchedRuleIDs {
@@ -231,6 +239,7 @@ const logPageHTML = `<!doctype html>
   .cls{font-family:ui-monospace,Menlo,monospace;font-size:12px;background:#111c30;border:1px solid #2a3a58;border-radius:6px;padding:1px 7px}
   tr.row-blocked td{background:rgba(239,68,68,.05)}
   tr.main{cursor:pointer}
+  tr.dayrow td{background:transparent;color:#fad100;font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:16px 9px 6px;border-bottom:1px solid #22324f}
   tr.main.open td{background:#101c34}
   tr.why td{white-space:normal;background:#0a1322;border-bottom:1px solid #22324f;padding:12px 16px 14px;font-size:13px;line-height:1.55}
   .why-head{margin-bottom:6px}.why-cls{color:#b7c4dc}
@@ -265,8 +274,9 @@ const logPageHTML = `<!doctype html>
 <th class="num">Tokens</th><th class="num">Cost</th></tr></thead>
 <tbody>
 {{range .Rows}}
+{{if .DayBreak}}<tr class="dayrow"><td colspan="8">{{.DayBreak}}</td></tr>{{end}}
 <tr class="main{{if .Blocked}} row-blocked{{end}}" onclick="tg(this)" tabindex="0" onkeydown="if(event.key==='Enter')tg(this)">
-  <td class="mono">{{clock .Time}}<div class="slug">{{day .Time}}</div></td>
+  <td class="mono">{{clock .Time}}</td>
   <td>{{.TaskType}}{{if and .Blocked .BlockCode}}<div class="slug code" title="{{.BlockCode}}">{{.BlockCode}}</div>{{end}}</td>
   <td class="{{riskClass .RiskLevel}}">{{.RiskLevel}}</td>
   <td>{{if and .Sensitivity (ne .Sensitivity "none")}}<span class="cls">{{.Sensitivity}}</span>{{else}}<span style="color:#475569">—</span>{{end}}</td>
@@ -295,3 +305,15 @@ const logPageHTML = `<!doctype html>
 function tg(r){var d=r.nextElementSibling;if(!d||!d.classList.contains('why'))return;d.hidden=!d.hidden;r.classList.toggle('open',!d.hidden);}
 </script>
 </body></html>`
+
+// dayLabel names a log day group: "Today", "Yesterday", else e.g. "Mon 5 Oct 2026".
+func dayLabel(t, now time.Time) string {
+	d := t.Local().Format("2006-01-02")
+	switch d {
+	case now.Local().Format("2006-01-02"):
+		return "Today · " + d
+	case now.Local().AddDate(0, 0, -1).Format("2006-01-02"):
+		return "Yesterday · " + d
+	}
+	return t.Local().Format("Mon 2 Jan 2006")
+}

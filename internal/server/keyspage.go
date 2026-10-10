@@ -169,6 +169,7 @@ td{padding:9px 10px;border-bottom:1px solid #17253f;font-size:.86rem}
 .tag.ok{background:#0f3323;color:#4ade80}.tag.bad{background:#3a1620;color:#f87171}
 .btn{background:#1a2a49;color:#e8eef7;border:1px solid #2c4066;border-radius:8px;padding:8px 14px;font-size:.85rem;cursor:pointer}
 .btn.del{background:#3a1620;border-color:#5b2330;color:#f8b4bc}
+.btn.primary{background:#fad100;color:#081328;border-color:#fad100;font-weight:600}.btn.primary:hover{background:#fddc5b}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
 label{display:block;font-size:.75rem;color:#8fa1bf;margin-bottom:4px}
 input{width:100%;background:#081328;border:1px solid #2c4066;border-radius:8px;color:#e8eef7;padding:8px 10px;font-size:.85rem}
@@ -220,7 +221,7 @@ input{width:100%;background:#081328;border:1px solid #2c4066;border-radius:8px;c
   {{end}}</td>
 </tr>
 {{else}}
-<tr><td colspan="9" class="empty">No keys yet — create the first one below. (The env key <span class="mono">LOCAL_API_KEY</span> remains as bootstrap.)</td></tr>
+<tr><td colspan="9" class="empty"><b style="color:#e8eef7">No department keys yet.</b><br>Create one key per department or team below — every request is then attributed to it in the log, the dashboard and the audit trail, and you can revoke one team without touching the others. The secret is shown once. (Until then the env key <span class="mono">LOCAL_API_KEY</span> works as bootstrap.)</td></tr>
 {{end}}
 </tbody>
 </table>
@@ -235,7 +236,7 @@ input{width:100%;background:#081328;border:1px solid #2c4066;border-radius:8px;c
     <div><label>Role (user/admin)</label><input name="role" placeholder="user"></div>
     <div><label>Scopes (comma-separated, empty = all)</label><input name="scopes" placeholder="chat:completions"></div>
   </div>
-  <div style="margin-top:14px"><button class="btn" type="submit">Create key</button></div>
+  <div style="margin-top:14px"><button class="btn primary" type="submit">Create key</button></div>
 </form>
 </div>
 

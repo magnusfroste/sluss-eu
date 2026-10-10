@@ -133,23 +133,24 @@ const usersHTML = `<!doctype html>
 <style>
 {{adminCSS}}
 *{box-sizing:border-box}
-body{margin:0;background:#09090b;color:#f4f4f5;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-.hd{padding:20px 26px;border-bottom:1px solid #1e1e22}
+body{margin:0;background:#081328;color:#e8eef7;font-family:"IBM Plex Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.hd{padding:20px 26px;border-bottom:1px solid #22324f}
 .hd h1{font-size:1.3rem;margin:0}
-.hd .sub{color:#8a8a92;font-size:.85rem;margin-top:4px}
+.hd .sub{color:#8fa1bf;font-size:.85rem;margin-top:4px}
 .wrap{padding:22px 30px;display:flex;flex-direction:column;gap:18px}
-.card{background:#101013;border:1px solid #1e1e22;border-radius:12px;padding:18px 20px;overflow-x:auto}
+.card{background:#101c34;border:1px solid #22324f;border-radius:12px;padding:18px 20px;overflow-x:auto}
 table{width:100%;border-collapse:collapse}
-th{text-align:left;font-size:.72rem;color:#5c5c63;text-transform:uppercase;letter-spacing:.05em;padding:8px 10px;border-bottom:1px solid #1e1e22}
-td{padding:9px 10px;border-bottom:1px solid #141417;font-size:.86rem}
-.tag{display:inline-block;padding:2px 9px;border-radius:20px;font-size:.72rem;background:#17171b;color:#b7bcc6}
+th{text-align:left;font-size:.72rem;color:#64748b;text-transform:uppercase;letter-spacing:.05em;padding:8px 10px;border-bottom:1px solid #22324f}
+td{padding:9px 10px;border-bottom:1px solid #17253f;font-size:.86rem}
+.tag{display:inline-block;padding:2px 9px;border-radius:20px;font-size:.72rem;background:#17253f;color:#b7c4dc}
 .tag.ok{background:#0f2f22;color:#4ade80}.tag.off{background:#3a1620;color:#f87171}
 .mono{font-family:ui-monospace,monospace;font-size:.82rem}
-.btn{background:#17171b;color:#f4f4f5;border:1px solid #2a2a30;border-radius:8px;padding:8px 14px;font-size:.85rem;cursor:pointer}
+.btn{background:#17253f;color:#e8eef7;border:1px solid #2c4066;border-radius:8px;padding:8px 14px;font-size:.85rem;cursor:pointer}
 .btn.del{background:#3a1620;border-color:#5b2330;color:#f8b4bc}
+.btn.primary{background:#fad100;color:#081328;border-color:#fad100;font-weight:600}.btn.primary:hover{background:#fddc5b}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
-label{display:block;font-size:.75rem;color:#8a8a92;margin-bottom:4px}
-input{width:100%;background:#09090b;border:1px solid #2a2a30;border-radius:8px;color:#f4f4f5;padding:8px 10px;font-size:.85rem}
+label{display:block;font-size:.75rem;color:#8fa1bf;margin-bottom:4px}
+input{width:100%;background:#081328;border:1px solid #2c4066;border-radius:8px;color:#e8eef7;padding:8px 10px;font-size:.85rem}
 .notice{background:#0f2f22;border:1px solid #1f6b45;color:#a7f3d0;border-radius:8px;padding:10px 14px;font-size:.85rem}
 .err{background:#3a1620;border:1px solid #7a2b39;color:#f8b4bc;border-radius:8px;padding:10px 14px;font-size:.85rem}
 </style></head>
@@ -184,7 +185,7 @@ input{width:100%;background:#09090b;border:1px solid #2a2a30;border-radius:8px;c
   </td>
 </tr>
 {{else}}
-<tr><td colspan="6" style="color:#5c5c63;text-align:center;padding:20px">No users yet — create the first one. (The break-glass env password works until then.)</td></tr>
+<tr><td colspan="6" style="color:#64748b;text-align:center;padding:20px"><b style="color:#e8eef7">No named users yet.</b><br>Create one account per person — every console action (policy changes, key creation, roster edits) is then attributed to a name in the audit trail instead of to the shared password. (The break-glass env password keeps working for emergencies.)</td></tr>
 {{end}}
 </tbody>
 </table>
@@ -198,7 +199,7 @@ input{width:100%;background:#09090b;border:1px solid #2a2a30;border-radius:8px;c
     <div><label>Role</label><input name="role" placeholder="admin" value="admin"></div>
     <div><label>Password (min 8 characters)</label><input name="password" type="password" required></div>
   </div>
-  <div style="margin-top:14px"><button class="btn" type="submit">Save user</button></div>
+  <div style="margin-top:14px"><button class="btn primary" type="submit">Save user</button></div>
 </form>
 </div>
 

@@ -30,7 +30,7 @@ func TestKeysPageEmptyState(t *testing.T) {
 		t.Fatalf("status=%d", rec.Code)
 	}
 	body := rec.Body.String()
-	if !strings.Contains(body, "No keys yet") || !strings.Contains(body, "Create key") {
+	if !strings.Contains(body, "No department keys yet") || !strings.Contains(body, "Create key") {
 		t.Fatalf("empty state / form missing:\n%s", body[:min(len(body), 400)])
 	}
 }
