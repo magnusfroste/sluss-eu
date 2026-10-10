@@ -171,6 +171,7 @@ td{padding:9px 10px;border-bottom:1px solid #17253f;font-size:.86rem;vertical-al
 .mono{font-family:ui-monospace,monospace;font-size:.82rem}
 .btn{background:#1a2a49;color:#e8eef7;border:1px solid #2c4066;border-radius:8px;padding:8px 14px;font-size:.85rem;cursor:pointer}
 .btn.del{background:#3a1620;border-color:#5b2330;color:#f8b4bc}
+.btn.primary{background:#fad100;color:#081328;border-color:#fad100;font-weight:600}.btn.primary:hover{background:#fddc5b}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
 label{display:block;font-size:.75rem;color:#8fa1bf;margin-bottom:4px}
 input,textarea{width:100%;background:#081328;border:1px solid #2c4066;border-radius:8px;color:#e8eef7;padding:8px 10px;font-size:.85rem;font-family:inherit}
@@ -196,7 +197,7 @@ input,textarea{width:100%;background:#081328;border:1px solid #2c4066;border-rad
 <div class="note" style="margin-bottom:12px">One link per recipient. Every open is counted and attributed — the audit trail and the table below show <b>who</b> has tried the demo and when. Disable a link to revoke that recipient only.</div>
 <form method="post" action="/router/demolinks" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:12px">
   <div style="flex:1;min-width:220px"><label>Label (prospect / company)</label><input name="label" placeholder="Acme AB — CISO" required></div>
-  <button class="btn" type="submit">Create link</button>
+  <button class="btn primary" type="submit">Create link</button>
 </form>
 {{if .NamedLinks}}
 <table>
@@ -269,7 +270,7 @@ input,textarea{width:100%;background:#081328;border:1px solid #2c4066;border-rad
   <div style="margin-top:12px"><label>Prompt (sent to the router)</label><textarea name="text" rows="2" placeholder="Summarise the case for customer …" required></textarea></div>
   <div style="margin-top:12px"><label>What to watch for (shown during the demo)</label><input name="note" placeholder="Personal data detected → local model"></div>
   <div style="margin-top:14px;display:flex;gap:10px">
-    <button class="btn" type="submit">Save prompt</button>
+    <button class="btn primary" type="submit">Save prompt</button>
   </div>
 </form>
 </div>

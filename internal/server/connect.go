@@ -82,24 +82,24 @@ const connectHTML = `<!doctype html>
 <meta name="robots" content="index,follow">
 {{.FaviconLinks}}
 <style>
-:root{--bg:#09090b;--panel:#101013;--line:#1e1e22;--ink:#f4f4f5;--muted:#8a8a92;--faint:#5c5c63;--accent:#3fb27f}
+:root{--bg:#081328;--panel:#101c34;--line:rgba(255,255,255,.09);--ink:#eaeff5;--muted:#9aa5b8;--faint:#6b7891;--accent:#fad100}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,"Inter","Segoe UI",Roboto,sans-serif;line-height:1.6;letter-spacing:-0.01em}
+body{margin:0;background:var(--bg);color:var(--ink);background-image:radial-gradient(60% 50% at 70% 0%,rgba(250,209,0,.08),transparent 70%);font-family:"IBM Plex Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.6;letter-spacing:-0.01em}
 .wrap{max-width:960px;margin:0 auto;padding:0 24px}
 nav{display:flex;align-items:center;justify-content:space-between;padding:22px 0;border-bottom:1px solid var(--line)}
 .brand{display:flex;align-items:center;gap:9px;font-weight:600;font-size:15px}
 nav a{color:var(--muted);text-decoration:none;font-size:14px;border:1px solid var(--line);padding:8px 15px;border-radius:8px}
 .hero{padding:56px 0 8px;max-width:720px}
-.lbl{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+.lbl{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-family:"IBM Plex Mono",ui-monospace,monospace}
 h1{font-size:2.2rem;line-height:1.1;margin:12px 0 14px;font-weight:600;letter-spacing:-0.02em}
 .sub{color:var(--muted)}
 .recipe{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:22px 0}
 .recipe h2{font-size:1rem;margin:0 0 10px}
 .kv{display:grid;grid-template-columns:110px 1fr auto;gap:8px 12px;align-items:center;font-size:.92rem}
 .kv .k{color:var(--faint);font-size:.8rem}
-code{font-family:ui-monospace,Menlo,monospace;background:#000;border:1px solid var(--line);border-radius:6px;padding:2px 7px;font-size:.86rem;color:#cfe9db}
+code{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;background:#0b1528;border:1px solid var(--line);border-radius:6px;padding:2px 7px;font-size:.86rem;color:#eaeff5}
 button.cp{background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer}
-button.cp:hover{color:var(--ink);border-color:var(--faint)}
+button.cp:hover{color:#081328;background:var(--accent);border-color:var(--accent)}
 table{width:100%;border-collapse:collapse;margin:8px 0 40px}
 th{text-align:left;font-size:.72rem;color:var(--faint);text-transform:uppercase;letter-spacing:.06em;padding:10px 10px;border-bottom:1px solid var(--line)}
 td{padding:11px 10px;border-bottom:1px solid var(--line);font-size:.9rem;vertical-align:top}
