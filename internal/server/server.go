@@ -264,6 +264,7 @@ func New(cfg Config) http.Handler {
 		AuditMemory:                cfg.AuditMemory,
 		Bandit:                     cfg.Bandit,
 		ConservativeMode:           cfg.ConservativeMode,
+		PolicyCache:                cfg.PolicyCache,
 	})
 	// Admin console gate. With a data dir (History) we use named-user sessions
 	// (login page + break-glass env password + Bearer admin), so console actions
@@ -436,6 +437,15 @@ func New(cfg Config) http.Handler {
 			Version: cfg.RegistryVersion, Roster: cfg.Roster,
 			Cache: cfg.PolicyCache, Auditor: cfg.Auditor, Reloader: cfg.RosterReloader}
 		mux.Handle("GET /router/providers", dashGuard(ProvidersPageHandler(provOpts)))
+		// Quick start (setup): live status of the four first-run steps, with
+		// one-step "add a local model" and "keep personal data local".
+		setupOpts := SetupOptions{Engine: cfg.Engine, Cache: cfg.PolicyCache, Roster: cfg.Roster,
+			Reloader: cfg.RosterReloader, History: cfg.History, Auditor: cfg.Auditor, Logger: cfg.Logger,
+			Rules: PolicyRulesOptions{Engine: cfg.Engine, Cache: cfg.PolicyCache, History: cfg.History,
+				Auditor: cfg.Auditor, BaselinePath: cfg.PolicyBaselinePath}}
+		mux.Handle("GET /router/setup", dashGuard(SetupPageHandler(setupOpts)))
+		mux.Handle("POST /router/setup/local", dashGuard(SetupLocalHandler(setupOpts)))
+		mux.Handle("POST /router/setup/protect", dashGuard(SetupProtectHandler(setupOpts)))
 		mux.Handle("GET /router/risk", dashGuard(RiskRegisterPageHandler(provOpts)))
 		if cfg.Roster != nil {
 			mux.Handle("POST /router/providers", dashGuard(ProvidersAddHandler(provOpts)))

@@ -122,8 +122,7 @@ footer a{color:var(--muted);text-decoration:none}footer a:hover{color:var(--ink)
     <h2>Getting started</h2>
     <ol>
       <li><b>Sign in</b> with the console password (<code>ROUTER_DASHBOARD_PASSWORD</code>) or an admin user.</li>
-      <li><b>Add a provider and a model</b> on Providers and Models — tag on-prem providers <code>local</code>. Changes apply immediately.</li>
-      <li><b>Pick a policy</b> — start with the NIS2 pack, then <b>dry-run</b> a prompt on Policy to see where it would go.</li>
+      <li>Open <b>Quick start</b>: add a local model, keep personal data local, and dry-run two prompts — a few minutes, live status on every step.</li>
       <li><b>Point a client</b> at this gateway with an API key — recipes on <a href="/connect">Connect</a>.</li>
     </ol>
   </section>
