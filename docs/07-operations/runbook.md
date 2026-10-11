@@ -89,3 +89,13 @@ en incident: aktivera **global conservative mode** (ISSUE-060).
 3. Kör policy tests lokalt/staging.
 4. Aktivera korrigerad policy.
 5. Logga audit event.
+
+## Deploy landade inte
+
+Symptom: `deploy`-jobbet i publish-image är rött ("does not run …"), eller
+sidfoten / `sluss_build_info` på `/metrics` visar en äldre commit än main.
+
+1. EasyPanel → tjänsten → **Stop**, sedan **Deploy**. Kontrollera sidfoten.
+2. Kör om `deploy`-jobbet i Actions när instansen är uppe igen (det är idempotent).
+3. Återkommer det: byt tjänstens källa till imagen
+   `ghcr.io/magnusfroste/sluss-eu:latest` så att EasyPanel inte bygger själv.
