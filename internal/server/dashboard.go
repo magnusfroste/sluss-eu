@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/magnusfroste/sluss/internal/policy"
 	"html/template"
 	"log/slog"
 	"net/http"
@@ -55,6 +56,7 @@ type DashboardOptions struct {
 	Engine           *engine.Engine    // provider inventory + compliance tags (egress surface)
 	AuditMemory      *audit.MemorySink // block/PII breakdowns for the audit window
 	Bandit           *bandit.Bandit    // learned best model per task class
+	PolicyCache      *policy.Cache     // for the quick-start banner (ISSUE-124)
 	ConservativeMode bool              // incident lever status
 }
 
@@ -104,6 +106,8 @@ type DashboardData struct {
 	// DataFlow leads the dashboard (ISSUE-116): where the data went, per
 	// sensitivity class, from durable history.
 	DataFlow DataFlowView `json:"data_flow"`
+	// Setup is the live quick-start state; the banner shows until complete.
+	Setup SetupStatus `json:"-"`
 	// Durable is true when totals come from SQLite history (they survive
 	// restarts), false for in-memory counters.
 	Durable bool `json:"durable"`
@@ -200,6 +204,7 @@ func buildDashboardData(opts DashboardOptions, taskFilter string) DashboardData 
 	d.DataFlow = buildDataFlow(opts.History, memLog, opts.Engine)
 	d.DataFlow.Days = buildTimeline(opts.History, opts.Engine, 7, time.Now())
 	d.Durable = opts.History != nil
+	d.Setup = SetupOptions{Engine: opts.Engine, Cache: opts.PolicyCache, History: opts.History}.status()
 	return d
 }
 
@@ -393,6 +398,8 @@ section{margin-bottom:2.5rem}
 .dot-ok{background:#22c55e}.dot-warn{background:#f59e0b}.dot-bad{background:#ef4444}
 .mono{font-family:ui-monospace,monospace;font-size:0.82rem}
 .num{text-align:right;font-variant-numeric:tabular-nums}
+.setupban{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:-1rem 0 1.5rem;padding:12px 16px;border:1px solid #7a5a1f;background:rgba(250,209,0,.07);border-radius:10px;color:#e8eef7;text-decoration:none;font-size:.9rem}
+.setupban b{color:#fad100}.setupban span{margin-left:auto;color:#fad100;font-weight:600}
 th.num{text-align:right}
 .ev-links{display:flex;flex-wrap:wrap;gap:6px 14px;margin:6px 0 4px}
 .ev-links a{color:#7fd3ff;text-decoration:none;font-weight:600;font-size:0.92rem;border-bottom:1px solid rgba(127,211,255,.3)}
@@ -424,6 +431,7 @@ details.adv[open]>summary{margin-bottom:1.25rem}
 <div class="tk-main" style="padding:2rem 2rem 3rem">
 <h1>Dashboard</h1>
 <p class="subtitle">Where your AI data went, what the gate stopped, and what routing saved — live.</p>
+{{if not .Setup.Complete}}<a class="setupban" href="/router/setup"><b>Finish setting up</b> — {{.Setup.Done}} of 4 steps done: a cloud model, a local model, keep personal data local, try it. <span>Quick start →</span></a>{{end}}
 
 {{with .DataFlow}}
 <div class="grid" style="margin-bottom:1rem">
