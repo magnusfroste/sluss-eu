@@ -48,6 +48,9 @@ COPY --from=build /out/router /usr/local/bin/router
 
 USER app
 ENV ROUTER_ADDR=:8080
+# Durable store (SQLite: keys, roster, history, audit chain) on the /data
+# volume by default, so a plain `docker run -v sluss-data:/data` persists.
+ENV ROUTER_DATA_DIR=/data
 EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \

@@ -1,5 +1,6 @@
 #
-# docker-compose.yml — tokenizer router on EasyPanel (or any compose host).
+# docker-compose.yml — Sluss on EasyPanel or any Docker host.
+# Step-by-step guide: docs/07-operations/self-host-docker.md
 #
 # Single container, no database required. Paste real values into the service's
 # env field in EasyPanel; the ${VAR:-default} substitution fills them in (see
@@ -8,15 +9,16 @@
 #
 # Two ways to get the image:
 #   - build from this repo (default below), or
-#   - pull a published image (uncomment `image:` + comment out `build:`) once the
-#     publish workflow has pushed ghcr.io/magnusfroste/sluss.
+#   - pull the published image (uncomment `image:` + comment out `build:`):
+#     ghcr.io/magnusfroste/sluss-eu, public, pushed on every merge to main.
+#     Pin a tag (sha-<short> or v<semver>) in production instead of latest.
 #
 services:
   router:
     build:
       context: ..
       dockerfile: Dockerfile
-    # image: ghcr.io/magnusfroste/sluss:${IMAGE_TAG:-latest}
+    # image: ghcr.io/magnusfroste/sluss-eu:${IMAGE_TAG:-latest}
     # pull_policy: ${PULL_POLICY:-always}
     restart: unless-stopped
     ports:
@@ -26,6 +28,7 @@ services:
       # A NAMED volume, not a relative bind mount: on Git-driven PaaS (EasyPanel)
       # the checkout directory is wiped on every redeploy, so `./data` would
       # silently lose the data. Named volumes are owned by Docker and survive.
+      # (The volume keeps its original name so existing installs keep their data.)
       - tokenizer-data:/data
     environment:
       - ROUTER_ADDR=:8080
@@ -33,6 +36,13 @@ services:
       # --- Auth: clients send this as `Authorization: Bearer ...`. REQUIRED —
       #     use a strong secret (openssl rand -hex 24), never the dev default. ---
       - LOCAL_API_KEY=${LOCAL_API_KEY:?set a strong LOCAL_API_KEY}
+      # --- Named admin for the console, seeded once when no user exists. ---
+      - ROUTER_ADMIN_USER=${ROUTER_ADMIN_USER:-}
+      - ROUTER_ADMIN_PASSWORD=${ROUTER_ADMIN_PASSWORD:-}
+      # --- Compliance pack, e.g. builtin:nis2-baseline (empty = default policy). ---
+      - ROUTER_POLICY_PATH=${ROUTER_POLICY_PATH:-}
+      # --- Public base URL (https://sluss.example.eu) for shareable links. ---
+      - ROUTER_PUBLIC_URL=${ROUTER_PUBLIC_URL:-}
       # --- Provider: set OPENROUTER_API_KEY for a real provider; omit → mock. ---
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
       - OPENROUTER_REFERER=${OPENROUTER_REFERER:-}
