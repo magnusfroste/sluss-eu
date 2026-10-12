@@ -59,3 +59,72 @@ jobs:
             BUILD_TIME=${{ steps.when.outputs.ts }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  # Auto-deploy (ISSUE-125): after a push to main, trigger the EasyPanel deploy
+  # webhook and then wait until the instance reports the new commit on
+  # /metrics (sluss_build_info). EasyPanel has silently kept the old container
+  # on some deploys, so one retry is made before the job fails.
+  #
+  # Configure in GitHub → Settings → Secrets and variables → Actions:
+  #   secret   EASYPANEL_DEPLOY_WEBHOOK  the service's deploy-webhook URL
+  #   variable SLUSS_DEPLOY_URL          e.g. https://demo.sluss.eu (optional;
+  #                                      without it the deploy is not verified)
+  # Without the secret the job is skipped with a notice, so forks stay green.
+  deploy:
+    needs: build-push
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: deploy-main
+      cancel-in-progress: true
+    env:
+      WEBHOOK: ${{ secrets.EASYPANEL_DEPLOY_WEBHOOK }}
+      DEPLOY_URL: ${{ vars.SLUSS_DEPLOY_URL }}
+      WANT: ${{ github.sha }}
+    steps:
+      - name: Deploy and verify
+        run: |
+          set -u
+          if [ -z "$WEBHOOK" ]; then
+            echo "::notice::EASYPANEL_DEPLOY_WEBHOOK is not set; skipping auto-deploy."
+            exit 0
+          fi
+
+          trigger() {
+            # The URL carries a token: never echo it, and keep curl quiet.
+            code=$(curl -sS -o /dev/null -w '%{http_code}' -X POST --max-time 30 "$WEBHOOK" || echo 000)
+            echo "deploy webhook answered HTTP $code"
+            case "$code" in 2*) return 0 ;; *) return 1 ;; esac
+          }
+
+          running() {
+            curl -sS --max-time 10 "${DEPLOY_URL%/}/metrics" 2>/dev/null \
+              | sed -n 's/^sluss_build_info{.*commit="\([0-9a-f]*\)".*/\1/p'
+          }
+
+          wait_for_build() {
+            # Up to 12 minutes: EasyPanel builds the image itself.
+            for _ in $(seq 1 48); do
+              got=$(running)
+              if [ "$got" = "$WANT" ]; then
+                echo "instance runs ${WANT:0:7}"
+                return 0
+              fi
+              sleep 15
+            done
+            echo "instance still runs ${got:-unknown}"
+            return 1
+          }
+
+          trigger || { sleep 10; trigger; } || { echo "::error::deploy webhook failed"; exit 1; }
+
+          if [ -z "$DEPLOY_URL" ]; then
+            echo "::notice::SLUSS_DEPLOY_URL is not set; deploy triggered but not verified."
+            exit 0
+          fi
+
+          wait_for_build && exit 0
+          echo "::warning::deploy did not land; triggering once more"
+          trigger && wait_for_build && exit 0
+          echo "::error::${DEPLOY_URL} does not run ${WANT:0:7} — check EasyPanel (Stop, then Deploy)."
+          exit 1
