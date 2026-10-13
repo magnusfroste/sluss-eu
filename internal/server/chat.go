@@ -206,7 +206,7 @@ func ChatCompletionsHandler(p provider.Adapter, opts ...ChatOptions) http.Handle
 			}
 
 			// Always enqueue a decision event (blocked or not).
-			cfg.enqueueDecision(job, dec, shadowComparison, routingDur, decErr, arm)
+			cfg.enqueueDecision(job, dec, shadowComparison, routingDur, decErr, arm, AdminUserFromContext(r.Context()))
 
 			if decErr != nil {
 				if errors.Is(decErr, engine.ErrBlocked) {
@@ -839,7 +839,7 @@ func (o *ChatOptions) healthSnapshot() engine.HealthSnapshot {
 }
 
 // enqueueDecision enqueues a DecisionEvent if a queue is configured.
-func (o *ChatOptions) enqueueDecision(job *router.JobDescriptor, dec engine.RouteDecision, shadowComparison *engine.DecisionComparison, routingDur time.Duration, decErr error, arm experiment.Arm) {
+func (o *ChatOptions) enqueueDecision(job *router.JobDescriptor, dec engine.RouteDecision, shadowComparison *engine.DecisionComparison, routingDur time.Duration, decErr error, arm experiment.Arm, actor string) {
 	if o.EventQueue == nil {
 		return
 	}
@@ -863,6 +863,7 @@ func (o *ChatOptions) enqueueDecision(job *router.JobDescriptor, dec engine.Rout
 		ShadowComparison:      shadowComparison,
 		Egress:                o.decisionEgress(dec),
 		ExperimentArm:         string(arm),
+		Actor:                 actor,
 		DecidedAt:             time.Now(),
 	}
 	o.EventQueue.Enqueue(eventlog.Event{Type: eventlog.EventTypeDecision, Decision: d})

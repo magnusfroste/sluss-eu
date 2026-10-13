@@ -26,6 +26,10 @@ type RequestLogRecord struct {
 	Blocked         bool      `json:"blocked,omitempty"`
 	BlockCode       string    `json:"block_code,omitempty"`
 	Egress          string    `json:"egress,omitempty"` // "local" | "cloud" | "" (blocked/unknown)
+	// TenantID is the department (API key tenant, or the SSO department for
+	// chat); Actor the signed-in person behind a chat request (ISSUE-130).
+	TenantID string `json:"tenant_id,omitempty"`
+	Actor    string `json:"actor,omitempty"`
 }
 
 // RequestLogTracker keeps a bounded in-memory ring of recent request records. A

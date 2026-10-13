@@ -22,6 +22,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/magnusfroste/sluss/internal/audit"
 	"github.com/magnusfroste/sluss/internal/auth"
 	"github.com/magnusfroste/sluss/internal/history"
 )
@@ -38,6 +39,10 @@ const (
 	// never an admin page.
 	roleAdmin = "admin"
 	roleDemo  = "demo"
+	// roleUser is an identified employee signed in through the company IdP
+	// (ISSUE-130): chat only, attributed by name and department, never the
+	// admin console.
+	roleUser = "user"
 )
 
 // --- password KDF (PBKDF2-HMAC-SHA256, stdlib) ---------------------------------
@@ -113,6 +118,7 @@ func pbkdf2SHA256(password, salt []byte, iter, keyLen int) []byte {
 type session struct {
 	user    string
 	role    string
+	dept    string // department (tenant) for identified users; "" otherwise
 	expires time.Time
 }
 
@@ -141,14 +147,14 @@ func NewSessionStore(p SessionPersister) *SessionStore {
 	if p != nil {
 		if rows, err := p.ActiveSessions(); err == nil {
 			for _, r := range rows {
-				s.m[r.ID] = session{user: r.Username, role: r.Role, expires: r.ExpiresAt}
+				s.m[r.ID] = session{user: r.Username, role: r.Role, dept: r.Department, expires: r.ExpiresAt}
 			}
 		}
 	}
 	return s
 }
 
-func (s *SessionStore) create(user, role string) (string, error) {
+func (s *SessionStore) create(user, role, dept string) (string, error) {
 	tok := make([]byte, 24)
 	if _, err := rand.Read(tok); err != nil {
 		return "", err
@@ -156,11 +162,11 @@ func (s *SessionStore) create(user, role string) (string, error) {
 	id := base64.RawURLEncoding.EncodeToString(tok)
 	exp := time.Now().Add(sessionTTL)
 	s.mu.Lock()
-	s.m[id] = session{user: user, role: role, expires: exp}
+	s.m[id] = session{user: user, role: role, dept: dept, expires: exp}
 	store := s.store
 	s.mu.Unlock()
 	if store != nil {
-		if err := store.InsertSession(history.Session{ID: id, Username: user, Role: role, ExpiresAt: exp}); err != nil {
+		if err := store.InsertSession(history.Session{ID: id, Username: user, Role: role, ExpiresAt: exp, Department: dept}); err != nil {
 			return "", err
 		}
 	}
@@ -201,9 +207,23 @@ func (s *SessionStore) delete(id string) {
 
 type ctxKeyAdminUser struct{}
 type ctxKeyRole struct{}
+type ctxKeyDepartment struct{}
 
 func withAdminUser(ctx context.Context, user string) context.Context {
 	return context.WithValue(ctx, ctxKeyAdminUser{}, user)
+}
+
+func withDepartment(ctx context.Context, dept string) context.Context {
+	return context.WithValue(ctx, ctxKeyDepartment{}, dept)
+}
+
+// DepartmentFromContext returns the department (tenant) an identified user's
+// traffic is attributed to, or "" for password, demo and API sessions.
+func DepartmentFromContext(ctx context.Context) string {
+	if v, ok := ctx.Value(ctxKeyDepartment{}).(string); ok {
+		return v
+	}
+	return ""
 }
 
 func withRole(ctx context.Context, role string) context.Context {
@@ -229,8 +249,8 @@ func RoleFromContext(ctx context.Context) string {
 }
 
 // grant serves next with both the user and role attached to the context.
-func grant(next http.HandlerFunc, w http.ResponseWriter, r *http.Request, user, role string) {
-	ctx := withRole(withAdminUser(r.Context(), user), role)
+func grant(next http.HandlerFunc, w http.ResponseWriter, r *http.Request, user, role, dept string) {
+	ctx := withDepartment(withRole(withAdminUser(r.Context(), user), role), dept)
 	next.ServeHTTP(w, r.WithContext(ctx))
 }
 
@@ -259,7 +279,22 @@ type AdminAuth struct {
 	Store      *history.Store // user accounts; nil disables named users
 	BreakGlass string         // env dashboard password; "" disables break-glass
 	KeyStore   auth.KeyStore  // for programmatic Bearer admin access (API clients)
+	Auditor    audit.Sink     // console logins are evidence; nil = not recorded
+	// SSO, when set, puts a "Sign in with <Label>" button on the login page that
+	// starts the OIDC flow at StartPath (ISSUE-130).
+	SSO *SSOButton
 }
+
+// SSOButton describes the identity-provider login offered on the login page.
+type SSOButton struct {
+	Label     string // e.g. "Microsoft Entra ID", "Okta", or the company name
+	StartPath string // e.g. /router/oidc/start
+}
+
+// ActionConsoleLogin records a person signing in to the console or the chat:
+// who, how (password, break-glass, oidc) and, for SSO, which department they
+// were mapped to. Evidence that the identified-user trail starts somewhere.
+const ActionConsoleLogin = audit.Action("console.login")
 
 // Require wraps a handler so only an authenticated admin reaches it. Order:
 // valid session cookie → serve (user in context); valid Bearer admin key →
@@ -270,8 +305,9 @@ func (a *AdminAuth) Require(next http.HandlerFunc) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if c, err := r.Cookie(sessionCookie); err == nil {
 			if s, ok := a.Sessions.get(c.Value); ok {
-				if s.role == roleDemo {
-					// Demo guests belong in the demo, not the admin console.
+				if s.role == roleDemo || s.role == roleUser {
+					// Demo guests and identified employees belong in the chat,
+					// not the admin console.
 					if r.Method == http.MethodGet {
 						http.Redirect(w, r, "/chat", http.StatusFound)
 						return
@@ -279,12 +315,12 @@ func (a *AdminAuth) Require(next http.HandlerFunc) http.Handler {
 					http.Error(w, "forbidden", http.StatusForbidden)
 					return
 				}
-				grant(next, w, r, s.user, s.role)
+				grant(next, w, r, s.user, s.role, s.dept)
 				return
 			}
 		}
 		if a.bearerAdmin(r) {
-			grant(next, w, r, "api", "api")
+			grant(next, w, r, "api", "api", "")
 			return
 		}
 		if r.Method == http.MethodGet {
@@ -303,12 +339,12 @@ func (a *AdminAuth) RequireDemo(next http.HandlerFunc) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if c, err := r.Cookie(sessionCookie); err == nil {
 			if s, ok := a.Sessions.get(c.Value); ok {
-				grant(next, w, r, s.user, s.role)
+				grant(next, w, r, s.user, s.role, s.dept)
 				return
 			}
 		}
 		if a.bearerAdmin(r) {
-			grant(next, w, r, "api", "api")
+			grant(next, w, r, "api", "api", "")
 			return
 		}
 		if r.Method == http.MethodGet {
@@ -319,10 +355,10 @@ func (a *AdminAuth) RequireDemo(next http.HandlerFunc) http.Handler {
 	})
 }
 
-// issueSession creates a session and sets the cookie. Shared by password login
-// and the shareable demo link.
-func (a *AdminAuth) issueSession(w http.ResponseWriter, r *http.Request, user, role string) error {
-	id, err := a.Sessions.create(user, role)
+// issueSession creates a session and sets the cookie. Shared by password login,
+// the shareable demo link and SSO. dept is "" except for identified users.
+func (a *AdminAuth) issueSession(w http.ResponseWriter, r *http.Request, user, role, dept string) error {
+	id, err := a.Sessions.create(user, role, dept)
 	if err != nil {
 		return err
 	}
@@ -395,21 +431,25 @@ func (a *AdminAuth) LoginHandler() http.HandlerFunc {
 			pass := r.FormValue("password")
 			role, ok := a.authenticate(user, pass)
 			if !ok {
-				renderLogin(w, next, "Wrong username or password.")
+				a.renderLogin(w, next, "Wrong username or password.")
 				return
 			}
-			actor := user
+			actor, method := user, "password"
 			if a.Store == nil || func() bool { _, found, _ := a.Store.GetAdminUser(user); return !found }() {
 				actor = user + " (" + breakGlassActor + ")"
+				method = breakGlassActor
 			}
-			if err := a.issueSession(w, r, actor, role); err != nil {
-				renderLogin(w, next, "Could not create a session.")
+			if err := a.issueSession(w, r, actor, role, ""); err != nil {
+				a.renderLogin(w, next, "Could not create a session.")
 				return
 			}
+			audit.Record(r.Context(), a.Auditor, audit.Entry{
+				Action: ActionConsoleLogin, Actor: actor, Detail: map[string]string{"method": method, "role": role},
+			})
 			http.Redirect(w, r, next, http.StatusSeeOther)
 			return
 		}
-		renderLogin(w, next, "")
+		a.renderLogin(w, next, "")
 	}
 }
 
@@ -424,15 +464,22 @@ func (a *AdminAuth) LogoutHandler() http.HandlerFunc {
 	}
 }
 
-func renderLogin(w http.ResponseWriter, next, errMsg string) {
+func (a *AdminAuth) renderLogin(w http.ResponseWriter, next, errMsg string) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	var errHTML string
+	var errHTML, ssoHTML, sub string
 	if errMsg != "" {
 		errHTML = `<div class="err">` + template_htmlEscape(errMsg) + `</div>`
+	}
+	sub = "Named accounts, or the break-glass password."
+	if a.SSO != nil && a.SSO.StartPath != "" {
+		ssoHTML = `<a class="sso" href="` + template_htmlEscape(a.SSO.StartPath) + `?next=` + template_htmlEscape(urlQueryEscape(next)) + `">Sign in with ` + template_htmlEscape(a.SSO.Label) + `</a><div class="or">or, for operators</div>`
+		sub = "Employees sign in with the company account. Local accounts are for operators and break-glass."
 	}
 	_, _ = w.Write([]byte(strings.NewReplacer(
 		"{{NEXT}}", template_htmlEscape(next),
 		"{{ERR}}", errHTML,
+		"{{SSO}}", ssoHTML,
+		"{{SUB}}", sub,
 		"{{FAVICON}}", faviconLinks,
 		"{{LOGO}}", brandLogoSVG,
 	).Replace(loginHTML)))
@@ -463,16 +510,20 @@ input:focus{outline:none;border-color:var(--accent)}
 button{width:100%;margin-top:20px;background:var(--accent);color:#081328;border:0;border-radius:6px;padding:11px;font-weight:600;font-size:14px;cursor:pointer}
 .err{background:#3a1620;border:1px solid #7a2b39;color:#f8b4bc;border-radius:8px;padding:9px 12px;font-size:13px;margin-bottom:6px}
 .sub{color:#6b7891;font-size:12px;margin-top:16px;text-align:center}
+.sso{display:block;text-align:center;background:var(--accent);color:#081328;text-decoration:none;border-radius:6px;padding:11px;font-weight:600;font-size:14px;margin-bottom:6px}
+.sso:hover{filter:brightness(1.06)}
+.or{color:#6b7891;font-size:11.5px;text-align:center;margin:14px 0 2px;letter-spacing:.03em;text-transform:uppercase}
 </style></head>
 <body>
 <form class="box" method="post" action="/router/login?next={{NEXT}}">
   <div class="brand">{{LOGO}} Sluss</div>
   {{ERR}}
+  {{SSO}}
   <label>Username</label>
   <input name="username" autocomplete="username" autofocus>
   <label>Password</label>
   <input name="password" type="password" autocomplete="current-password">
   <button type="submit">Sign in</button>
-  <div class="sub">Named accounts, or the break-glass password.</div>
+  <div class="sub">{{SUB}}</div>
 </form>
 </body></html>`

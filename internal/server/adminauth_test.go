@@ -135,7 +135,7 @@ func TestSessionSurvivesRestart(t *testing.T) {
 		t.Fatalf("open 1: %v", err)
 	}
 	store1 := NewSessionStore(s1)
-	id, err := store1.create("magnus", "admin")
+	id, err := store1.create("magnus", "admin", "")
 	if err != nil {
 		t.Fatalf("create: %v", err)
 	}

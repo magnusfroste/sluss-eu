@@ -55,6 +55,11 @@ Now watch the signature moment — the same client, two prompts, two destination
 local or cloud, and why — without calling any provider. The same dry-run is in
 the admin console and as the MCP tool `route_explain`.
 
+Employees sign in with the company account (OpenID Connect against Entra ID,
+Okta, Google or Keycloak — Sluss keeps no accounts of its own); every chat
+request is then logged under the person and their department. See the
+self-host guide.
+
 Then open **http://localhost:8080** — a short home page with **Sign in** and
 getting-started steps, `/connect` (per-client recipes), and the admin console
 (log in with `ROUTER_DASHBOARD_PASSWORD` if set). Product information lives on

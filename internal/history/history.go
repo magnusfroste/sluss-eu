@@ -43,7 +43,8 @@ CREATE TABLE IF NOT EXISTS requests (
 	blocked INTEGER NOT NULL DEFAULT 0,
 	sensitivity TEXT NOT NULL DEFAULT '',
 	block_code TEXT NOT NULL DEFAULT '',
-	egress TEXT NOT NULL DEFAULT ''
+	egress TEXT NOT NULL DEFAULT '',
+	actor TEXT NOT NULL DEFAULT ''
 );
 CREATE INDEX IF NOT EXISTS idx_requests_time ON requests(time);
 CREATE INDEX IF NOT EXISTS idx_requests_request_id ON requests(request_id);
@@ -101,7 +102,8 @@ CREATE TABLE IF NOT EXISTS sessions (
 	id TEXT PRIMARY KEY,
 	username TEXT NOT NULL DEFAULT '',
 	role TEXT NOT NULL DEFAULT '',
-	expires_at TEXT NOT NULL DEFAULT ''
+	expires_at TEXT NOT NULL DEFAULT '',
+	department TEXT NOT NULL DEFAULT ''
 );
 `
 
@@ -120,6 +122,11 @@ var migrations = []string{
 	// Where the data went (ISSUE-116): "local" | "cloud" per request, recorded
 	// at decision time and corrected by the answering attempt.
 	`ALTER TABLE requests ADD COLUMN egress TEXT NOT NULL DEFAULT ''`,
+	// SSO sessions (ISSUE-130): the department an identified user's chat is
+	// attributed to.
+	`ALTER TABLE sessions ADD COLUMN department TEXT NOT NULL DEFAULT ''`,
+	// The signed-in person behind a chat request (ISSUE-130); "" for API keys.
+	`ALTER TABLE requests ADD COLUMN actor TEXT NOT NULL DEFAULT ''`,
 }
 
 // Store is a SQLite-backed request history. It implements eventlog.Handler:
@@ -198,11 +205,11 @@ func (s *Store) insertDecision(d *eventlog.DecisionEvent) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	_, _ = s.db.Exec(`INSERT INTO requests
-		(time, request_id, tenant_id, task_type, risk_level, model, provider_model_id, provider, input_tokens, cost_usd, blocked, sensitivity, block_code, egress)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		(time, request_id, tenant_id, task_type, risk_level, model, provider_model_id, provider, input_tokens, cost_usd, blocked, sensitivity, block_code, egress, actor)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		at.UTC().Format(time.RFC3339Nano), d.RequestID, d.TenantID, d.TaskType, d.RiskLevel,
 		d.SelectedModel, d.ProviderModelID, d.SelectedProvider, d.PromptTokens, d.EstimatedCostUSD, boolToInt(d.Blocked),
-		d.Sensitivity, d.BlockCode, d.Egress)
+		d.Sensitivity, d.BlockCode, d.Egress, d.Actor)
 }
 
 func (s *Store) fillAttempt(a *eventlog.AttemptEvent) {
@@ -241,7 +248,7 @@ func (s *Store) Recent(n int) []eventlog.RequestLogRecord {
 		n = 100
 	}
 	rows, err := s.db.Query(`SELECT time, request_id, task_type, risk_level, model, provider_model_id, provider,
-			input_tokens, output_tokens, cost_usd, blocked, sensitivity, block_code, egress
+			input_tokens, output_tokens, cost_usd, blocked, sensitivity, block_code, egress, tenant_id, actor
 		FROM requests ORDER BY id DESC LIMIT ?`, n)
 	if err != nil {
 		return nil
@@ -257,7 +264,7 @@ func scanRequestRows(rows *sql.Rows) []eventlog.RequestLogRecord {
 		var ts string
 		var blocked int
 		if err := rows.Scan(&ts, &r.RequestID, &r.TaskType, &r.RiskLevel, &r.Model, &r.ProviderModelID, &r.Provider,
-			&r.InputTokens, &r.OutputTokens, &r.CostUSD, &blocked, &r.Sensitivity, &r.BlockCode, &r.Egress); err != nil {
+			&r.InputTokens, &r.OutputTokens, &r.CostUSD, &blocked, &r.Sensitivity, &r.BlockCode, &r.Egress, &r.TenantID, &r.Actor); err != nil {
 			continue
 		}
 		r.Time, _ = time.Parse(time.RFC3339Nano, ts)
@@ -294,7 +301,7 @@ func (s *Store) Since(t time.Time, limit int) []eventlog.RequestLogRecord {
 		limit = 10_000
 	}
 	rows, err := s.db.Query(`SELECT time, request_id, task_type, risk_level, model, provider_model_id, provider,
-			input_tokens, output_tokens, cost_usd, blocked, sensitivity, block_code, egress
+			input_tokens, output_tokens, cost_usd, blocked, sensitivity, block_code, egress, tenant_id, actor
 		FROM requests WHERE time >= ? ORDER BY id DESC LIMIT ?`,
 		t.UTC().Format(time.RFC3339Nano), limit)
 	if err != nil {
@@ -315,10 +322,10 @@ func (s *Store) ByRequestID(id string) (eventlog.RequestLogRecord, bool) {
 	var ts string
 	var blocked int
 	err := s.db.QueryRow(`SELECT time, request_id, task_type, risk_level, model, provider_model_id, provider,
-			input_tokens, output_tokens, cost_usd, blocked, sensitivity, block_code, egress
+			input_tokens, output_tokens, cost_usd, blocked, sensitivity, block_code, egress, tenant_id, actor
 		FROM requests WHERE request_id = ? ORDER BY id DESC LIMIT 1`, id).Scan(
 		&ts, &r.RequestID, &r.TaskType, &r.RiskLevel, &r.Model, &r.ProviderModelID, &r.Provider,
-		&r.InputTokens, &r.OutputTokens, &r.CostUSD, &blocked, &r.Sensitivity, &r.BlockCode, &r.Egress)
+		&r.InputTokens, &r.OutputTokens, &r.CostUSD, &blocked, &r.Sensitivity, &r.BlockCode, &r.Egress, &r.TenantID, &r.Actor)
 	if err != nil {
 		return eventlog.RequestLogRecord{}, false
 	}
