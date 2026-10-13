@@ -594,6 +594,7 @@ func main() {
 		KeyManager:                 keyManager,
 		Profile:                    strings.TrimSpace(os.Getenv("ROUTER_PROFILE")),
 		PublicURL:                  strings.TrimSpace(os.Getenv("ROUTER_PUBLIC_URL")),
+		OIDC:                       oidcFromEnv(),
 	})
 	// Named-user console (accountability): seed an initial admin from env when
 	// the user table is empty. The env dashboard password remains break-glass.
@@ -840,4 +841,25 @@ func parseFloatEnv(s string, fallback float64) float64 {
 		return v
 	}
 	return fallback
+}
+
+// oidcFromEnv reads the company-account sign-in (ISSUE-130). Nil unless
+// ROUTER_OIDC_ISSUER and ROUTER_OIDC_CLIENT_ID are both set.
+func oidcFromEnv() *server.OIDCConfig {
+	c := &server.OIDCConfig{
+		Issuer:            strings.TrimSpace(os.Getenv("ROUTER_OIDC_ISSUER")),
+		ClientID:          strings.TrimSpace(os.Getenv("ROUTER_OIDC_CLIENT_ID")),
+		ClientSecret:      strings.TrimSpace(os.Getenv("ROUTER_OIDC_CLIENT_SECRET")),
+		Scopes:            strings.TrimSpace(os.Getenv("ROUTER_OIDC_SCOPES")),
+		GroupsClaim:       strings.TrimSpace(os.Getenv("ROUTER_OIDC_GROUPS_CLAIM")),
+		AdminGroups:       server.SplitList(os.Getenv("ROUTER_OIDC_ADMIN_GROUPS")),
+		Departments:       server.ParseDepartmentMap(os.Getenv("ROUTER_OIDC_DEPARTMENTS")),
+		DefaultDepartment: strings.TrimSpace(os.Getenv("ROUTER_OIDC_DEFAULT_DEPARTMENT")),
+		AllowedDomains:    server.SplitList(os.Getenv("ROUTER_OIDC_ALLOWED_DOMAINS")),
+		Label:             strings.TrimSpace(os.Getenv("ROUTER_OIDC_LABEL")),
+	}
+	if !c.Enabled() {
+		return nil
+	}
+	return c
 }

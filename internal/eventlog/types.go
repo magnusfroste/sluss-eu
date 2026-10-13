@@ -48,7 +48,10 @@ type DecisionEvent struct {
 	BlockCode             string
 	// Egress is where the selected model sits: "local" (a local/on-prem tag)
 	// or "cloud" (ISSUE-116). Empty when blocked or unknown.
-	Egress           string
+	Egress string
+	// Actor is the signed-in person behind a chat request (ISSUE-130: SSO
+	// email), "" for API traffic, which is attributed by key and tenant.
+	Actor            string
 	ShadowComparison *engine.DecisionComparison
 	// ExperimentArm is the live A/B arm ("control"/"treatment") this request was
 	// bucketed into, or "" when no experiment is running. Lets outcomes be sliced

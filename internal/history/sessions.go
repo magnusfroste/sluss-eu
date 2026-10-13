@@ -24,6 +24,9 @@ type Session struct {
 	Username  string
 	Role      string
 	ExpiresAt time.Time
+	// Department is the tenant an identified (SSO) user's chat traffic is
+	// attributed to (ISSUE-130). Empty for password and demo sessions.
+	Department string
 }
 
 // InsertSession persists a new session (write-through from the cache).
@@ -33,9 +36,9 @@ func (s *Store) InsertSession(sess Session) error {
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	_, err := s.db.Exec(`INSERT OR REPLACE INTO sessions (id, username, role, expires_at)
-		VALUES (?, ?, ?, ?)`,
-		sess.ID, sess.Username, sess.Role, sess.ExpiresAt.UTC().Format(time.RFC3339))
+	_, err := s.db.Exec(`INSERT OR REPLACE INTO sessions (id, username, role, expires_at, department)
+		VALUES (?, ?, ?, ?, ?)`,
+		sess.ID, sess.Username, sess.Role, sess.ExpiresAt.UTC().Format(time.RFC3339), sess.Department)
 	return err
 }
 
@@ -62,7 +65,7 @@ func (s *Store) ActiveSessions() ([]Session, error) {
 	if _, err := s.db.Exec(`DELETE FROM sessions WHERE expires_at <> '' AND expires_at < ?`, nowUTC); err != nil {
 		return nil, err
 	}
-	rows, err := s.db.Query(`SELECT id, username, role, expires_at FROM sessions`)
+	rows, err := s.db.Query(`SELECT id, username, role, expires_at, department FROM sessions`)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +74,7 @@ func (s *Store) ActiveSessions() ([]Session, error) {
 	for rows.Next() {
 		var sess Session
 		var exp string
-		if err := rows.Scan(&sess.ID, &sess.Username, &sess.Role, &exp); err != nil {
+		if err := rows.Scan(&sess.ID, &sess.Username, &sess.Role, &exp, &sess.Department); err != nil {
 			return nil, err
 		}
 		sess.ExpiresAt = parseSessionTime(exp)

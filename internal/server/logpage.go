@@ -288,6 +288,7 @@ const logPageHTML = `<!doctype html>
 <tr class="why" hidden><td colspan="8">
   <div class="why-head">{{if .Blocked}}<span class="eg eg-blocked">blocked</span> fail-closed — <span class="mono">{{.BlockCode}}</span>. No provider was called.{{else if eq .Egress "local"}}<span class="eg eg-local">local</span> Sent to <b>{{.Model}}</b> on {{.Provider}}, a local/on-prem model — the data stayed in the house.{{else if eq .Egress "cloud"}}<span class="eg eg-cloud">cloud</span> Sent to <b>{{.Model}}</b> on {{.Provider}} — no rule required a local model for this classification.{{else}}Destination unknown — an older row whose model and provider were removed.{{end}}</div>
   <div class="why-cls">Classified (deterministic rules, no LLM): task <b>{{.TaskType}}</b> · risk <b>{{.RiskLevel}}</b> · data class <b>{{if .Sensitivity}}{{.Sensitivity}}{{else}}none{{end}}</b> · request <span class="mono">{{.RequestID}}</span></div>
+  {{if .Actor}}<div class="why-cls">Asked by <b>{{.Actor}}</b>{{if .TenantID}} · department <b>{{.TenantID}}</b>{{end}} (signed in with the company account)</div>{{else if .TenantID}}<div class="why-cls">Department <b>{{.TenantID}}</b> (API key)</div>{{end}}
   {{if .Why}}<div class="why-rules">Rules in the current policy that match this classification:
     <ol>{{range .Why}}<li><span class="w">{{.When}}</span> → <b class="k-{{.Kind}}">{{.Then}}</b> <span class="mono rid">{{.ID}}</span></li>{{end}}</ol>
   </div>{{end}}

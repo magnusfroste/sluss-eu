@@ -25,7 +25,7 @@ func DemoSessionsHandlers(h *history.Store) (get, put http.HandlerFunc) {
 			w.WriteHeader(http.StatusNoContent)
 			return
 		}
-		v, ok := h.KVGet(demoSessionsKey)
+		v, ok := h.KVGet(chatSessionsKey(r))
 		if !ok {
 			_, _ = w.Write([]byte("[]"))
 			return
@@ -42,7 +42,7 @@ func DemoSessionsHandlers(h *history.Store) (get, put http.HandlerFunc) {
 			http.Error(w, "read error", http.StatusBadRequest)
 			return
 		}
-		if err := h.KVSet(demoSessionsKey, string(body)); err != nil {
+		if err := h.KVSet(chatSessionsKey(r), string(body)); err != nil {
 			http.Error(w, "save error", http.StatusInternalServerError)
 			return
 		}
@@ -61,15 +61,37 @@ var demoTenant = &tenant.Tenant{
 	Scopes:  auth.AllScopes(),
 }
 
-// demoTenantInjector adapts the demo chat endpoint to the standard chat handler:
-// it injects the demo tenant into the request context (the chat handler reads
-// the tenant from context, normally set by auth.Middleware) so no bearer key is
-// needed. The endpoint itself is still gated by the dashboard guard.
+// demoTenantInjector adapts the chat page's send endpoint to the standard chat
+// handler: it injects a tenant into the request context (the chat handler
+// reads the tenant from context, normally set by auth.Middleware) so no bearer
+// key is needed. The endpoint itself is still gated by the chat guard.
+//
+// A session signed in through the company IdP (ISSUE-130) carries a
+// department: its traffic is attributed to that department as the tenant,
+// with the person on the key id, so the log, the dashboard and the audit
+// chain say who asked. Every other session (password, demo link) stays on
+// the synthetic demo tenant.
 func demoTenantInjector(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := tenant.WithTenant(r.Context(), demoTenant)
+		t := demoTenant
+		if dept := DepartmentFromContext(r.Context()); dept != "" {
+			t = &tenant.Tenant{
+				ID: dept, Project: "chat", KeyID: "user:" + AdminUserFromContext(r.Context()),
+				Scopes: auth.AllScopes(),
+			}
+		}
+		ctx := tenant.WithTenant(r.Context(), t)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+// chatSessionsKey is where a session's chat history lives: the shared demo
+// blob for operators and demo guests, a private key per identified user.
+func chatSessionsKey(r *http.Request) string {
+	if DepartmentFromContext(r.Context()) != "" {
+		return demoSessionsKey + ":" + AdminUserFromContext(r.Context())
+	}
+	return demoSessionsKey
 }
 
 // DemoChatPageHandler serves the "seeing is believing" demo: a ChatGPT-style

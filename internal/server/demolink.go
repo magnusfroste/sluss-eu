@@ -121,7 +121,7 @@ func DemoEntryHandler(a *AdminAuth, h *history.Store, auditor audit.Sink) http.H
 		// Named per-prospect link: validate, count the open, attribute by label.
 		if label, ok := h.TouchDemoLink(got, time.Now()); ok {
 			actor := "demo:" + label
-			if err := a.issueSession(w, r, actor, roleDemo); err != nil {
+			if err := a.issueSession(w, r, actor, roleDemo, ""); err != nil {
 				http.Error(w, "could not start the demo", http.StatusInternalServerError)
 				return
 			}
@@ -138,7 +138,7 @@ func DemoEntryHandler(a *AdminAuth, h *history.Store, auditor audit.Sink) http.H
 			http.Redirect(w, r, "/router/login", http.StatusFound)
 			return
 		}
-		if err := a.issueSession(w, r, "demo-guest", roleDemo); err != nil {
+		if err := a.issueSession(w, r, "demo-guest", roleDemo, ""); err != nil {
 			http.Error(w, "could not start the demo", http.StatusInternalServerError)
 			return
 		}

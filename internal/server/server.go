@@ -92,6 +92,11 @@ type Config struct {
 	// dashboard URL directly and log in.
 	DashboardPassword string
 
+	// OIDC, when enabled, adds "Sign in with the company account" (ISSUE-130):
+	// employees get an identified chat session, admin groups get the console.
+	// Needs a data dir (sessions are DB-backed).
+	OIDC *OIDCConfig
+
 	// Roster, when set (a data dir is configured), is the SQLite-backed source of
 	// truth for the roster — provider connections and routable models (ISSUE-073).
 	// It enables CRUD on the Models and Providers pages, persisted to history.db.
@@ -276,7 +281,13 @@ func New(cfg Config) http.Handler {
 	var demoGuard func(http.HandlerFunc) http.Handler
 	if cfg.History != nil {
 		adminAuth := &AdminAuth{Sessions: NewSessionStore(cfg.History), Store: cfg.History,
-			BreakGlass: cfg.DashboardPassword, KeyStore: cfg.KeyStore}
+			BreakGlass: cfg.DashboardPassword, KeyStore: cfg.KeyStore, Auditor: cfg.Auditor}
+		if cfg.OIDC.Enabled() {
+			oidc := NewOIDC(*cfg.OIDC, adminAuth, cfg.Auditor, cfg.PublicURL, cfg.Logger)
+			adminAuth.SSO = oidc.Button()
+			mux.HandleFunc("GET "+oidcStartPath, oidc.StartHandler())
+			mux.HandleFunc("GET "+oidcCallbackPath, oidc.CallbackHandler())
+		}
 		mux.HandleFunc("GET /router/login", adminAuth.LoginHandler())
 		mux.HandleFunc("POST /router/login", adminAuth.LoginHandler())
 		mux.HandleFunc("POST /router/logout", adminAuth.LogoutHandler())
