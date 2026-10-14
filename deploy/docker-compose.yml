@@ -54,6 +54,8 @@ services:
       - ROUTER_OIDC_DEFAULT_DEPARTMENT=${ROUTER_OIDC_DEFAULT_DEPARTMENT:-}
       - ROUTER_OIDC_ALLOWED_DOMAINS=${ROUTER_OIDC_ALLOWED_DOMAINS:-}
       - ROUTER_OIDC_LABEL=${ROUTER_OIDC_LABEL:-}
+      # --- Chat web search: a SearXNG-compatible endpoint (optional). ---
+      - ROUTER_SEARCH_URL=${ROUTER_SEARCH_URL:-}
       # --- Provider: set OPENROUTER_API_KEY for a real provider; omit → mock. ---
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
       - OPENROUTER_REFERER=${OPENROUTER_REFERER:-}

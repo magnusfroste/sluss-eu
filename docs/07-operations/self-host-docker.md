@@ -57,6 +57,10 @@ Sluss keeps no employee accounts. Connect it to your identity provider over Open
 
 With Entra ID and Intune, a Conditional Access policy on the Sluss app can require a compliant, managed device. Sluss then never has to check the device itself.
 
+### Make the chat the company's front door
+
+Employees who sign in land in the chat. It attaches files (text and code are read in the browser and classified as document text; images are flagged as attachments policy decides on) and, with `ROUTER_SEARCH_URL` set to a SearXNG-compatible endpoint, searches the web before answering. Self-host SearXNG next to Sluss so a search query never becomes someone else's data. A prompt that carries personal or confidential data is never sent to the search engine; the chat says so.
+
 ### Roll it out with your MDM
 
 **Rollout** in the console (`/router/rollout`) generates what Intune, Jamf or Fleet runs: scripts that point every tool with a base URL at Sluss, a deny list of direct generative-AI domains for your DNS filter or web gateway, a block page on this instance to point the sinkhole at, a web clip for the company chat, and a daily coverage check that reports per device whether a provider can still be reached directly. The dashboard shows the result.
