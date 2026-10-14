@@ -98,6 +98,14 @@ CREATE TABLE IF NOT EXISTS admin_users (
 	disabled_at TEXT NOT NULL DEFAULT '',
 	last_login_at TEXT NOT NULL DEFAULT ''
 );
+CREATE TABLE IF NOT EXISTS coverage_devices (
+	device TEXT PRIMARY KEY,
+	os TEXT NOT NULL DEFAULT '',
+	tenant_id TEXT NOT NULL DEFAULT '',
+	direct_ai TEXT NOT NULL DEFAULT '',
+	sluss TEXT NOT NULL DEFAULT '',
+	reported_at TEXT NOT NULL DEFAULT ''
+);
 CREATE TABLE IF NOT EXISTS sessions (
 	id TEXT PRIMARY KEY,
 	username TEXT NOT NULL DEFAULT '',

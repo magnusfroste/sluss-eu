@@ -57,6 +57,10 @@ Sluss keeps no employee accounts. Connect it to your identity provider over Open
 
 With Entra ID and Intune, a Conditional Access policy on the Sluss app can require a compliant, managed device. Sluss then never has to check the device itself.
 
+### Roll it out with your MDM
+
+**Rollout** in the console (`/router/rollout`) generates what Intune, Jamf or Fleet runs: scripts that point every tool with a base URL at Sluss, a deny list of direct generative-AI domains for your DNS filter or web gateway, a block page on this instance to point the sinkhole at, a web clip for the company chat, and a daily coverage check that reports per device whether a provider can still be reached directly. The dashboard shows the result.
+
 The full list of settings, with the issuer formats for each IdP, is in [`deploy/example.env`](../../deploy/example.env).
 
 ## 3. Put TLS in front

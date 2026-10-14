@@ -100,6 +100,23 @@ Three values — base URL, API key, `model: auto`:
 
 `/connect` on a running instance has copy-paste recipes per client.
 
+## Fits your IT — no new island
+
+An IT organisation does not want another tool with its own accounts, its own
+agent and its own way of being rolled out. Sluss plugs into what you already
+run, the same way ChatGPT Enterprise does, and leaves the decisions where they
+belong:
+
+| Your system | What it does for Sluss |
+|---|---|
+| **Identity provider** (Entra ID, Okta, Google, Keycloak) | *Sign in with the company account* over OpenID Connect. Sluss keeps no employee accounts: your IdP decides who, MFA, device compliance (Conditional Access) and when someone leaves. Groups map to the admin console or chat-only, and to the department every request is logged under. |
+| **MDM** (Intune, Jamf, Kandji, Fleet) | The **Rollout** page generates what the MDM runs: scripts that point every tool with a base URL at Sluss, a web clip that puts the company chat on every home screen (phones too), a browser policy, and a daily read-only check per device. |
+| **DNS filter / secure web gateway** (Umbrella, Zscaler, Cloudflare Gateway) | A curated deny list of direct generative-AI domains, and a block page on your instance to point the sinkhole at: *"blocked here — open the company AI chat"*. Block + offer, no interception. |
+| **Audit and incident process** | A hash-chained audit log with an offline verifier, 24h/72h incident evidence on one URL, and a dashboard that says how many managed devices can still reach a provider directly. |
+
+Nothing of ours runs on the desktop, nothing inspects traffic. The control is
+*the only AI path is Sluss*; the evidence is per request and per device.
+
 ## Why this exists (and why it is open source)
 
 It started as private inference — vLLM on our own GPUs, RAG on internal data,
