@@ -45,6 +45,7 @@ const (
 	icLog       = `<svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="20" y2="12"/><line x1="8" y1="18" x2="20" y2="18"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></svg>`
 	icModels    = `<svg viewBox="0 0 24 24"><path d="M12 3 3 8l9 5 9-5z"/><path d="M3 12l9 5 9-5"/><path d="M3 16l9 5 9-5"/></svg>`
 	icSetup     = `<svg viewBox="0 0 24 24"><path d="M5 12.5 L9.5 17 L19 7.5"/><circle cx="12" cy="12" r="9.2"/></svg>`
+	icRollout   = `<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8"/><path d="M12 16v4"/><path d="M9 10l3-3 3 3"/><path d="M12 7v6"/></svg>`
 	icRisk      = `<svg viewBox="0 0 24 24"><path d="M12 3.5 L19 6.2 V11.5 C19 15.6 16 18.8 12 20.5 C8 18.8 5 15.6 5 11.5 V6.2 Z"/><path d="M9 12 L11.2 14.2 L15.2 10"/></svg>`
 	icProviders = `<svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="6" rx="1.5"/><rect x="3.5" y="13" width="17" height="6" rx="1.5"/><line x1="7" y1="8" x2="7" y2="8"/><line x1="7" y1="16" x2="7" y2="16"/></svg>`
 	icKeys      = `<svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="3.4"/><path d="M10.4 10.4 20 20"/><path d="M17 17l2.2-2.2"/><path d="M14.6 14.6l2.2-2.2"/></svg>`
@@ -61,6 +62,7 @@ var adminNavItems = []navItem{
 	{"dashboard", "/router/dashboard", icDashboard, "Dashboard", "Evidence"},
 	{"log", "/router/log", icLog, "Request log", "Evidence"},
 	{"setup", "/router/setup", icSetup, "Quick start", "Control"},
+	{"rollout", "/router/rollout", icRollout, "Rollout", "Control"},
 	{"policy", "/router/policy", icPolicy, "Policy", "Control"},
 	{"models", "/router/models", icModels, "Models", "Control"},
 	{"providers", "/router/providers", icProviders, "Providers", "Control"},

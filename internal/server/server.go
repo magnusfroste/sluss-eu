@@ -454,6 +454,14 @@ func New(cfg Config) http.Handler {
 			Reloader: cfg.RosterReloader, History: cfg.History, Auditor: cfg.Auditor, Logger: cfg.Logger,
 			Rules: PolicyRulesOptions{Engine: cfg.Engine, Cache: cfg.PolicyCache, History: cfg.History,
 				Auditor: cfg.Auditor, BaselinePath: cfg.PolicyBaselinePath}}
+		// Rollout kit (ISSUE-128a): MDM scripts, deny list, web clip, block
+		// page and per-device coverage. The report endpoint takes a department
+		// key like /v1 does; the block page is public (a sinkhole points at it).
+		rolloutOpts := RolloutOptions{History: cfg.History, PublicURL: cfg.PublicURL, Auditor: cfg.Auditor, Logger: cfg.Logger}
+		mux.Handle("GET /router/rollout", dashGuard(RolloutPageHandler(rolloutOpts)))
+		mux.Handle("GET /router/rollout/file/{name}", dashGuard(RolloutFileHandler(rolloutOpts)))
+		mux.Handle("POST /router/coverage", auth.Middleware(cfg.KeyStore)(http.HandlerFunc(CoverageReportHandler(rolloutOpts))))
+		mux.HandleFunc("GET /blocked", BlockedPageHandler(rolloutOpts))
 		mux.Handle("GET /router/setup", dashGuard(SetupPageHandler(setupOpts)))
 		mux.Handle("POST /router/setup/local", dashGuard(SetupLocalHandler(setupOpts)))
 		mux.Handle("POST /router/setup/protect", dashGuard(SetupProtectHandler(setupOpts)))

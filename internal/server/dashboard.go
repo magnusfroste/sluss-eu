@@ -108,6 +108,9 @@ type DashboardData struct {
 	DataFlow DataFlowView `json:"data_flow"`
 	// Setup is the live quick-start state; the banner shows until complete.
 	Setup SetupStatus `json:"-"`
+	// Coverage is the managed-device picture from the rollout kit's daily
+	// check (ISSUE-128a); the card shows once a device has reported.
+	Coverage history.CoverageSummary `json:"-"`
 	// Durable is true when totals come from SQLite history (they survive
 	// restarts), false for in-memory counters.
 	Durable bool `json:"durable"`
@@ -205,6 +208,9 @@ func buildDashboardData(opts DashboardOptions, taskFilter string) DashboardData 
 	d.DataFlow.Days = buildTimeline(opts.History, opts.Engine, 7, time.Now())
 	d.Durable = opts.History != nil
 	d.Setup = SetupOptions{Engine: opts.Engine, Cache: opts.PolicyCache, History: opts.History}.status()
+	if opts.History != nil {
+		d.Coverage = opts.History.SummarizeCoverage()
+	}
 	return d
 }
 
@@ -445,6 +451,11 @@ details.adv[open]>summary{margin-bottom:1.25rem}
     <div class="card-value{{if gt .Blocked 0}} bad{{end}}">{{.Blocked}}</div>
     <div class="card-sub">no compliant model · never a silent fallback</div>
   </div>
+  {{if gt $.Coverage.Devices 0}}<a class="card" href="/router/rollout" style="text-decoration:none;display:block">
+    <div class="card-label">Managed devices</div>
+    <div class="card-value{{if gt $.Coverage.DirectOpen 0}} bad{{end}}">{{$.Coverage.DirectOpen}}<span style="font-size:1rem;color:#94a3b8;font-weight:500"> / {{$.Coverage.Devices}}</span></div>
+    <div class="card-sub">{{if gt $.Coverage.DirectOpen 0}}still reach AI providers directly{{else}}none can reach AI providers directly{{end}} · daily check</div>
+  </a>{{end}}
   <div class="card">
     <div class="card-label">Personal data (PII)</div>
     <div class="card-value">{{.PII.Total}}</div>
