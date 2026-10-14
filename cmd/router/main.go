@@ -595,6 +595,7 @@ func main() {
 		Profile:                    strings.TrimSpace(os.Getenv("ROUTER_PROFILE")),
 		PublicURL:                  strings.TrimSpace(os.Getenv("ROUTER_PUBLIC_URL")),
 		OIDC:                       oidcFromEnv(),
+		SearchURL:                  strings.TrimSpace(os.Getenv("ROUTER_SEARCH_URL")),
 	})
 	// Named-user console (accountability): seed an initial admin from env when
 	// the user table is empty. The env dashboard password remains break-glass.

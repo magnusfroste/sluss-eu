@@ -92,6 +92,10 @@ type Config struct {
 	// dashboard URL directly and log in.
 	DashboardPassword string
 
+	// SearchURL (ROUTER_SEARCH_URL) is a SearXNG-compatible endpoint the chat
+	// may query when the user asks for web search (ISSUE-129). Empty = off.
+	SearchURL string
+
 	// OIDC, when enabled, adds "Sign in with the company account" (ISSUE-130):
 	// employees get an identified chat session, admin groups get the console.
 	// Needs a data dir (sessions are DB-backed).
@@ -479,8 +483,9 @@ func New(cfg Config) http.Handler {
 	// dashboard; the send endpoint injects a demo tenant so no bearer key is
 	// exposed in the browser, then delegates to the real chat handler.
 	if cfg.Engine != nil {
-		demoChat := demoTenantInjector(chat)
-		mux.Handle("GET /chat", demoGuard(DemoChatPageHandler()))
+		search := SearchOptions{URL: cfg.SearchURL, Auditor: cfg.Auditor, Logger: cfg.Logger}
+		demoChat := demoTenantInjector(search.Middleware(chat))
+		mux.Handle("GET /chat", demoGuard(DemoChatPageHandler(search.Enabled())))
 		mux.Handle("POST /chat/send", demoGuard(demoChat.ServeHTTP))
 		// Demo chat sessions persist server-side in SQLite (when a data dir is
 		// set) so they survive restarts/redeploys; the browser falls back to

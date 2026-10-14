@@ -1,8 +1,10 @@
 package server
 
 import (
+	"html/template"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/magnusfroste/sluss/internal/auth"
@@ -98,16 +100,35 @@ func chatSessionsKey(r *http.Request) string {
 // page with a session sidebar where each answer shows which model the router
 // picked, so you can flip to the dashboard and watch the savings accumulate.
 // Sessions live in the browser's localStorage — no backend state needed.
-func DemoChatPageHandler() http.HandlerFunc {
+func DemoChatPageHandler(searchOn bool) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		// A demo-link guest gets the clean, nav-free page — a focused product demo,
-		// not the admin console. Admins keep the left nav to jump back.
-		if RoleFromContext(r.Context()) == roleDemo {
-			_, _ = w.Write([]byte(demoChatHTMLGuest))
-			return
+		role, user, dept := RoleFromContext(r.Context()), AdminUserFromContext(r.Context()), DepartmentFromContext(r.Context())
+		// A demo-link guest gets the clean, nav-free page — a focused product
+		// demo, not the admin console. An identified employee (ISSUE-130) gets
+		// the same clean page as the company AI chat, with their name and a
+		// sign-out. Admins keep the left nav to jump back.
+		page, tagline, employee := demoChatHTML, "live routing demo", false
+		switch role {
+		case roleDemo:
+			page = demoChatHTMLGuest
+		case roleUser:
+			page, tagline, employee = demoChatHTMLGuest, "company AI", true
 		}
-		_, _ = w.Write([]byte(demoChatHTML))
+		ident := ""
+		if dept != "" || role == roleUser {
+			ident = `<div class="ident"><span class="mono">` + template.HTMLEscapeString(user) + `</span>` +
+				func() string {
+					if dept != "" {
+						return ` · ` + template.HTMLEscapeString(dept)
+					}
+					return ""
+				}() + ` · <a href="/router/logout">Sign out</a></div>`
+		}
+		flags := "const EMPLOYEE=" + strconv.FormatBool(employee) + ",SEARCH_ON=" + strconv.FormatBool(searchOn) + ";"
+		_, _ = w.Write([]byte(strings.NewReplacer(
+			"<!--IDENTITY-->", ident, "<!--TAGLINE-->", tagline, "/*FLAGS*/", flags,
+		).Replace(page)))
 	}
 }
 
@@ -209,12 +230,27 @@ const demoChatTemplate = `<!doctype html>
   .composer button{background:var(--accent);color:#081328;border:0;border-radius:10px;
     padding:0 20px;font-weight:700;font-size:15px;cursor:pointer}
   .composer button:disabled{opacity:.5;cursor:not-allowed}
+  .composer .tool{background:var(--panel2);color:var(--ink);border:1px solid var(--line);padding:0 12px;font-size:16px;font-weight:400}
+  .composer .tool[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+  .composer .tool:hover{border-color:var(--accent)}
+  .attached{max-width:760px;margin:0 auto 8px;display:flex;flex-wrap:wrap;gap:6px}
+  .attached:empty{display:none}
+  .fchip{display:inline-flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:12.5px}
+  .fchip button{border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:14px;line-height:1;padding:0}
+  .fchip button:hover{color:#f07ab0}
+  .fmeta{font-size:12px;color:var(--muted);margin-top:6px}
+  .sources{margin-top:8px;font-size:12.5px;color:var(--muted);line-height:1.6}
+  .sources a{color:#7fd3ff;text-decoration:none}.sources a:hover{text-decoration:underline}
+  .pill.search{background:#12264a;color:#7fb2ff}.pill.search.skip{background:#33290f;color:#f4b740}
+  .ident{margin-left:auto;font-size:12.5px;color:var(--muted);display:flex;gap:4px;align-items:center;white-space:nowrap}
+  .ident a{color:#7fd3ff;text-decoration:none}.ident .mono{font-family:ui-monospace,Menlo,monospace;color:var(--ink)}
   .hint{max-width:760px;margin:8px auto 0;color:var(--muted);font-size:12px;text-align:center}
   @media (max-width:760px){
     aside.sessions{display:none}
     header{flex-wrap:wrap;padding:10px 12px;gap:8px}
     .brand small{display:none}
     .modelpick{width:100%}.modelpick select{flex:1;min-width:0;max-width:100%}
+    .ident{margin-left:0;width:100%}
     main{padding:14px 10px}.msg{max-width:100%}.bubble{max-width:100%}
     footer{padding:10px 10px}.composer button{padding:0 14px}.hint{display:none}}
 </style>
@@ -226,12 +262,17 @@ const demoChatTemplate = `<!doctype html>
 <div class="chatrow">
 <div class="col">
   <header>
-    <div class="brand"><span class="dot"></span>sluss<small>live routing demo</small></div>
+    <div class="brand"><span class="dot"></span>sluss<small><!--TAGLINE--></small></div>
     <!--MODEL_PICKER-->
+    <!--IDENTITY-->
   </header>
   <main><div class="wrap" id="wrap"></div></main>
   <footer>
+    <div class="attached" id="attached"></div>
     <form class="composer" id="form">
+      <button type="button" class="tool" id="attachbtn" title="Attach a text file (txt, md, csv, json, code) or an image. Read in your browser, classified by the gateway before any model sees it.">📎</button>
+      <input type="file" id="filein" multiple hidden>
+      <button type="button" class="tool" id="searchbtn" aria-pressed="false" title="Search the web through the company search engine before answering. Skipped automatically when the prompt contains personal or confidential data.">🌐</button>
       <input id="input" placeholder="Ask anything — simple or hard…" autocomplete="off" autofocus>
       <button id="send" type="submit">Send</button>
     </form>
@@ -255,7 +296,40 @@ let QUICK=[
   {label:"Debug a Go deadlock",tier:"hard",text:"debug this race condition deadlock in my concurrent Go code, goroutines hang on a mutex"},
   {label:"Security-review a login",tier:"blocked",text:"security review this login form for XSS and secret leakage"},
 ];
+/*FLAGS*/
 const LS='tok_demo_sessions_v1';
+// Attachments (ISSUE-129): read in the browser, sent as array-form content so
+// the gateway classifies the document text (or flags an image as an
+// attachment it cannot read) before any model sees it. Nothing is uploaded
+// anywhere else.
+const TEXT_EXT=/\.(txt|md|markdown|csv|tsv|json|ya?ml|xml|log|go|py|js|ts|tsx|jsx|java|rs|c|h|cpp|cs|rb|php|sql|html?|css|sh|ps1|ini|toml|env|cfg)$/i;
+const TEXT_MAX=300*1024, IMG_MAX=2*1024*1024;
+let attached=[]; // {name, kind:'text'|'image', text?, data?}
+const attachedEl=document.getElementById('attached'), fileIn=document.getElementById('filein');
+const searchBtn=document.getElementById('searchbtn');
+let searchOn=false;
+if(!SEARCH_ON){searchBtn.disabled=true;searchBtn.title='Web search is not configured on this instance (ROUTER_SEARCH_URL).';}
+searchBtn.onclick=()=>{searchOn=!searchOn;searchBtn.setAttribute('aria-pressed',searchOn?'true':'false');};
+document.getElementById('attachbtn').onclick=()=>fileIn.click();
+fileIn.onchange=async()=>{
+  for(const f of fileIn.files){
+    if(f.type.startsWith('image/')){
+      if(f.size>IMG_MAX){alert(f.name+': images up to 2 MB.');continue;}
+      attached.push({name:f.name,kind:'image',data:await readAs(f,'dataurl')});
+    }else if(TEXT_EXT.test(f.name)||f.type.startsWith('text/')){
+      if(f.size>TEXT_MAX){alert(f.name+': text files up to 300 KB.');continue;}
+      attached.push({name:f.name,kind:'text',text:await readAs(f,'text')});
+    }else{alert(f.name+': PDF and Office files are not read yet — paste the text for now.');}
+  }
+  fileIn.value='';renderAttached();
+};
+function readAs(f,how){return new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=no;how==='text'?r.readAsText(f):r.readAsDataURL(f);});}
+function renderAttached(){attachedEl.innerHTML='';attached.forEach((a,i)=>{const c=el('fchip',(a.kind==='image'?'🖼 ':'📄 ')+escapeHtml(a.name));const x=document.createElement('button');x.type='button';x.textContent='×';x.onclick=()=>{attached.splice(i,1);renderAttached();};c.appendChild(x);attachedEl.appendChild(c);});}
+function partsFor(text){
+  const parts=[{type:'text',text:text}];
+  attached.forEach(a=>{if(a.kind==='text')parts.push({type:'text',text:'--- Attached file: '+a.name+' ---\n'+a.text});else parts.push({type:'image_url',image_url:{url:a.data}});});
+  return parts;
+}
 const wrap=document.getElementById('wrap'), sideEl=document.getElementById('sessions');
 const form=document.getElementById('form'), input=document.getElementById('input'), send=document.getElementById('send');
 let sessions=[], currentId=null;
@@ -348,7 +422,9 @@ function renderMessages(){
   wrap.innerHTML='';
   const s=cur();
   if(!s||!s.messages.length){
-    wrap.appendChild(el('intro','Type anything — <b>the router reads the prompt and picks the model</b> before the answer is generated.<br>Every answer shows which model was chosen. Open the dashboard in another tab and watch the savings tick up.'));
+    wrap.appendChild(el('intro',EMPLOYEE
+      ?'Ask anything. <b>The company gateway reads your prompt and picks the model by policy</b> before anything is sent — personal and confidential data stays on company models.<br>Attach a file with 📎, or turn on 🌐 to search the web first.'
+      :'Type anything — <b>the router reads the prompt and picks the model</b> before the answer is generated.<br>Every answer shows which model was chosen. Open the dashboard in another tab and watch the savings tick up.'));
     const chips=el('chips');
     QUICK.forEach(q=>{const c=document.createElement('button');c.className='chip';c.type='button';
       c.innerHTML=escapeHtml(q.label)+(q.tier?'<span class="t">'+escapeHtml(q.tier)+'</span>':'');
@@ -363,6 +439,8 @@ function renderMessages(){
     if(m.role!=='user'&&(m.task||m.model))row.appendChild(el('badge',badgeHTML(m.task,m.model)+(m.pinned?'<span class="pill pinned">pinned</span>':'')));
     if(m.role!=='user'&&m.switchReason){const c=el('');c.innerHTML=switchHTML(m.switchReason,m.egress,m.model);if(c.firstElementChild)row.appendChild(c.firstElementChild);}
     const b=el('bubble');b.textContent=m.content;row.appendChild(b);
+    if(m.files&&m.files.length)row.appendChild(el('fmeta','📎 '+m.files.map(escapeHtml).join(', ')));
+    if(m.sources&&m.sources.length)row.appendChild(sourcesEl(m.sources));
     wrap.appendChild(row);
   });
   scroll();
@@ -378,18 +456,20 @@ function deleteSession(id){
 async function ask(text){
   let s=cur();
   if(!s){s={id:uid(),title:text.length>38?text.slice(0,38)+'…':text,messages:[]};sessions.unshift(s);currentId=s.id;wrap.innerHTML='';renderSidebar();}
-  s.messages.push({role:'user',content:text});
-  const um=el('msg user');um.appendChild(el('who','You'));const ub=el('bubble');ub.textContent=text;um.appendChild(ub);wrap.appendChild(um);
-  input.value='';send.disabled=true;scroll();
+  const files=attached.map(a=>a.name), parts=attached.length?partsFor(text):null;
+  s.messages.push(parts?{role:'user',content:text,parts:parts,files:files}:{role:'user',content:text});
+  const um=el('msg user');um.appendChild(el('who','You'));const ub=el('bubble');ub.textContent=text;um.appendChild(ub);
+  if(files.length)um.appendChild(el('fmeta','📎 '+files.map(escapeHtml).join(', ')));wrap.appendChild(um);
+  attached=[];renderAttached();input.value='';send.disabled=true;scroll();
   const bm=el('msg bot');bm.appendChild(el('who','sluss'));
   const badge=el('badge','<span class="pill task">classifying…</span>');bm.appendChild(badge);
   const bubble=el('bubble');const curEl=el('cursor');bubble.appendChild(curEl);bm.appendChild(bubble);wrap.appendChild(bm);scroll();
-  const apiMsgs=s.messages.map(m=>({role:m.role,content:m.content}));
+  const apiMsgs=s.messages.map(m=>({role:m.role,content:m.parts?m.parts:m.content}));
   const pick=pickedModel(), pinned=pick!=='auto';
-  let model='',task='',acc='',reason='',egress='';
+  let model='',task='',acc='',reason='',egress='',sources=[];
   try{
     const res=await fetch('/chat/send',{method:'POST',credentials:'same-origin',
-      headers:{'Content-Type':'application/json'},body:JSON.stringify({model:pick,stream:true,messages:apiMsgs})});
+      headers:{'Content-Type':'application/json'},body:JSON.stringify({model:pick,stream:true,messages:apiMsgs,search:searchOn})});
     if(!res.ok){
       // Clean error card — never dump a raw proxy/HTML error page in the chat.
       let msg='',code='';const raw=await res.text();
@@ -416,6 +496,14 @@ async function ask(text){
     badge.innerHTML=badgeHTML(task,model)+(pinned?'<span class="pill pinned" title="Model pinned by the admin — classification bypassed, policy still enforced.">pinned</span>':'')+
       (fbIdx?'<span class="pill fallback" title="The primary model ('+escapeHtml(primary)+') did not answer — the policy-approved fallback chain, built before the first call, took over. The fallback never widens egress.">fallback · from '+escapeHtml(primary||'primary')+'</span>':'');
     if(reason){const c=el('');c.innerHTML=switchHTML(reason,egress,model,sensSrc);if(c.firstElementChild)bm.insertBefore(c.firstElementChild,bubble);}
+    const sh=res.headers.get('x-router-search')||'';
+    if(sh){
+      if(sh.startsWith('done')){try{sources=JSON.parse(atob((res.headers.get('x-router-sources')||'').replace(/-/g,'+').replace(/_/g,'/')));}catch(e){sources=[];}
+        badge.insertAdjacentHTML('beforeend','<span class="pill search" title="Fetched through the company search engine before the model answered.">web search · '+sources.length+' sources</span>');}
+      else if(sh.startsWith('skipped')){badge.insertAdjacentHTML('beforeend','<span class="pill search skip" title="The prompt was classified as '+escapeHtml(sh.split(';')[1]||'sensitive')+' — nothing was sent to a search engine.">search skipped · '+escapeHtml(sh.split(';')[1]||'sensitive')+' in prompt</span>');}
+      else if(sh==='failed'){badge.insertAdjacentHTML('beforeend','<span class="pill search skip">search unavailable</span>');}
+      else if(sh==='empty'){badge.insertAdjacentHTML('beforeend','<span class="pill search skip">no web results</span>');}
+    }
     const reader=res.body.getReader(),dec=new TextDecoder();let buf='';let thinking=false;
     while(true){const {done,value}=await reader.read();if(done)break;
       buf+=dec.decode(value,{stream:true});const lines=buf.split('\n');buf=lines.pop();
@@ -428,14 +516,17 @@ async function ask(text){
           const d=dl&&dl.content;
           if(d){acc+=d;thinking=false;bubble.textContent=acc;bubble.appendChild(curEl);scroll();}}catch(e){}}}
     curEl.remove();if(!acc)bubble.textContent='(empty answer)';
+    if(sources.length)bm.appendChild(sourcesEl(sources));
   }catch(e){curEl.remove();bubble.textContent='Error: '+e.message;}
-  s.messages.push({role:'assistant',content:acc,model:model,task:task,switchReason:reason,egress:egress,pinned:pinned});
+  s.messages.push({role:'assistant',content:acc,model:model,task:task,switchReason:reason,egress:egress,pinned:pinned,sources:sources});
   persist();send.disabled=false;input.focus();
 }
-form.onsubmit=e=>{e.preventDefault();const t=input.value.trim();if(t)ask(t)};
+function sourcesEl(list){const d=el('sources','Sources: '+list.map((x,i)=>'['+(i+1)+'] <a href="'+escapeHtml(x.u)+'" target="_blank" rel="noopener noreferrer">'+escapeHtml(x.t||x.u)+'</a>').join(' · '));return d;}
+form.onsubmit=e=>{e.preventDefault();const t=input.value.trim();if(t||attached.length)ask(t||'See the attached file.')};
 document.getElementById('newchat').onclick=newChat;
 // Boot: load sessions from the server (SQLite) first, then localStorage.
 async function boot(){
+  if(EMPLOYEE)document.getElementById('hint').textContent='Your questions are routed by company policy. Personal and confidential data stays on company models; web search only runs when the prompt contains none.';
   loadModels();
   // Admin-managed quick prompts (DB-backed); fall back to the built-in list.
   try{const qr=await fetch('/chat/quickprompts',{credentials:'same-origin'});
