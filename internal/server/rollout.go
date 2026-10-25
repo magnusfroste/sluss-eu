@@ -106,6 +106,7 @@ var rolloutFiles = []rolloutFile{
 	{"sluss-env.ps1", "Point tools at Sluss — Windows", "Intune platform script (system context)", "text/plain", envPs1},
 	{"genai-domains.csv", "Deny list — generative AI domains", "DNS filter / secure web gateway (Umbrella, Zscaler, Cloudflare Gateway)", "text/csv", domainsCSV},
 	{"genai-domains.json", "Deny list — JSON", "Same list for APIs and scripts; includes the allow entry", "application/json", domainsJSON},
+	{"genai-defender-indicators.csv", "Deny list — Defender indicators", "Defender for Endpoint: Settings → Endpoints → Indicators → Import", "text/csv", defenderIndicators},
 	{"sluss-webclip.mobileconfig", "Web clip — company AI chat", "macOS & iOS configuration profile (Jamf, Intune, Mosyle)", "application/x-apple-aspen-config", webClip},
 	{"sluss-browser-policy.json", "Browser policy — bookmark + DoH off", "Chrome/Edge managed policy (Intune settings catalog, Jamf plist)", "application/json", browserPolicy},
 	{"coverage.sh", "Coverage check — macOS & Linux", "Jamf extension attribute / Fleet query, daily", "text/x-shellscript", coverageSh},
@@ -441,6 +442,7 @@ type rolloutPageData struct {
 	Summary history.CoverageSummary
 	Durable bool
 	Notice  string
+	Guides  []filterGuide
 }
 
 // RolloutPageHandler renders the kit: downloads, the deny list, the block
@@ -448,7 +450,7 @@ type rolloutPageData struct {
 func RolloutPageHandler(o RolloutOptions) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		base := o.base(r)
-		d := rolloutPageData{Base: base, Host: hostOf(base), Files: rolloutFiles, Domains: genAIDomains, Durable: o.History != nil}
+		d := rolloutPageData{Base: base, Host: hostOf(base), Files: rolloutFiles, Domains: genAIDomains, Durable: o.History != nil, Guides: guidesFor(base)}
 		if o.History != nil {
 			d.Devices, _ = o.History.ListCoverage()
 			d.Summary = o.History.SummarizeCoverage()
@@ -506,6 +508,15 @@ var rolloutTmpl = template.Must(template.New("rollout").Funcs(template.FuncMap{
   .kpi .v{font-size:1.5rem;font-weight:700}.kpi .v.bad{color:#f87171}.kpi .l{color:#8fa1bf;font-size:.76rem;text-transform:uppercase;letter-spacing:.04em}
   .banner{padding:11px 16px;border-radius:10px;font-size:.88rem;background:#33290f;color:#f4b740;border:1px solid #7a5a1f}
   .tbl{overflow-x:auto}
+  .guides{margin-top:16px;border-top:1px solid #22324f;padding-top:12px}
+  .gh{color:#8fa1bf;font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  .guide{background:#0b1528;border:1px solid #22324f;border-radius:8px;margin-top:8px}
+  .guide summary{cursor:pointer;padding:10px 12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .guide[open] summary{border-bottom:1px solid #22324f}
+  .gfit{color:#8fa1bf;font-size:.8rem;flex:1;min-width:180px}
+  .guide ol{margin:10px 14px 4px 30px;padding:0}.guide li{margin-bottom:8px}
+  .guide a{color:#7fd3ff}
+  .gnote{margin:8px 14px 12px;color:#b7c4dc;font-size:.86rem}
   .dom{columns:3;column-gap:18px;font-size:.84rem;margin-top:8px}.dom div{break-inside:avoid;padding:2px 0}
   @media(max-width:700px){.body{margin-left:0}.dom{columns:1}}
 </style></head>
@@ -539,6 +550,14 @@ var rolloutTmpl = template.Must(template.New("rollout").Funcs(template.FuncMap{
         <div class="dom">{{range .Domains}}<div><span class="mono">{{.Domain}}</span> <span style="color:#6b7891">· {{.Vendor}} {{.Kind}}</span></div>{{end}}</div>
       </details>
       <div style="margin-top:12px"><a href="/blocked?from=chatgpt.com" target="_blank" style="color:#7fd3ff">Preview the block page ↗</a></div>
+      <div class="guides">
+        <div class="gh">Step by step, for the filter you run</div>
+        {{range .Guides}}<details class="guide" id="g-{{.ID}}"><summary><b>{{.Name}}</b><span class="gfit">{{.Fits}}</span>{{if .Redirect}}<span class="pill closed" title="The block sends the user to this instance's /blocked page.">redirects to Sluss</span>{{else}}<span class="pill" title="The product shows its own block notice; the web clip and bookmark carry the offer.">block only</span>{{end}}</summary>
+          <ol>{{range .Steps}}<li>{{.}}</li>{{end}}</ol>
+          {{if .Note}}<p class="gnote">{{.Note}}</p>{{end}}
+          <p class="gnote"><b>Check it:</b> on a managed device open <code>chatgpt.com</code> — you should see the block{{if .Redirect}} and land on this instance's page{{end}}. Then run the coverage script from step 3: the device should report <span class="pill closed">closed</span>.</p>
+        </details>{{end}}
+      </div>
     </div>
   </div>
 

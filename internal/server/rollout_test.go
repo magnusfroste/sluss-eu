@@ -185,3 +185,39 @@ func TestRolloutBaseFallsBackToRequestHost(t *testing.T) {
 		t.Fatal("hostOf wrong")
 	}
 }
+
+func TestRolloutGuidesCarryTheInstanceURLs(t *testing.T) {
+	o, _ := rolloutRig(t)
+	rec := httptest.NewRecorder()
+	RolloutPageHandler(o)(rec, httptest.NewRequest(http.MethodGet, "/router/rollout", nil))
+	body := rec.Body.String()
+	for _, want := range []string{
+		"Microsoft Defender", "Cloudflare Zero Trust", "Cisco Umbrella", "Zscaler Internet Access",
+		"https://sluss.example.eu/blocked?from=", "<code>https://sluss.example.eu/blocked</code>",
+		"genai-defender-indicators.csv", "redirects to Sluss", "block only",
+	} {
+		if !strings.Contains(body, want) {
+			t.Fatalf("guides lack %q", want)
+		}
+	}
+	// Defender can't redirect; the guide must say so rather than imply it.
+	for _, g := range guidesFor("https://x") {
+		if g.ID == "defender" && (g.Redirect || g.Note == "") {
+			t.Fatal("the Defender guide must be block-only with a note on how the offer reaches users")
+		}
+	}
+}
+
+func TestDefenderIndicatorsFormat(t *testing.T) {
+	csv := defenderIndicators("https://sluss.example.eu")
+	lines := strings.Split(strings.TrimSpace(csv), "\n")
+	if !strings.HasPrefix(lines[0], "IndicatorType,IndicatorValue,ExpirationTime,Action,") || len(lines) != len(genAIDomains)+1 {
+		t.Fatalf("header or row count wrong:\n%s", csv)
+	}
+	for _, l := range lines[1:] {
+		f := strings.Split(l, ",")
+		if len(f) != 12 || f[0] != "DomainName" || f[3] != "Block" || f[1] == "" {
+			t.Fatalf("bad indicator row %q (%d fields)", l, len(f))
+		}
+	}
+}
