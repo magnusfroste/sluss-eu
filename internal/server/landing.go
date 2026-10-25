@@ -125,10 +125,11 @@ footer a{color:var(--muted);text-decoration:none}footer a:hover{color:var(--ink)
       <li>Open <b>Quick start</b>: add a local model, keep personal data local, and dry-run two prompts — a few minutes, live status on every step.</li>
       <li><b>Point a client</b> at this gateway with an API key — recipes on <a href="/connect">Connect</a>.</li>
     </ol>
+    <p>Setting this up for the first time? The <a href="/manual">manual</a> explains every step in plain language — no training in identity providers or device management needed.</p>
   </section>
 </div></main>
 <footer><div class="wrap">
-  <span><a href="{{.ProductSite}}">About Sluss</a> · <a href="{{.Repo}}">Docs &amp; source</a> · <a href="{{.Repo}}/blob/main/SECURITY.md">Security</a></span>
+  <span><a href="{{.ProductSite}}">About Sluss</a> · <a href="/manual">Manual</a> · <a href="{{.Repo}}">Docs &amp; source</a> · <a href="{{.Repo}}/blob/main/SECURITY.md">Security</a></span>
   <span>Open source · AGPL-3.0 · not a legal compliance certification</span>
 </div></footer>
 </body></html>`

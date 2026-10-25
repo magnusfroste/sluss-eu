@@ -288,7 +288,7 @@ var setupTmpl = template.Must(template.New("setup").Funcs(template.FuncMap{
 <div class="tk-main">
 <header>
   <h1>Quick start</h1>
-  <div class="sub">Two models and one rule: harmless prompts go to a cheap cloud model, personal data stays on your own hardware. Each step shows its live state.</div>
+  <div class="sub">Two models and one rule: harmless prompts go to a cheap cloud model, personal data stays on your own hardware. Each step shows its live state. Step by step in plain language: <a href="/manual/quick-start" style="color:#7fd3ff">the manual</a>.</div>
 </header>
 <div class="wrap">
   {{if .Notice}}<div class="banner ok">{{.Notice}}</div>{{end}}

@@ -526,7 +526,7 @@ var rolloutTmpl = template.Must(template.New("rollout").Funcs(template.FuncMap{
 <div class="tk-main">
 <header>
   <h1>Rollout</h1>
-  <div class="sub">Make Sluss the only AI path on managed devices with the tools you already have: your MDM points the apps here, your DNS filter or web gateway blocks the direct way out, and a daily check proves it per device. No agent of ours on the desktop, nothing inspects traffic.</div>
+  <div class="sub">Make Sluss the only AI path on managed devices with the tools you already have: your MDM points the apps here, your DNS filter or web gateway blocks the direct way out, and a daily check proves it per device. No agent of ours on the desktop, nothing inspects traffic. New to this? The <a href="/manual/stop-chatgpt" style="color:#7fd3ff">manual</a> walks through it without assuming any training.</div>
 </header>
 <div class="wrap">
   {{if .Notice}}<div class="banner">{{.Notice}}</div>{{end}}
