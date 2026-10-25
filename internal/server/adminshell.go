@@ -72,6 +72,7 @@ var adminNavItems = []navItem{
 	{"prompts", "/router/prompts", icPrompts, "Demo prompts", "Show"},
 	{"chat", "/chat", icChat, "Live chat", "Show"},
 	{"connect", "/connect", icConnect, "Connect", "Show"},
+	{"manual", "/manual", icSetup, "Manual", "Show"},
 }
 
 // adminNavHTML renders the left navigation with the given page marked active.

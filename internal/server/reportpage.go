@@ -51,24 +51,38 @@ func renderReportPage(w http.ResponseWriter, d reportPageData) {
 var (
 	mdBold = regexp.MustCompile(`\*\*(.+?)\*\*`)
 	mdCode = regexp.MustCompile("`([^`]+)`")
+	// Links only to http(s) or a path on this instance — never javascript:
+	// or data: — and matched after escaping, so the text cannot carry markup.
+	mdLink = regexp.MustCompile(`\[([^\]]+)\]\(((?:https?://|/|#)[^)\s]*)\)`)
+	mdOL   = regexp.MustCompile(`^\d{1,3}\. `)
 )
 
-// mdInline renders the inline subset the report writers use: bold and code.
-// Input is HTML-escaped first, so report content can never inject markup.
+// mdInline renders the inline subset the report and manual writers use:
+// bold, code and links. Input is HTML-escaped first, so content can never
+// inject markup.
 func mdInline(s string) string {
 	s = html.EscapeString(s)
 	s = mdCode.ReplaceAllString(s, "<code>$1</code>")
 	s = mdBold.ReplaceAllString(s, "<strong>$1</strong>")
+	s = mdLink.ReplaceAllStringFunc(s, func(m string) string {
+		p := mdLink.FindStringSubmatch(m)
+		ext := ""
+		if strings.HasPrefix(p[2], "http") {
+			ext = ` target="_blank" rel="noopener noreferrer"`
+		}
+		return `<a href="` + p[2] + `"` + ext + `>` + p[1] + `</a>`
+	})
 	return s
 }
 
 // markdownToHTML converts the small, predictable Markdown dialect the report
 // renderers emit (headings, bullets, blockquotes, fenced code, pipe tables,
-// paragraphs) into HTML. It is deliberately not a general Markdown parser.
+// paragraphs, numbered steps) into HTML. It is deliberately not a general
+// Markdown parser.
 func markdownToHTML(md string) template.HTML {
 	var b strings.Builder
 	lines := strings.Split(md, "\n")
-	inList, inQuote, inCode, inTable := false, false, false, false
+	inList, inQuote, inCode, inTable, inOL := false, false, false, false, false
 	var para []string
 	closeAll := func() {
 		if len(para) > 0 {
@@ -78,6 +92,10 @@ func markdownToHTML(md string) template.HTML {
 		if inList {
 			b.WriteString("</ul>\n")
 			inList = false
+		}
+		if inOL {
+			b.WriteString("</ol>\n")
+			inOL = false
 		}
 		if inQuote {
 			b.WriteString("</blockquote>\n")
@@ -137,8 +155,17 @@ func markdownToHTML(md string) template.HTML {
 				b.WriteString("<td>" + mdInline(strings.TrimSpace(c)) + "</td>")
 			}
 			b.WriteString("</tr>\n")
+		case mdOL.MatchString(trim):
+			if len(para) > 0 || inQuote || inTable || inList {
+				closeAll()
+			}
+			if !inOL {
+				b.WriteString("<ol>\n")
+				inOL = true
+			}
+			b.WriteString("<li>" + mdInline(mdOL.ReplaceAllString(trim, "")) + "</li>\n")
 		case strings.HasPrefix(trim, "- "):
-			if len(para) > 0 || inQuote || inTable {
+			if len(para) > 0 || inQuote || inTable || inOL {
 				closeAll()
 			}
 			if !inList {
@@ -158,12 +185,17 @@ func markdownToHTML(md string) template.HTML {
 			}
 			b.WriteString(mdInline(trim[2:]))
 		default:
+			if inOL && strings.HasPrefix(line, "   ") {
+				// continuation line under a numbered step
+				b.WriteString("<div class=\"cont\">" + mdInline(trim) + "</div>\n")
+				continue
+			}
 			if inList && strings.HasPrefix(line, "  ") {
 				// continuation of a nested bullet ("  - sub") → flatten
 				b.WriteString("<li class=\"sub\">" + mdInline(strings.TrimPrefix(trim, "- ")) + "</li>\n")
 				continue
 			}
-			if inList || inQuote || inTable {
+			if inList || inQuote || inTable || inOL {
 				closeAll()
 			}
 			para = append(para, trim)

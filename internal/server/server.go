@@ -192,6 +192,11 @@ func New(cfg Config) http.Handler {
 	mux.HandleFunc("GET /robots.txt", RobotsHandler(landingOpts))
 
 	mux.HandleFunc("GET /healthz", HealthzHandler())
+	// The manual (ISSUE-133): public product instructions with this
+	// instance's address filled in; raw Markdown at /manual/<page>.md.
+	manualH := ManualHandler(ManualOptions{PublicURL: cfg.PublicURL, Logger: cfg.Logger})
+	mux.HandleFunc("GET /manual", manualH)
+	mux.HandleFunc("GET /manual/{page}", manualH)
 	mux.HandleFunc("GET /readyz", ReadyzHandler(cfg.Readiness...))
 
 	// Prometheus metrics.

@@ -114,7 +114,9 @@ belong:
 | **DNS filter / secure web gateway** (Umbrella, Zscaler, Cloudflare Gateway) | A curated deny list of direct generative-AI domains, and a block page on your instance to point the sinkhole at: *"blocked here — open the company AI chat"*. Block + offer, no interception. |
 | **Audit and incident process** | A hash-chained audit log with an offline verifier, 24h/72h incident evidence on one URL, and a dashboard that says how many managed devices can still reach a provider directly. |
 
-Nothing of ours runs on the desktop, nothing inspects traffic. The control is
+Nothing of ours runs on the desktop, nothing inspects traffic.
+
+**Manual.** [`manual/`](manual/) is the step-by-step guide for an administrator without specialist training — models and the first rule, stopping ChatGPT, developer tools, showing that it works, a glossary and troubleshooting. A running instance serves it at `/manual` with its own addresses filled in (and as raw Markdown at `/manual/<page>.md` for agents). The control is
 *the only AI path is Sluss*; the evidence is per request and per device.
 
 ## Why this exists (and why it is open source)
