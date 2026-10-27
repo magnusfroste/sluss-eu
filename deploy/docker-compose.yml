@@ -87,6 +87,19 @@ services:
       retries: 3
       start_period: 5s
 
+  # Optional web search for the company chat. Start with:
+  #   docker compose --profile search up -d
+  # and set ROUTER_SEARCH_URL=http://searxng:8080/search on the router.
+  searxng:
+    image: searxng/searxng:latest
+    profiles: ["search"]
+    restart: unless-stopped
+    environment:
+      - SEARXNG_SECRET=${SEARXNG_SECRET:?set SEARXNG_SECRET (openssl rand -hex 32)}
+    volumes:
+      - ./searxng/settings.yml:/etc/searxng/settings.yml:ro
+    # No published port: only the router reaches it on the compose network.
+
 volumes:
   # Survives container recreation and Git-checkout wipes on redeploy.
   tokenizer-data:
