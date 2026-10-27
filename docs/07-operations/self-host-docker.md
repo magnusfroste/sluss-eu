@@ -61,6 +61,12 @@ With Entra ID and Intune, a Conditional Access policy on the Sluss app can requi
 
 Employees who sign in land in the chat. It attaches files (text and code are read in the browser and classified as document text; images are flagged as attachments policy decides on) and, with `ROUTER_SEARCH_URL` set to a SearXNG-compatible endpoint, searches the web before answering. Self-host SearXNG next to Sluss so a search query never becomes someone else's data. A prompt that carries personal or confidential data is never sent to the search engine; the chat says so.
 
+**Setting up SearXNG.** [`deploy/searxng/settings.yml`](../../deploy/searxng/settings.yml) is a ready configuration: JSON output on (SearXNG ships with it off, and Sluss then gets HTTP 403), no rate limiter, no public use.
+
+- *Docker Compose:* `docker compose --profile search up -d` with `SEARXNG_SECRET` set, and `ROUTER_SEARCH_URL=http://searxng:8080/search` on the router.
+- *EasyPanel:* add an App service `searxng` from the image `searxng/searxng:latest`, without a domain. Add a file mount at `/etc/searxng/settings.yml` with the file's content, and the environment variable `SEARXNG_SECRET` with a long random value. On the Sluss service, set `ROUTER_SEARCH_URL=http://<project>_searxng:8080/search`, where `<project>` is the EasyPanel project name, and redeploy.
+- *Check:* in the chat, turn on 🌐 and ask something harmless. The answer shows *web search · N sources*. *search unavailable* means Sluss cannot reach SearXNG, or JSON output is off.
+
 ### Roll it out with your MDM
 
 **Rollout** in the console (`/router/rollout`) generates what Intune, Jamf or Fleet runs: scripts that point every tool with a base URL at Sluss, a deny list of direct generative-AI domains for your DNS filter or web gateway, a block page on this instance to point the sinkhole at, a web clip for the company chat, and a daily coverage check that reports per device whether a provider can still be reached directly. The dashboard shows the result.

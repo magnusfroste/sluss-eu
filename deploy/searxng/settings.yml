@@ -1,0 +1,26 @@
+# SearXNG for the Sluss company chat (ISSUE-129 / web search).
+# Mount this file at /etc/searxng/settings.yml in the searxng/searxng image.
+# Only Sluss talks to this instance, on the internal network: no public
+# domain, no rate limiter, and JSON output switched on (SearXNG ships with
+# JSON off, which makes every Sluss search fail with HTTP 403).
+use_default_settings: true
+
+general:
+  instance_name: "Sluss search"
+
+server:
+  # Overridden by the SEARXNG_SECRET environment variable — set a long random
+  # value there (openssl rand -hex 32).
+  secret_key: "set-SEARXNG_SECRET-instead"
+  limiter: false
+  image_proxy: false
+  public_instance: false
+
+search:
+  safe_search: 1
+  formats:
+    - html
+    - json
+
+ui:
+  query_in_title: false

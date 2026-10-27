@@ -26,6 +26,10 @@ Microsoft Entra ID sends groups as long ID numbers, not names. Copy the group's 
 - The computer may not be using the company filter, for example on a home network without the filter's client. Check that the filter's app is installed and connected.
 - Run the coverage script on that computer. If it says *open*, the filter does not apply there yet.
 
+## The chat says "search unavailable"
+
+Sluss could not get results from the search service. Either the search service is not running, the address in `ROUTER_SEARCH_URL` is wrong, or the search service has JSON output turned off. The ready configuration in `deploy/searxng/settings.yml` turns it on.
+
 ## The coverage script reports "Sluss unreachable"
 
 The computer cannot reach `{{BASE}}`. Check the network from that computer, and that the department key in the script is valid.
