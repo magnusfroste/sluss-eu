@@ -301,6 +301,7 @@ func redirectModels(w http.ResponseWriter, r *http.Request, ok, errMsg string) {
 var modelsTmpl = template.Must(template.New("models").Funcs(template.FuncMap{
 	"adminCSS": adminCSSFunc,
 	"adminNav": adminNavFunc,
+	"dsHead":   dsHeadFunc,
 	"usd":      func(v float64) string { return fmt.Sprintf("$%.2f", v) },
 	"tierClass": func(t string) string {
 		switch t {
@@ -381,10 +382,7 @@ tr.editrow .delf{margin-top:10px}
 <div class="tk-shell">
 {{adminNav "models"}}
 <div class="tk-main">
-<header>
-  <h1>Models</h1>
-  <div class="sub">The roster — routable models and their tier · {{.Version}}</div>
-</header>
+{{dsHead "models" "Models" "Which models Sluss may use, where they run, and what they cost."}}
 <div class="wrap">
   {{if .Notice}}<div class="banner ok">{{.Notice}}</div>{{end}}
   {{if .Error}}<div class="banner err">{{.Error}}</div>{{end}}

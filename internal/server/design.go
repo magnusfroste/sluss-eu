@@ -1,5 +1,10 @@
 package server
 
+import (
+	"html/template"
+	"strings"
+)
+
 // The Sluss design system (ISSUE-135). Every admin page gets these tokens and
 // components through the shared shell CSS, so pages stop carrying their own
 // widths, card styles and table styles. The rules a page follows:
@@ -75,4 +80,60 @@ table.ds-table{width:100%;border-collapse:collapse;font-size:.88rem;margin:0}
 .ds-form{max-width:var(--ds-form)}
 @media(max-width:900px){.ds-alert{flex-wrap:wrap}.ds-alert>div{flex:1 1 220px}.ds-c8,.ds-c6,.ds-c4,.ds-c3{grid-column:span 12}.ds-content{padding:var(--ds-s5) var(--ds-s4) var(--ds-s7)}}
 @media(min-width:901px) and (max-width:1180px){.ds-c3{grid-column:span 6}}
+`
+
+// dsHeadHTML renders the shared page header (ISSUE-136): title, one sentence,
+// and — when the page belongs to a menu group with more than one page — the
+// group's pages as tabs. Every console page uses it, so headers and tabs look
+// and sit the same everywhere.
+func dsHeadHTML(active, title, sub string) string {
+	var b strings.Builder
+	b.WriteString(`<div class="ds-top"><div class="ds-ph"><div><h1>` + template.HTMLEscapeString(title) + `</h1>`)
+	if sub != "" {
+		b.WriteString(`<p>` + template.HTMLEscapeString(sub) + `</p>`)
+	}
+	b.WriteString(`</div></div>`)
+	for _, g := range adminNavGroups {
+		in := false
+		for _, p := range g.pages {
+			in = in || p.key == active
+		}
+		if !in || len(g.pages) < 2 {
+			continue
+		}
+		b.WriteString(`<nav class="ds-tabs">`)
+		for _, p := range g.pages {
+			cls := ""
+			if p.key == active {
+				cls = ` class="on"`
+			}
+			b.WriteString(`<a` + cls + ` href="` + p.href + `">` + template.HTMLEscapeString(p.label) + `</a>`)
+		}
+		b.WriteString(`</nav>`)
+	}
+	b.WriteString(`</div>`)
+	return b.String()
+}
+
+func dsHeadFunc(active, title, sub string) template.HTML {
+	return template.HTML(dsHeadHTML(active, title, sub))
+}
+
+// designFrameCSS makes the existing pages sit in the design system's frame
+// without rewriting each template: the content column, card radius and table
+// rhythm are the same on every page. It wins over a page's own rules by
+// specificity (.tk-main >), not by !important, except for padding and width,
+// which pages set in many shapes.
+const designFrameCSS = `
+.ds-top{width:100%;max-width:var(--ds-content);margin:0 auto;padding:var(--ds-s6) var(--ds-s6) 0;box-sizing:border-box}
+.ds-top .ds-ph{margin-bottom:var(--ds-s4)}
+.ds-tabs{display:flex;gap:var(--ds-s1);border-bottom:1px solid var(--ds-line);margin-bottom:var(--ds-s5);overflow-x:auto}
+.ds-tabs a{padding:10px var(--ds-s4);color:var(--ds-muted);text-decoration:none;font-weight:600;font-size:.92rem;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.ds-tabs a:hover{color:#fff}.ds-tabs a.on{color:#fff;border-color:var(--ds-accent)}
+.tk-main>.wrap{width:100%!important;max-width:var(--ds-content)!important;margin:0 auto!important;padding:0 var(--ds-s6) var(--ds-s7)!important;box-sizing:border-box;display:flex;flex-direction:column;gap:var(--ds-s4)}
+.tk-main>.wrap .card,.tk-main>.wrap form.addf{border-radius:var(--ds-r3);border-color:var(--ds-line);background:var(--ds-surface)}
+.tk-main>.wrap form.addf{max-width:none}
+.tk-main>.wrap th{font-size:.72rem;color:var(--ds-muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.tk-main>.wrap td{border-bottom-color:var(--ds-line-soft)}
+@media(max-width:900px){.ds-top{padding:var(--ds-s5) var(--ds-s4) 0}.tk-main>.wrap{padding:0 var(--ds-s4) var(--ds-s7)!important}}
 `

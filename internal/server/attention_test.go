@@ -37,21 +37,28 @@ func TestAttentionNamesFailingModelAndSetup(t *testing.T) {
 	}
 }
 
-func TestNavShowsSixGroupsAndSubPagesOfActiveGroup(t *testing.T) {
+func TestNavShowsSixGroupsAndPageTabsShowTheGroup(t *testing.T) {
 	html := adminNavHTML("providers")
 	for _, want := range []string{">Overview<", ">Activity<", ">Policy<", ">Models<", ">Access<", ">Rollout<", ">Open chat<", ">Manual<", ">Sign out<"} {
 		if !strings.Contains(html, want) {
 			t.Fatalf("nav lacks %q", want)
 		}
 	}
-	if !strings.Contains(html, `tk-sublink on" href="/router/providers"`) || !strings.Contains(html, `href="/router/risk"`) {
-		t.Fatalf("active group's pages should be listed with providers marked:\n%s", html)
-	}
-	if strings.Contains(adminNavHTML("dashboard"), `href="/router/risk"`) {
-		t.Fatal("sub-pages of an inactive group should not be listed")
-	}
 	if strings.Count(html, `class="tk-link`) != 9 {
 		t.Fatalf("want 6 groups + 2 bottom links + sign out, got %d", strings.Count(html, `class="tk-link`))
+	}
+	if !strings.Contains(html, `tk-link active" href="/router/models"`) {
+		t.Fatal("the Models group should be active on the Providers page")
+	}
+	// The group's pages are tabs in the page header, not a second menu.
+	head := dsHeadHTML("providers", "Providers", "x")
+	for _, want := range []string{`href="/router/models">Models<`, `class="on" href="/router/providers">Providers<`, `href="/router/risk">Risk register<`} {
+		if !strings.Contains(head, want) {
+			t.Fatalf("tabs lack %q:\n%s", want, head)
+		}
+	}
+	if strings.Contains(dsHeadHTML("policy", "Policy", ""), "ds-tabs") {
+		t.Fatal("a single-page group has no tabs")
 	}
 }
 

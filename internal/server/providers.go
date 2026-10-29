@@ -375,6 +375,7 @@ func urlQueryEscape(s string) string {
 var providersTmpl = template.Must(template.New("providers").Funcs(template.FuncMap{
 	"adminCSS":  adminCSSFunc,
 	"adminNav":  adminNavFunc,
+	"dsHead":    dsHeadFunc,
 	"healthPct": func(v float64) string { return fmt.Sprintf("%.0f%%", v*100) },
 }).Parse(providersHTML))
 
@@ -436,10 +437,7 @@ const providersHTML = `<!doctype html>
 <div class="tk-shell">
 {{adminNav "providers"}}
 <div class="tk-main">
-<header>
-  <h1>Providers</h1>
-  <div class="sub">Reusable connections (endpoint + key env var) · {{.Version}}</div>
-</header>
+{{dsHead "providers" "Providers" "The endpoints Sluss connects to, and the name of the environment variable that holds each key."}}
 <div class="wrap">
   {{if .Notice}}<div class="banner ok">{{.Notice}}</div>{{end}}
   {{if .Error}}<div class="banner err">{{.Error}}</div>{{end}}
@@ -548,6 +546,7 @@ const providersHTML = `<!doctype html>
 var riskTmpl = template.Must(template.New("risk").Funcs(template.FuncMap{
 	"adminCSS": adminCSSFunc,
 	"adminNav": adminNavFunc,
+	"dsHead":   dsHeadFunc,
 }).Parse(riskHTML))
 
 const riskHTML = `<!doctype html>
@@ -604,10 +603,7 @@ const riskHTML = `<!doctype html>
 <div class="tk-shell">
 {{adminNav "risk"}}
 <div class="tk-main">
-<header>
-  <h1>Risk register</h1>
-  <div class="sub">Supply chain — what you assert about each AI provider, and what the active policy requires</div>
-</header>
+{{dsHead "risk" "Risk register" "What you assert about each AI provider, and what the active policy requires."}}
 <div class="wrap">
   {{if .Notice}}<div class="banner ok">{{.Notice}}</div>{{end}}
   {{if .Error}}<div class="banner err">{{.Error}}</div>{{end}}
