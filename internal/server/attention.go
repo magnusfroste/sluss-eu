@@ -82,6 +82,16 @@ func buildAttention(opts DashboardOptions, d *DashboardData, now time.Time) []at
 		})
 	}
 
+	if s := activeUpdates.Status(); s.Available {
+		out = append(out, attentionItem{
+			Level:  "info",
+			Title:  "A newer version of Sluss is available",
+			Detail: plural(s.Behind, "change") + " since this build. See what is new and how to upgrade the way you deployed it.",
+			Href:   "/router/system",
+			Action: "What is new",
+		})
+	}
+
 	if d.Coverage.DirectOpen > 0 {
 		out = append(out, attentionItem{
 			Level:  "warn",

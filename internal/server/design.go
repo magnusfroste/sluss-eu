@@ -59,6 +59,7 @@ a.ds-card{text-decoration:none;color:inherit;display:block}a.ds-card:hover{borde
 .ds-alert b{color:#fff}
 .ds-alert .ds-btn{margin-left:auto}
 .ds-alert.lvl-bad{border-color:#5b2330;background:var(--ds-bad-bg)}.ds-alert.lvl-bad .ds-dot{background:var(--ds-bad)}
+.ds-alert.lvl-info{border-color:#24406b;background:var(--ds-cloud-bg)}.ds-alert.lvl-info .ds-dot{background:var(--ds-cloud)}
 .ds-alert.lvl-ok{border-color:#1f5c38;background:var(--ds-ok-bg)}.ds-alert.lvl-ok .ds-dot{background:var(--ds-ok)}
 .ds-badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:2px 10px;font-size:.75rem;font-weight:600;white-space:nowrap}
 .ds-badge.local{background:var(--ds-ok-bg);color:var(--ds-ok-ink)}.ds-badge.cloud{background:var(--ds-cloud-bg);color:var(--ds-cloud-ink)}

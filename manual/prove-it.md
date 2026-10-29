@@ -27,3 +27,8 @@ Open [Request log]({{BASE}}/router/log) and click a row. It shows which rules ma
 - **Control report:** the active rules and what they did, ready to attach to a report.
 
 > These documents show what Sluss controlled and recorded. They are evidence for your own assessment, not a certificate that you comply with a law.
+
+## Which version runs, and how to upgrade
+
+The version in the menu footer opens the [Version]({{BASE}}/router/system) page. It shows the commit this instance runs, whether a newer version exists and what it changes, and the upgrade step for the way you deployed Sluss. A yellow dot next to the version means an update is waiting.
+
