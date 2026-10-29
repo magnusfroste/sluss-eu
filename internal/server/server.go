@@ -278,6 +278,7 @@ func New(cfg Config) http.Handler {
 		AuditMemory:                cfg.AuditMemory,
 		Bandit:                     cfg.Bandit,
 		ConservativeMode:           cfg.ConservativeMode,
+		ErrorRing:                  cfg.ErrorRing,
 		PolicyCache:                cfg.PolicyCache,
 	})
 	// Admin console gate. With a data dir (History) we use named-user sessions

@@ -55,7 +55,7 @@ func TestTimelineAndFlowCharts(t *testing.T) {
 		}
 	}
 	flow := string(flowSVG(DataFlowView{Local: 2, Cloud: 1, Blocked: 1}))
-	for _, want := range []string{"prompts classified", "Stayed in the house", "Blocked fail-closed", "50%"} {
+	for _, want := range []string{"prompts classified", "Stayed in the house", "Stopped by policy", "50%"} {
 		if !strings.Contains(flow, want) {
 			t.Errorf("flow missing %q", want)
 		}

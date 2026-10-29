@@ -25,10 +25,15 @@ const adminShellCSS = `
 .tk-link:hover .tk-ic{color:#cfe0ff}.tk-link.active .tk-ic{color:#fad100}
 .tk-link .tk-ic svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 .tk-sec{color:#5f6e87;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;padding:14px 12px 6px}
+.tk-sub{display:flex;flex-direction:column;margin:2px 0 6px 40px;border-left:1px solid #22324f}
+.tk-sublink{color:#8fa1bf;text-decoration:none;font-size:13px;padding:6px 10px;border-radius:0 7px 7px 0}
+.tk-sublink:hover{color:#fff;background:#101c34}.tk-sublink.on{color:#fff;font-weight:600;box-shadow:inset 2px 0 0 #fad100}
+.tk-bottom{margin-top:auto;border-top:1px solid #17253f;padding-top:8px;display:flex;flex-direction:column;gap:3px}
+.tk-bottom .tk-foot{margin-top:4px;border-top:0}
 .tk-foot{margin-top:auto;color:#5f6e87;font-size:11px;padding:12px 12px 4px;border-top:1px solid #17253f}
 .tk-build{color:inherit;text-decoration:none;font-family:ui-monospace,Menlo,monospace}.tk-build:hover{text-decoration:underline}
 .tk-main{flex:1;min-width:0;display:flex;flex-direction:column}
-@media(max-width:760px){.tk-nav{width:58px;padding:12px 8px}
+@media(max-width:760px){.tk-sub{display:none}.tk-nav{width:58px;padding:12px 8px}
   .tk-lbl,.tk-brand .tk-bt,.tk-sec,.tk-foot{display:none}
   .tk-link{justify-content:center;padding:11px 0}.tk-link .tk-ic{width:auto}}
 `
@@ -53,50 +58,76 @@ const (
 	icPrompts   = `<svg viewBox="0 0 24 24"><path d="M13 3 5 13h5l-1 8 8-11h-5z"/></svg>`
 	icChat      = `<svg viewBox="0 0 24 24"><path d="M20 4H4v12h5v4l4-4h7z"/></svg>`
 	icConnect   = `<svg viewBox="0 0 24 24"><path d="M9 15l6-6"/><path d="M11 6l1-1a3.5 3.5 0 0 1 5 5l-1 1"/><path d="M13 18l-1 1a3.5 3.5 0 0 1-5-5l1-1"/></svg>`
+	icSignOut   = `<svg viewBox="0 0 24 24"><path d="M15 4h4v16h-4"/><path d="M10 8l-4 4 4 4"/><path d="M6 12h10"/></svg>`
 	icPolicy    = `<svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.4-3 8-7 10-4-2-7-5.6-7-10V6z"/><path d="M9.5 12l2 2 3.5-4"/></svg>`
 )
 
-// Grouped the way the product is pitched: Evidence (what happened, provably),
-// Control (what is allowed to happen), Show (connect clients, run the demo).
-var adminNavItems = []navItem{
-	{"dashboard", "/router/dashboard", icDashboard, "Dashboard", "Evidence"},
-	{"log", "/router/log", icLog, "Request log", "Evidence"},
-	{"setup", "/router/setup", icSetup, "Quick start", "Control"},
-	{"rollout", "/router/rollout", icRollout, "Rollout", "Control"},
-	{"policy", "/router/policy", icPolicy, "Policy", "Control"},
-	{"models", "/router/models", icModels, "Models", "Control"},
-	{"providers", "/router/providers", icProviders, "Providers", "Control"},
-	{"risk", "/router/risk", icRisk, "Risk register", "Control"},
-	{"keys", "/router/keys", icKeys, "Keys", "Control"},
-	{"users", "/router/users", icUsers, "Users", "Control"},
-	{"prompts", "/router/prompts", icPrompts, "Demo prompts", "Show"},
-	{"chat", "/chat", icChat, "Live chat", "Show"},
-	{"connect", "/connect", icConnect, "Connect", "Show"},
-	{"manual", "/manual", icSetup, "Manual", "Show"},
+// The console menu (ISSUE-135): six groups by the admin's job, not fifteen
+// pages. A group links to its first page; the pages of the active group are
+// listed under it, so nothing became harder to reach. Page keys are the ones
+// pages already pass to adminNav.
+type navGroup struct {
+	key, label, icon string
+	pages            []navItem
+}
+
+var adminNavGroups = []navGroup{
+	{"overview", "Overview", icDashboard, []navItem{{key: "dashboard", href: "/router/dashboard", label: "Overview"}}},
+	{"activity", "Activity", icLog, []navItem{{key: "log", href: "/router/log", label: "Request log"}, {key: "reports", href: "/router/incident-report?window=24h", label: "Reports"}}},
+	{"policy", "Policy", icPolicy, []navItem{{key: "policy", href: "/router/policy", label: "Policy"}}},
+	{"models", "Models", icModels, []navItem{{key: "models", href: "/router/models", label: "Models"}, {key: "providers", href: "/router/providers", label: "Providers"}, {key: "risk", href: "/router/risk", label: "Risk register"}}},
+	{"access", "Access", icKeys, []navItem{{key: "keys", href: "/router/keys", label: "Department keys"}, {key: "users", href: "/router/users", label: "Console users"}}},
+	{"rollout", "Rollout", icRollout, []navItem{{key: "setup", href: "/router/setup", label: "Quick start"}, {key: "rollout", href: "/router/rollout", label: "Managed devices"}, {key: "connect", href: "/connect", label: "Connect clients"}, {key: "prompts", href: "/router/prompts", label: "Demo link"}}},
+}
+
+// adminNavBottom is the fixed foot of the menu: leave the console for the
+// chat, read the manual.
+var adminNavBottom = []navItem{
+	{key: "chat", href: "/chat", icon: icChat, label: "Open chat"},
+	{key: "manual", href: "/manual", icon: icSetup, label: "Manual"},
 }
 
 // adminNavHTML renders the left navigation with the given page marked active.
 func adminNavHTML(active string) string {
 	var b strings.Builder
 	b.WriteString(`<nav class="tk-nav"><div class="tk-brand">` + brandLogoSVG + `<span class="tk-bt">Sluss</span></div>`)
-	group := ""
-	for _, it := range adminNavItems {
-		if it.group != group {
-			group = it.group
-			b.WriteString(`<div class="tk-sec">` + group + `</div>`)
+	for _, g := range adminNavGroups {
+		inGroup := false
+		for _, p := range g.pages {
+			inGroup = inGroup || p.key == active
 		}
+		cls := "tk-link"
+		if inGroup {
+			cls += " active"
+		}
+		b.WriteString(`<a class="` + cls + `" href="` + g.pages[0].href + `"><span class="tk-ic">` + g.icon + `</span><span class="tk-lbl">` + g.label + `</span></a>`)
+		if inGroup && len(g.pages) > 1 {
+			b.WriteString(`<div class="tk-sub">`)
+			for _, p := range g.pages {
+				sc := "tk-sublink"
+				if p.key == active {
+					sc += " on"
+				}
+				b.WriteString(`<a class="` + sc + `" href="` + p.href + `">` + p.label + `</a>`)
+			}
+			b.WriteString(`</div>`)
+		}
+	}
+	b.WriteString(`<div class="tk-bottom">`)
+	for _, it := range adminNavBottom {
 		cls := "tk-link"
 		if it.key == active {
 			cls += " active"
 		}
 		b.WriteString(`<a class="` + cls + `" href="` + it.href + `"><span class="tk-ic">` + it.icon + `</span><span class="tk-lbl">` + it.label + `</span></a>`)
 	}
-	b.WriteString(`<div class="tk-foot"><a class="tk-link" href="/router/logout" style="padding:6px 12px"><span class="tk-lbl">Sign out</span></a>admin · <a class="tk-build" href="https://github.com/magnusfroste/sluss-eu/commit/` + template.HTMLEscapeString(buildinfo.FullCommit()) + `" title="Built ` + template.HTMLEscapeString(buildinfo.BuiltAt()) + `">` + template.HTMLEscapeString(buildinfo.Short()) + `</a></div></nav>`)
+	b.WriteString(`<a class="tk-link" href="/router/logout"><span class="tk-ic">` + icSignOut + `</span><span class="tk-lbl">Sign out</span></a>`)
+	b.WriteString(`<div class="tk-foot">admin · <a class="tk-build" href="https://github.com/magnusfroste/sluss-eu/commit/` + template.HTMLEscapeString(buildinfo.FullCommit()) + `" title="Built ` + template.HTMLEscapeString(buildinfo.BuiltAt()) + `">` + template.HTMLEscapeString(buildinfo.Short()) + `</a></div></div></nav>`)
 	return b.String()
 }
 
 // Template helpers for the html/template pages (dashboard, log, providers).
 // adminCSSFunc returns template.CSS — inside a <style> element html/template
 // uses a CSS context, so a template.HTML value would be escaped to ZgotmplZ.
-func adminCSSFunc() template.CSS               { return template.CSS(adminShellCSS) }
+func adminCSSFunc() template.CSS               { return template.CSS(adminShellCSS + designCSS) }
 func adminNavFunc(active string) template.HTML { return template.HTML(adminNavHTML(active)) }

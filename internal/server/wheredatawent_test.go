@@ -79,7 +79,7 @@ func TestDataFlowFromHistory(t *testing.T) {
 	rec := httptest.NewRecorder()
 	htmlH(rec, httptest.NewRequest(http.MethodGet, "/router/dashboard", nil))
 	body := rec.Body.String()
-	for _, want := range []string{"Where your data went", "3 kept in the house", "Stayed in the house", "left the house — allowed by your policy"} {
+	for _, want := range []string{"Where your data went", "3 kept local", "Stayed in the house", "allowed by your policy", "Personal data"} {
 		if !strings.Contains(body, want) {
 			t.Fatalf("dashboard missing %q", want)
 		}
