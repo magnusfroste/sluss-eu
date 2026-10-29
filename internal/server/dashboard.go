@@ -375,7 +375,7 @@ var dashboardTmpl = template.Must(template.New("dashboard").Funcs(template.FuncM
 		pct := float64(requests) / float64(total) * 100
 		return fmt.Sprintf("%.0f%%", pct)
 	},
-	"repeat": func(n int, s string) string { return strings.Repeat(s, n) },
+	"repeat":    func(n int, s string) string { return strings.Repeat(s, n) },
 	"dataClass": dataClassLabel,
 }).Parse(`<!DOCTYPE html>
 <html lang="en">
