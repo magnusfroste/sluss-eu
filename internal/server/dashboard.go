@@ -58,6 +58,9 @@ type DashboardOptions struct {
 	Bandit           *bandit.Bandit    // learned best model per task class
 	PolicyCache      *policy.Cache     // for the quick-start banner (ISSUE-124)
 	ConservativeMode bool              // incident lever status
+	// ErrorRing feeds "needs you" on the Overview (ISSUE-135): models that
+	// keep failing at their provider.
+	ErrorRing *eventlog.ErrorRing
 }
 
 // GreenSummary is the estimated environmental counterpart of SavingsSummary:
@@ -111,6 +114,8 @@ type DashboardData struct {
 	// Coverage is the managed-device picture from the rollout kit's daily
 	// check (ISSUE-128a); the card shows once a device has reported.
 	Coverage history.CoverageSummary `json:"-"`
+	// Attention is what the admin should act on, shown first (ISSUE-135).
+	Attention []attentionItem `json:"-"`
 	// Durable is true when totals come from SQLite history (they survive
 	// restarts), false for in-memory counters.
 	Durable bool `json:"durable"`
@@ -211,6 +216,7 @@ func buildDashboardData(opts DashboardOptions, taskFilter string) DashboardData 
 	if opts.History != nil {
 		d.Coverage = opts.History.SummarizeCoverage()
 	}
+	d.Attention = buildAttention(opts, &d, time.Now())
 	return d
 }
 
@@ -369,12 +375,13 @@ var dashboardTmpl = template.Must(template.New("dashboard").Funcs(template.FuncM
 		pct := float64(requests) / float64(total) * 100
 		return fmt.Sprintf("%.0f%%", pct)
 	},
-	"repeat": func(n int, s string) string { return strings.Repeat(s, n) },
+	"repeat":    func(n int, s string) string { return strings.Repeat(s, n) },
+	"dataClass": dataClassLabel,
 }).Parse(`<!DOCTYPE html>
-<html lang="sv">
+<html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Sluss — Router Dashboard</title>
+<title>Sluss — Overview</title>
 <style>
 {{adminCSS}}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -434,64 +441,59 @@ details.adv[open]>summary{margin-bottom:1.25rem}
 <body>
 <div class="tk-shell">
 {{adminNav "dashboard"}}
-<div class="tk-main" style="padding:2rem 2rem 3rem">
-<h1>Dashboard</h1>
-<p class="subtitle">Where your AI data went, what the gate stopped, and what routing saved — live.</p>
-{{if not .Setup.Complete}}<a class="setupban" href="/router/setup"><b>Finish setting up</b> — {{.Setup.Done}} of 4 steps done: a cloud model, a local model, keep personal data local, try it. <span>Quick start →</span></a>{{end}}
+<div class="tk-main"><div class="ds-content">
+<div class="ds-ph"><div><h1>Overview</h1><p>What needs you, where your AI data went, and the evidence — in that order.</p></div>
+  <div class="ds-actions"><a class="ds-btn" href="/router/log">Request log</a><a class="ds-btn primary" href="/router/compliance/report">Control report</a></div></div>
 
-{{with .DataFlow}}
-<div class="grid" style="margin-bottom:1rem">
-  <div class="card">
-    <div class="card-label">Stayed in the house</div>
-    <div class="card-value ok">{{.Local}}</div>
-    <div class="card-sub">{{.Pct .Local}}% of requests · local / on-prem models</div>
-  </div>
-  <div class="card">
-    <div class="card-label">Blocked fail-closed</div>
-    <div class="card-value{{if gt .Blocked 0}} bad{{end}}">{{.Blocked}}</div>
-    <div class="card-sub">no compliant model · never a silent fallback</div>
-  </div>
-  {{if gt $.Coverage.Devices 0}}<a class="card" href="/router/rollout" style="text-decoration:none;display:block">
-    <div class="card-label">Managed devices</div>
-    <div class="card-value{{if gt $.Coverage.DirectOpen 0}} bad{{end}}">{{$.Coverage.DirectOpen}}<span style="font-size:1rem;color:#94a3b8;font-weight:500"> / {{$.Coverage.Devices}}</span></div>
-    <div class="card-sub">{{if gt $.Coverage.DirectOpen 0}}still reach AI providers directly{{else}}none can reach AI providers directly{{end}} · daily check</div>
-  </a>{{end}}
-  <div class="card">
-    <div class="card-label">Personal data (PII)</div>
-    <div class="card-value">{{.PII.Total}}</div>
-    <div class="card-sub">{{if gt .PII.Cloud 0}}<span class="bad">{{.PII.Cloud}} went to the cloud</span>{{else if gt .PII.Total 0}}{{.PII.Local}} kept in the house · {{.PII.Blocked}} blocked{{else}}none seen yet{{end}} · types only, never values</div>
-  </div>
-  <div class="card ev">
-    <div class="card-label">Evidence</div>
-    <div class="ev-links"><a href="/router/incident-report?window=24h">Incident 24h</a><a href="/router/gap-report">Gap report</a><a href="/router/audit/export">Audit chain</a><a href="/router/compliance/report">Control report</a></div>
-    <div class="card-sub">counts and classes — never prompt content</div>
-  </div>
+<div class="ds-attention">
+{{range .Attention}}<div class="ds-alert lvl-{{.Level}}"><span class="ds-dot"></span><div><b>{{.Title}}.</b> {{.Detail}}</div><a class="ds-btn sm" href="{{.Href}}">{{.Action}}</a></div>
+{{else}}<div class="ds-alert lvl-ok"><span class="ds-dot"></span><div><b>Nothing needs you right now.</b> No model has failed in the last hour, every provider has its key, and setup is complete.</div></div>
+{{end}}
 </div>
 
-<section class="flow">
-<h2>Where your data went</h2>
+{{with .DataFlow}}
+<div class="ds-section"><div class="ds-grid">
+  <div class="ds-card ds-stat ds-c3"><div class="ds-label">Stayed in the house</div><div class="ds-value ds-v-ok">{{.Local}}</div><div class="ds-hint">{{.Pct .Local}}% of requests · own hardware</div></div>
+  <div class="ds-card ds-stat ds-c3"><div class="ds-label">Went to the cloud</div><div class="ds-value ds-v-cloud">{{.Cloud}}</div><div class="ds-hint">{{.Pct .Cloud}}% · allowed by your rules</div></div>
+  <div class="ds-card ds-stat ds-c3"><div class="ds-label">Stopped by policy</div><div class="ds-value{{if gt .Blocked 0}} ds-v-bad{{end}}">{{.Blocked}}</div><div class="ds-hint">nothing was sent anywhere</div></div>
+  <div class="ds-card ds-stat ds-c3"><div class="ds-label">Personal data seen</div><div class="ds-value">{{.PII.Total}}</div><div class="ds-hint">{{if gt .PII.Cloud 0}}<span class="ds-v-bad">{{.PII.Cloud}} went to the cloud</span>{{else if gt .PII.Total 0}}{{.PII.Local}} kept local · {{.PII.Blocked}} stopped · 0 to cloud{{else}}none seen yet{{end}}</div></div>
+</div></div>
+
+<div class="ds-section"><div class="ds-grid">
+  <div class="ds-card ds-c8"><h2>Where your data went</h2>
+    {{if gt .Total 0}}<div class="ds-sub">{{.Total}} prompts classified by fixed rules, never by an AI</div>
+    <div class="chart">{{.FlowSVG}}</div>
+    {{if gt .Unknown 0}}<div class="ds-foot">{{.Unknown}} older requests have no known destination: their model and provider were removed.</div>{{end}}
+    {{else}}<div class="ds-sub">No requests yet — send one from the <a href="/chat" style="color:#7fd3ff">chat</a> or any connected client.</div>{{end}}
+  </div>
+  <div class="ds-card ds-c4"><h2>Evidence</h2><div class="ds-sub">Counts and classes — never prompt content</div>
+    <div class="ds-links">
+      <a href="/router/incident-report?window=24h">Incident, last 24 h <small>NIS2 early warning →</small></a>
+      <a href="/router/audit/export">Audit chain <small>verify offline →</small></a>
+      <a href="/router/gap-report">Gap report <small>shadow policy →</small></a>
+      <a href="/router/compliance/report">Control report <small>rules and effect →</small></a>
+    </div>
+    {{if gt $.Coverage.Devices 0}}<div class="ds-foot"><a href="/router/rollout">Managed devices</a>: {{$.Coverage.DirectOpen}} of {{$.Coverage.Devices}} can reach AI providers directly.</div>{{end}}
+  </div>
+</div></div>
+
 {{if gt .Total 0}}
-<div class="chart">{{.FlowSVG}}</div>
-<div class="flow-legend"><span><i class="seg-local"></i>Local {{.Local}}</span><span><i class="seg-cloud"></i>Cloud {{.Cloud}}</span><span><i class="seg-blocked"></i>Blocked {{.Blocked}}</span>{{if gt .Unknown 0}}<span style="color:#94a3b8">Unknown {{.Unknown}} (older rows whose model and provider were removed)</span>{{end}}</div>
-<div class="flow-scroll"><table class="flow-table">
-<thead><tr><th>Data class</th><th class="num">Local</th><th class="num">Cloud</th><th class="num">Blocked</th><th></th></tr></thead>
+<div class="ds-section"><h2>By kind of data</h2>
+<div class="ds-tablewrap"><div class="ds-scroll"><table class="ds-table">
+<thead><tr><th>Kind of data</th><th class="ds-num">Kept local</th><th class="ds-num">Cloud</th><th class="ds-num">Stopped</th><th></th></tr></thead>
 <tbody>
-{{range .Rows}}
-<tr>
-  <td>{{if eq .Sensitivity "none"}}<span style="color:#94a3b8">no sensitive data</span>{{else}}<span class="cls">{{.Sensitivity}}</span>{{end}}</td>
-  <td class="num ok">{{.Local}}</td>
-  <td class="num{{if and (gt .Cloud 0) (ne .Sensitivity "none")}} warn{{end}}">{{.Cloud}}</td>
-  <td class="num{{if gt .Blocked 0}} bad{{end}}">{{.Blocked}}</td>
-  <td class="note">{{if and (gt .Cloud 0) (ne .Sensitivity "none")}}left the house — allowed by your policy{{end}}</td>
-</tr>
+{{range .Rows}}<tr>
+  <td title="{{.Sensitivity}}">{{dataClass .Sensitivity}}</td>
+  <td class="ds-num{{if gt .Local 0}} ds-v-ok{{end}}">{{.Local}}</td>
+  <td class="ds-num{{if and (gt .Cloud 0) (ne .Sensitivity "none")}} ds-v-warn{{end}}">{{.Cloud}}</td>
+  <td class="ds-num{{if gt .Blocked 0}} ds-v-bad{{end}}">{{.Blocked}}</td>
+  <td>{{if and (gt .Cloud 0) (ne .Sensitivity "none")}}<span class="ds-badge warn">allowed by your policy</span>{{end}}</td>
+</tr>{{end}}
+</tbody></table></div></div>
+<div class="ds-foot">A sensitive kind in the cloud column is a choice in your <a href="/router/policy">policy</a>, and can be changed there.</div>
+</div>
 {{end}}
-</tbody>
-</table></div>
-<p class="subtitle" style="margin:-1.25rem 0 0">Retained history · classification by deterministic rules, no LLM · a sensitive class in the cloud column is a policy choice you can change on <a href="/router/policy" style="color:#7fd3ff">Policy</a>.</p>
-{{else}}
-<p class="subtitle">No requests yet — send one from <a href="/demo" style="color:#7fd3ff">Live chat</a> or any connected client.</p>
-{{end}}
-</section>
+<div class="ds-section">
 {{if .Days}}
 <section class="flow">
 <h2>Last 7 days</h2>
@@ -505,6 +507,7 @@ details.adv[open]>summary{margin-bottom:1.25rem}
 {{else}}<p class="subtitle">No requests in the last 7 days.</p>{{end}}
 </section>
 {{end}}
+</div>
 {{end}}
 
 {{if gt .Savings.PremiumBaselineUSD 0.0}}
@@ -518,6 +521,7 @@ details.adv[open]>summary{margin-bottom:1.25rem}
 </div>
 {{end}}
 
+<details class="adv ds-section"><summary>More detail — routes, providers, egress, learning and spend per tenant</summary>
 <div class="grid">
   <div class="card">
     <div class="card-label">Total requests</div>
@@ -715,11 +719,12 @@ details.adv[open]>summary{margin-bottom:1.25rem}
 </table>
 </section>
 
+</details>
 <p style="font-size:0.72rem;color:#334155">
   JSON: <a href="/router/dashboard/data" style="color:#3b82f6">/router/dashboard/data</a> &nbsp;·&nbsp;
   Metrics: <a href="/metrics" style="color:#3b82f6">/metrics</a>
 </p>
-</div>
+</div></div>
 </div>
 <div id="ctip" role="tooltip"></div>
 <script>

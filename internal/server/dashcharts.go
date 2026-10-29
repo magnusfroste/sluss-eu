@@ -200,7 +200,7 @@ func flowSVG(v DataFlowView) template.HTML {
 		n     int
 		col   string
 	}
-	outs := []out{{"Stayed in the house", v.Local, colLocal}, {"Went to the cloud", v.Cloud, colCloud}, {"Blocked fail-closed", v.Blocked, colBlocked}}
+	outs := []out{{"Stayed in the house", v.Local, colLocal}, {"Went to the cloud", v.Cloud, colCloud}, {"Stopped by policy", v.Blocked, colBlocked}}
 	if v.Unknown > 0 {
 		outs = append(outs, out{"Unknown (older rows)", v.Unknown, colMuted})
 	}
