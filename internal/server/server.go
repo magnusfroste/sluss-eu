@@ -443,6 +443,9 @@ func New(cfg Config) http.Handler {
 		// Per-row live test (ISSUE-098): works read-only too (registry fallback),
 		// so it is registered regardless of roster CRUD.
 		mux.Handle("POST /router/models/test", dashGuard(ModelTestHandler(modelOpts)))
+		// Per-provider live test (ISSUE-134): served models + every routed model.
+		mux.Handle("POST /router/providers/test", dashGuard(ProviderTestHandler(modelOpts)))
+		mux.Handle("POST /router/models/slug", dashGuard(ModelSlugHandler(modelOpts)))
 		if cfg.Roster != nil {
 			mux.Handle("POST /router/models", dashGuard(ModelsAddHandler(modelOpts)))
 			mux.Handle("POST /router/models/delete", dashGuard(ModelsDeleteHandler(modelOpts)))
