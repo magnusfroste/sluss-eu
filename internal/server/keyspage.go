@@ -145,6 +145,7 @@ func redirectKeys(w http.ResponseWriter, r *http.Request, ok, errMsg string) {
 var keysTmpl = template.Must(template.New("keys").Funcs(template.FuncMap{
 	"adminCSS": adminCSSFunc,
 	"adminNav": adminNavFunc,
+	"dsHead":   dsHeadFunc,
 }).Parse(keysHTML))
 
 const keysHTML = `<!doctype html>
@@ -184,8 +185,7 @@ input{width:100%;background:#081328;border:1px solid #2c4066;border-radius:8px;c
 <div class="tk-shell">
 {{adminNav "keys"}}
 <div class="tk-main">
-<div class="hd"><h1>API keys</h1>
-<div class="sub">DB-backed keys per department (tenant/project). The secret is shown <b>once</b>.</div></div>
+{{dsHead "keys" "Department keys" "One key per department or team. Every request is logged under its department; the secret is shown once."}}
 <div class="wrap">
 
 {{if .Notice}}<div class="notice">{{.Notice}}</div>{{end}}

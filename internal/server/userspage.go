@@ -124,6 +124,7 @@ func redirectUsers(w http.ResponseWriter, r *http.Request, ok, errMsg string) {
 var usersTmpl = template.Must(template.New("users").Funcs(template.FuncMap{
 	"adminCSS": adminCSSFunc,
 	"adminNav": adminNavFunc,
+	"dsHead":   dsHeadFunc,
 }).Parse(usersHTML))
 
 const usersHTML = `<!doctype html>
@@ -158,8 +159,7 @@ input{width:100%;background:#081328;border:1px solid #2c4066;border-radius:8px;c
 <div class="tk-shell">
 {{adminNav "users"}}
 <div class="tk-main">
-<div class="hd"><h1>Users</h1>
-<div class="sub">Named console accounts. Every console action is attributed to the signed-in user in the audit log.</div></div>
+{{dsHead "users" "Console users" "Named accounts for the admin console. Every change is recorded under the person who made it."}}
 <div class="wrap">
 
 {{if .Notice}}<div class="notice">{{.Notice}}</div>{{end}}

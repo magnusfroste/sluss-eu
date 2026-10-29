@@ -210,6 +210,7 @@ func PolicyPageHandler(o PolicyPageOptions) http.HandlerFunc {
 var policyTmpl = template.Must(template.New("policy").Funcs(template.FuncMap{
 	"adminCSS": adminCSSFunc,
 	"adminNav": adminNavFunc,
+	"dsHead":   dsHeadFunc,
 	"inc":      func(i int) int { return i + 1 },
 }).Parse(policyHTML))
 
@@ -252,8 +253,7 @@ textarea{width:100%;background:#081328;border:1px solid #2c4066;border-radius:8p
 <div class="tk-shell">
 {{adminNav "policy"}}
 <div class="tk-main">
-<div class="hd"><h1>Policy</h1>
-<div class="sub">The firewall for data egress. See the active policy and test how a prompt routes — before a single provider call.</div></div>
+{{dsHead "policy" "Policy" "The rules every request passes, and a dry run that shows where a prompt would go without sending it."}}
 <div class="wrap">
 
 {{if .Notice}}<div class="card" style="border-color:#1f6b45;color:#a7f3d0;background:#0f2f22">{{.Notice}}</div>{{end}}

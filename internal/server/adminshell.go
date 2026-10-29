@@ -12,6 +12,7 @@ import (
 // are tk- prefixed to avoid colliding with per-page styles.
 const adminShellCSS = `
 .tk-shell{display:flex;min-height:100vh}
+.tk-nav,.tk-nav *{box-sizing:border-box}
 .tk-nav{width:212px;flex-shrink:0;background:#060f22;border-right:1px solid #22324f;
   display:flex;flex-direction:column;padding:14px 10px;gap:3px;position:sticky;top:0;height:100vh}
 .tk-brand{display:flex;align-items:center;gap:9px;font-weight:700;color:#e8eef7;
@@ -101,17 +102,6 @@ func adminNavHTML(active string) string {
 			cls += " active"
 		}
 		b.WriteString(`<a class="` + cls + `" href="` + g.pages[0].href + `"><span class="tk-ic">` + g.icon + `</span><span class="tk-lbl">` + g.label + `</span></a>`)
-		if inGroup && len(g.pages) > 1 {
-			b.WriteString(`<div class="tk-sub">`)
-			for _, p := range g.pages {
-				sc := "tk-sublink"
-				if p.key == active {
-					sc += " on"
-				}
-				b.WriteString(`<a class="` + sc + `" href="` + p.href + `">` + p.label + `</a>`)
-			}
-			b.WriteString(`</div>`)
-		}
 	}
 	b.WriteString(`<div class="tk-bottom">`)
 	for _, it := range adminNavBottom {
@@ -129,5 +119,5 @@ func adminNavHTML(active string) string {
 // Template helpers for the html/template pages (dashboard, log, providers).
 // adminCSSFunc returns template.CSS — inside a <style> element html/template
 // uses a CSS context, so a template.HTML value would be escaped to ZgotmplZ.
-func adminCSSFunc() template.CSS               { return template.CSS(adminShellCSS + designCSS) }
+func adminCSSFunc() template.CSS               { return template.CSS(adminShellCSS + designCSS + designFrameCSS) }
 func adminNavFunc(active string) template.HTML { return template.HTML(adminNavHTML(active)) }
