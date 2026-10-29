@@ -19,10 +19,12 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
-// Set via -ldflags -X; empty means "not stamped".
+// Set via -ldflags -X; empty means "not stamped". Version is the release tag
+// (e.g. v1.0.0) when the image was built from one, empty for main builds.
 var (
-	Commit string
-	Built  string
+	Commit  string
+	Built   string
+	Version string
 )
 
 var resolveOnce sync.Once
@@ -78,6 +80,19 @@ func Short() string {
 	return c + suffix
 }
 
+// Release returns the release tag this build was made from ("" for builds of
+// main or local builds).
+func Release() string { return Version }
+
+// Label is what the console shows for this build: the release tag when there
+// is one, otherwise the short commit.
+func Label() string {
+	if Version != "" {
+		return Version
+	}
+	return Short()
+}
+
 // BuiltAt returns the build timestamp ("" when unknown).
 func BuiltAt() string {
 	resolveOnce.Do(resolve)
@@ -86,10 +101,10 @@ func BuiltAt() string {
 
 var info = promauto.NewGaugeVec(prometheus.GaugeOpts{
 	Name: "sluss_build_info",
-	Help: "Build of the running router: always 1, labelled with the commit and build time.",
-}, []string{"commit", "built"})
+	Help: "Build of the running router: always 1, labelled with the commit, build time and release tag (empty for main builds).",
+}, []string{"built", "commit", "version"})
 
 // Register publishes sluss_build_info on /metrics. Call once at startup.
 func Register() {
-	info.WithLabelValues(FullCommit(), BuiltAt()).Set(1)
+	info.WithLabelValues(BuiltAt(), FullCommit(), Version).Set(1)
 }
