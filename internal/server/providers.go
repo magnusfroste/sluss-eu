@@ -429,6 +429,8 @@ const providersHTML = `<!doctype html>
   .rtab td{padding:8px 6px;text-align:center;border-bottom:1px solid #17253f}
   .rtab tbody tr:last-child td{border-bottom:none}
   .rtab .req{color:#f4b740;font-size:10px;letter-spacing:.03em;margin-top:2px}
+.ptest{margin-top:10px;padding:10px 12px;background:#0b1528;border:1px solid #22324f;border-radius:8px;font-size:.84rem;line-height:1.55}
+.ptest .ok{color:#4ade80}.ptest .bad{color:#f87171}.ptest .warn{color:#f4b740}.ptest .mono{font-family:ui-monospace,Menlo,monospace}
 </style></head>
 <body>
 <div class="tk-shell">
@@ -472,11 +474,12 @@ const providersHTML = `<!doctype html>
         {{if .KeySet}}<span class="tag ok">key set · {{.KeyEnv}}</span>
         {{else}}<span class="tag bad">key missing · {{.KeyEnv}}</span>{{end}}
       {{else}}<span class="tag neutral">no key</span>{{end}}
-      {{if .HasHealth}}<span class="tag {{if ge .Health 0.9}}ok{{else if ge .Health 0.5}}warn{{else}}bad{{end}}">health {{healthPct .Health}}</span>{{end}}
+      {{if .HasHealth}}<span class="tag {{if ge .Health 0.9}}ok{{else if ge .Health 0.5}}warn{{else}}bad{{end}}" title="Share of successful calls in recent live traffic — passive. Press Test for a live check now.">traffic health {{healthPct .Health}}</span>{{end}}
       {{if .Synced}}<span class="tag neutral">prices synced</span>{{else}}<span class="tag neutral">manual prices</span>{{end}}
       {{range .Tags}}<span class="tag neutral">{{.}}</span>{{end}}
       <a class="tag neutral" href="/router/models">{{.ModelN}} models</a>
       <span class="tag neutral">{{.Status}}</span>
+      <button class="btn sm" type="button" style="margin:0" onclick="testProvider(this)" data-id="{{.ID}}" title="Ask this provider which models it serves, then send each model routed to it a 1-token request — the same call a real request makes.">Test</button>
       {{if and .Deletable $.CRUD}}
       <span class="pacts">
       <button class="btn sm" type="button" style="margin:0" onclick="editProvider(this)" data-id="{{.ID}}" data-name="{{.Name}}" data-url="{{.BaseURL}}" data-key="{{.KeyEnv}}" data-tags="{{range $i, $t := .Tags}}{{if $i}}, {{end}}{{$t}}{{end}}">Edit</button>
@@ -487,6 +490,7 @@ const providersHTML = `<!doctype html>
       </span>
       {{end}}
     </div>
+    <div class="ptest" id="pt-{{.ID}}" hidden></div>
   </div>
   {{else}}
   <div class="empty">No providers configured.</div>
@@ -508,6 +512,22 @@ const providersHTML = `<!doctype html>
     <div style="margin-top:14px"><button class="btn" type="submit" id="provsave">Save connection</button> <button class="btn" type="button" id="provcancel" style="display:none" onclick="resetProvider()">Cancel</button></div>
   </form>
   <script>
+  function useSlug(b,pid){b.disabled=true;b.textContent='Switching…';
+    fetch('/router/models/slug',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'id='+encodeURIComponent(b.dataset.model)+'&slug='+encodeURIComponent(b.dataset.slug)})
+    .then(function(r){return r.json()}).then(function(j){if(j.error){b.textContent=j.error;return}
+      var t=document.querySelector('button[data-id="'+pid+'"][onclick^="testProvider"]');if(t)testProvider(t);});}
+  function testProvider(b){var id=b.dataset.id,box=document.getElementById('pt-'+id);box.hidden=false;box.textContent='Testing '+id+'…';b.disabled=true;
+    fetch('/router/providers/test',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'id='+encodeURIComponent(id)})
+    .then(function(r){return r.json()}).then(function(j){var h='';
+      var e=function(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};
+      var routed=(j.models||[]).map(function(m){return m.model_id});
+      if(j.served_error){h+='<div class="warn">Model list: '+e(j.served_error)+'</div>'}
+      else if(j.served){h+='<div>Serves:</div>';j.served.forEach(function(s){var inuse=(j.models||[]).some(function(m){return m.slug===s});
+        h+='<div style="margin-left:12px"><span class="mono">'+e(s)+'</span>'+(inuse?' <span class="ok">in use</span>':(routed.length===1?' <button class="btn sm" type="button" style="margin:0 0 0 6px" data-model="'+e(routed[0])+'" data-slug="'+e(s)+'" onclick="useSlug(this,\''+e(id)+'\')">Use this for '+e(routed[0])+'</button>':''))+'</div>'});}
+      (j.models||[]).forEach(function(m){h+='<div>'+(m.ok?'<span class="ok">✓</span>':'<span class="bad">✗</span>')+' <b>'+e(m.model_id)+'</b> <span class="mono">'+e(m.slug)+'</span> · '+e(m.latency_ms)+' ms'+(m.ok?'':' — '+e(m.status||'')+' '+e(m.diagnosis||m.error||''))+'</div>'});
+      if(!(j.models||[]).length){h+='<div class="warn">No models are routed to this provider.</div>'}
+      if((j.missing||[]).length){h+='<div class="bad">Registered here but not served there: <span class="mono">'+e(j.missing.join(', '))+'</span> — the model was renamed or unloaded on the provider. Update the model\'s slug on <a href="/router/models" style="color:#7fd3ff">Models</a>.</div>'}
+      box.innerHTML=h;}).catch(function(err){box.textContent='Test failed: '+err}).finally(function(){b.disabled=false});}
   function editProvider(b){var d=b.dataset;
     document.getElementById('prov_id').value=d.id;document.getElementById('prov_id').readOnly=true;
     document.getElementById('prov_name').value=d.name;document.getElementById('prov_url').value=d.url;
