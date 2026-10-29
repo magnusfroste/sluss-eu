@@ -776,6 +776,7 @@ func (o MCPOptions) serverInfo(_ context.Context, _ json.RawMessage) (any, error
 		"name":             MCPName,
 		"mcp_version":      MCPVersion,
 		"build_commit":     buildinfo.FullCommit(),
+		"build_version":    buildinfo.Release(),
 		"build_time":       buildinfo.BuiltAt(),
 		"registry_version": registryVersion,
 		"roster_source":    rosterSource,

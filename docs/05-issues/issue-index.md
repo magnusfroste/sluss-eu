@@ -117,6 +117,7 @@ P2:
 4. Uppdatera dokumentation om kontrakt ändras.
 5. Kontrollera latency om issue påverkar fast path.
 6. Merge efter review.
+- ISSUE-139 — Första releasen v1.0.0: versionsstämpel från release-taggen (footer, /metrics, MCP), image-taggar :v1.0.0 och :1.0, uppdateringskontrollen följer releaser för release-byggen, CHANGELOG. `epic: EPIC-14`, `priority: P1`, `state: done`, klar 2026-10-29.
 - ISSUE-138 — Ny version och uppgradering: kontroll var 6:e timme mot GitHubs publika API (av med ROUTER_UPDATE_CHECK=off), Version-sidan med "What is new" och uppgraderingssteg per EasyPanel/Docker/Compose/AgentHotel (ROUTER_DEPLOYMENT först), gul prick vid versionen i menyn, informationsrad på Overview. Ingen självuppgradering. `epic: EPIC-14`, `priority: P2`, `state: done`, klar 2026-10-29.
 - ISSUE-137 — Activity (logg + rapporter) och Rollout (Quick start, Managed devices, Demo link) i designsystemet med flikar; loggen och policyreglerna i klartext; mobilchatten visar alltid Send. `epic: EPIC-15`, `priority: P1`, `state: done`, klar 2026-10-29.
 - ISSUE-136 — Models, Providers, Risk register, Keys, Users och Policy i designsystemet: gemensamt sidhuvud med flikar för gruppens sidor (ersätter undermenyn), samma kolumnbredd, kort och tabellrytm på alla sidor, samma menybredd. `epic: EPIC-15`, `priority: P1`, `state: done`, klar 2026-10-29.

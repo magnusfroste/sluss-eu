@@ -31,7 +31,7 @@ var upgradePaths = []upgradePath{
 	}, ""},
 	{"docker", "Docker", []string{
 		"Pull the new image and recreate the container with the same flags and the same /data volume. Pin a tag (sha-… or v…) in production instead of latest.",
-	}, "docker pull ghcr.io/magnusfroste/sluss-eu:latest\ndocker rm -f sluss\ndocker run -d --name sluss --restart unless-stopped -v sluss-data:/data … ghcr.io/magnusfroste/sluss-eu:latest"},
+	}, "docker pull ghcr.io/magnusfroste/sluss-eu:<version>   # e.g. v1.0.0, or latest for main\ndocker rm -f sluss\ndocker run -d --name sluss --restart unless-stopped -v sluss-data:/data … ghcr.io/magnusfroste/sluss-eu:<version>"},
 	{"compose", "Docker Compose", []string{
 		"From the directory with your docker-compose.yml:",
 	}, "docker compose pull\ndocker compose up -d"},
@@ -41,10 +41,10 @@ var upgradePaths = []upgradePath{
 }
 
 type versionPageData struct {
-	Commit, Short, Built string
-	S                    UpdateStatus
-	Paths                []upgradePath
-	Notice               string
+	Commit, Short, Built, Release string
+	S                             UpdateStatus
+	Paths                         []upgradePath
+	Notice                        string
 }
 
 // VersionPageHandler renders /router/system.
@@ -64,7 +64,7 @@ func VersionPageHandler(u *UpdateChecker, logger *slog.Logger) http.HandlerFunc 
 			}
 		}
 		d := versionPageData{
-			Commit: buildinfo.FullCommit(), Short: buildinfo.Short(), Built: buildinfo.BuiltAt(),
+			Commit: buildinfo.FullCommit(), Short: buildinfo.Short(), Built: buildinfo.BuiltAt(), Release: buildinfo.Release(),
 			S: s, Paths: paths, Notice: r.URL.Query().Get("ok"),
 		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -128,14 +128,14 @@ details.path summary{cursor:pointer;font-weight:600}
 <div class="ds-grid">
   <div class="ds-card ds-stat ds-c6">
     <div class="ds-label">This instance</div>
-    <div class="ds-value mono" style="font-size:1.6rem">{{.Short}}</div>
-    <div class="ds-hint">built {{.Built}} · <a style="color:#7fd3ff" href="{{.S.RepoURL}}/commit/{{.Commit}}">see the commit</a></div>
+    <div class="ds-value mono" style="font-size:1.6rem">{{if .Release}}{{.Release}}{{else}}{{.Short}}{{end}}</div>
+    <div class="ds-hint">{{if .Release}}release · commit <span class="mono">{{.Short}}</span> · {{else}}a build of main · {{end}}built {{.Built}} · <a style="color:#7fd3ff" href="{{.S.RepoURL}}/{{if .Release}}releases/tag/{{.Release}}{{else}}commit/{{.Commit}}{{end}}">{{if .Release}}release notes{{else}}see the commit{{end}}</a></div>
   </div>
   <div class="ds-card ds-stat ds-c6">
-    <div class="ds-label">Latest on main</div>
+    <div class="ds-label">{{if eq .S.Track "release"}}Latest release{{else}}Latest on main{{end}}</div>
     {{if .S.Disabled}}<div class="ds-value" style="font-size:1.3rem">Check is off</div><div class="ds-hint">ROUTER_UPDATE_CHECK=off — for air-gapped installs. Compare the footer with the repository by hand.</div>
     {{else if .S.Error}}<div class="ds-value" style="font-size:1.3rem">Unknown</div><div class="ds-hint">{{.S.Error}}</div>
-    {{else if .S.Available}}<div class="ds-value ds-v-warn">{{.S.Behind}} {{if eq .S.Behind 1}}change{{else}}changes{{end}} behind</div><div class="ds-hint">latest <span class="mono">{{short .S.Latest}}</span> · checked {{clock .S.Checked}}</div>
+    {{else if .S.Available}}<div class="ds-value ds-v-warn">{{if .S.LatestTag}}{{.S.LatestTag}} is out{{else}}{{.S.Behind}} {{if eq .S.Behind 1}}change{{else}}changes{{end}} behind{{end}}</div><div class="ds-hint">{{if .S.LatestTag}}{{.S.Behind}} changes since {{.Release}}{{else}}latest <span class="mono">{{short .S.Latest}}</span>{{end}} · checked {{clock .S.Checked}}</div>
     {{else if not .S.Checked.IsZero}}<div class="ds-value ds-v-ok" style="font-size:1.6rem">Up to date</div><div class="ds-hint">checked {{clock .S.Checked}}</div>
     {{else}}<div class="ds-value" style="font-size:1.3rem">Not checked yet</div><div class="ds-hint">The first check runs shortly after start.</div>{{end}}
     {{if not .S.Disabled}}<form method="post" action="/router/system/check" style="margin-top:12px"><button class="ds-btn sm" type="submit">Check now</button></form>{{end}}

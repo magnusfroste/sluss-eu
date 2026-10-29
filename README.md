@@ -66,7 +66,8 @@ getting-started steps, `/connect` (per-client recipes), and the admin console
 [www.sluss.eu](https://www.sluss.eu); a running instance tells search engines
 not to index it.
 
-Prefer a container? Every push to `main` publishes
+Prefer a container? Releases are published as `ghcr.io/magnusfroste/sluss-eu:v1.0.0`
+(pin this in production — see [CHANGELOG](CHANGELOG.md)); every push to `main` publishes
 `ghcr.io/magnusfroste/sluss-eu:latest` (public); `deploy/docker-compose.yml` is a
 one-service compose with a data volume. Step by step — `docker run`, TLS,
 upgrades, backup, air-gapped installs:

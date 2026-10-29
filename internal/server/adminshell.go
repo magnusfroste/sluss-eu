@@ -118,7 +118,7 @@ func adminNavHTML(active string) string {
 		dot = `<span class="tk-upd" aria-hidden="true"></span>`
 		tip = "A newer version is available (" + itoa(s.Behind) + " changes) · see what is new"
 	}
-	b.WriteString(`<div class="tk-foot">admin · <a class="tk-build" href="/router/system" title="` + template.HTMLEscapeString(tip) + `">` + template.HTMLEscapeString(buildinfo.Short()) + dot + `</a></div></div></nav>`)
+	b.WriteString(`<div class="tk-foot">admin · <a class="tk-build" href="/router/system" title="` + template.HTMLEscapeString(tip) + `">` + template.HTMLEscapeString(buildinfo.Label()) + dot + `</a></div></div></nav>`)
 	return b.String()
 }
 

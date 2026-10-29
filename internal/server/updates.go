@@ -14,6 +14,7 @@ package server
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
@@ -42,6 +43,9 @@ type UpdateStatus struct {
 	Checked   time.Time
 	Error     string
 	Current   string // full commit of this build, "" when unknown (dev build)
+	Release   string // release tag this build was made from ("" for main builds)
+	Track     string // "release" (compared with the latest release) or "main"
+	LatestTag string // newest release tag, in release mode
 	Latest    string
 	Behind    int // commits on main this build does not have
 	Commits   []updateCommit
@@ -60,6 +64,7 @@ type UpdateChecker struct {
 	Interval time.Duration
 	Logger   *slog.Logger
 	Current  func() string // defaults to buildinfo.FullCommit
+	Release  func() string // defaults to buildinfo.Release
 
 	mu     sync.Mutex
 	status UpdateStatus
@@ -109,6 +114,11 @@ func (u *UpdateChecker) Status() UpdateStatus {
 	if s.Current == "" {
 		s.Current = u.current()
 	}
+	s.Release = u.release()
+	s.Track = "main"
+	if s.Release != "" {
+		s.Track = "release"
+	}
 	return s
 }
 
@@ -124,9 +134,60 @@ func (u *UpdateChecker) current() string {
 	return sha
 }
 
-// Check asks GitHub how this build compares with main.
+func (u *UpdateChecker) release() string {
+	if u.Release != nil {
+		return strings.TrimSpace(u.Release())
+	}
+	return strings.TrimSpace(buildinfo.Release())
+}
+
+// latestRelease returns the newest published release tag ("" when none).
+func (u *UpdateChecker) latestRelease(ctx context.Context) (string, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, strings.TrimRight(u.APIBase, "/")+"/repos/"+u.Repo+"/releases/latest", nil)
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("Accept", "application/vnd.github+json")
+	resp, err := u.Client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode == http.StatusNotFound {
+		return "", nil
+	}
+	var rel struct {
+		Tag string `json:"tag_name"`
+	}
+	if err := json.NewDecoder(io.LimitReader(resp.Body, 1<<20)).Decode(&rel); err != nil || resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("github.com answered HTTP %d", resp.StatusCode)
+	}
+	return rel.Tag, nil
+}
+
+// Check asks GitHub how this build compares with what it should follow: the
+// newest release for a release build, main for a main build.
 func (u *UpdateChecker) Check(ctx context.Context) {
 	st := UpdateStatus{Checked: time.Now(), Current: u.current()}
+	head := "main"
+	if rel := u.release(); rel != "" {
+		latest, err := u.latestRelease(ctx)
+		if err != nil {
+			st.Error = "could not read the latest release: " + err.Error()
+			u.mu.Lock()
+			u.status = st
+			u.mu.Unlock()
+			return
+		}
+		st.LatestTag = latest
+		if latest == "" || latest == rel {
+			u.mu.Lock()
+			u.status = st
+			u.mu.Unlock()
+			return
+		}
+		head = latest
+	}
 	defer func() {
 		u.mu.Lock()
 		u.status = st
@@ -151,7 +212,7 @@ func (u *UpdateChecker) Check(ctx context.Context) {
 		} `json:"commits"`
 		Message string `json:"message"`
 	}
-	url := strings.TrimRight(u.APIBase, "/") + "/repos/" + u.Repo + "/compare/" + st.Current + "...main"
+	url := strings.TrimRight(u.APIBase, "/") + "/repos/" + u.Repo + "/compare/" + st.Current + "..." + head
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		st.Error = err.Error()

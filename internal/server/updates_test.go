@@ -114,3 +114,34 @@ func TestVersionPageFooterDotAndOverviewInfo(t *testing.T) {
 		t.Fatalf("overview should mention the update: %+v", items)
 	}
 }
+
+// A release build follows releases, not main: it is up to date while the
+// newest release is its own tag, and offers the next release when one exists.
+func TestUpdateCheckFollowsReleasesForReleaseBuilds(t *testing.T) {
+	latest := "v1.0.0"
+	var compared string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/releases/latest") {
+			_ = json.NewEncoder(w).Encode(map[string]string{"tag_name": latest})
+			return
+		}
+		compared = r.URL.Path
+		_ = json.NewEncoder(w).Encode(map[string]any{"ahead_by": 4, "commits": []map[string]any{{"sha": strings.Repeat("e", 40), "commit": map[string]any{"message": "next release work"}}}})
+	}))
+	t.Cleanup(srv.Close)
+	u := NewUpdateChecker(UpdateConfig{}, nil)
+	u.APIBase = srv.URL
+	u.Current = func() string { return "0123456789abcdef0123456789abcdef01234567" }
+	u.Release = func() string { return "v1.0.0" }
+
+	u.Check(context.Background())
+	if s := u.Status(); s.Available || s.Track != "release" || s.LatestTag != "v1.0.0" || compared != "" {
+		t.Fatalf("own tag is latest: %+v compared=%q", s, compared)
+	}
+	latest = "v1.1.0"
+	u.Check(context.Background())
+	s := u.Status()
+	if !s.Available || s.LatestTag != "v1.1.0" || s.Behind != 4 || !strings.HasSuffix(compared, "...v1.1.0") {
+		t.Fatalf("newer release: %+v compared=%q", s, compared)
+	}
+}
