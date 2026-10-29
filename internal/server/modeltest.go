@@ -179,3 +179,168 @@ func (o ModelsOptions) providerConnByID(id string) (baseURL, keyEnv string, ok b
 	}
 	return "", "", false
 }
+
+// providerTestResult is what the per-provider Test button renders (ISSUE-134):
+// every model routed to this connection, live-tested with its own slug, plus
+// what the provider itself says it serves — so a model renamed or unloaded on
+// a lab box shows up as "registered here, not served there" instead of as an
+// error in the chat.
+type providerTestResult struct {
+	ProviderID  string            `json:"provider_id"`
+	Models      []modelTestResult `json:"models"`
+	Served      []string          `json:"served,omitempty"`
+	ServedError string            `json:"served_error,omitempty"`
+	Missing     []string          `json:"missing,omitempty"` // registered slugs the provider does not list
+}
+
+// ProviderTestHandler tests one provider connection: GET <base>/models for the
+// served list, then a 1-token completion per model routed to it.
+func ProviderTestHandler(opts ModelsOptions) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		_ = r.ParseForm()
+		id := strings.TrimSpace(r.FormValue("id"))
+		w.Header().Set("Content-Type", "application/json")
+		baseURL, keyEnv, ok := opts.providerConnByID(id)
+		if id == "" || !ok {
+			w.WriteHeader(http.StatusNotFound)
+			_ = json.NewEncoder(w).Encode(providerTestResult{ProviderID: id, ServedError: "unknown provider id"})
+			return
+		}
+		res := providerTestResult{ProviderID: id}
+		res.Served, res.ServedError = opts.servedModels(r, baseURL, keyEnv)
+		served := map[string]bool{}
+		for _, s := range res.Served {
+			served[s] = true
+		}
+		for _, mid := range opts.modelsOfProvider(id) {
+			mr, _ := opts.runModelTest(r, mid)
+			res.Models = append(res.Models, mr)
+			if len(res.Served) > 0 && mr.Slug != "" && !served[mr.Slug] {
+				res.Missing = append(res.Missing, mr.Slug)
+			}
+		}
+		_ = json.NewEncoder(w).Encode(res)
+	}
+}
+
+// modelsOfProvider lists the model ids routed to a provider connection.
+func (o ModelsOptions) modelsOfProvider(providerID string) []string {
+	var ids []string
+	seen := map[string]bool{}
+	if o.Roster != nil {
+		if ms, err := o.Roster.LoadRosterModels(); err == nil {
+			for _, m := range ms {
+				if m.ProviderID == providerID && !seen[m.ID] {
+					ids, seen[m.ID] = append(ids, m.ID), true
+				}
+			}
+		}
+	}
+	if len(ids) == 0 && o.Engine != nil && o.Engine.Registry != nil {
+		if snap, err := o.Engine.Registry.Active(); err == nil {
+			for _, m := range snap.ModelsForProvider(providerID) {
+				if !seen[m.ID] {
+					ids, seen[m.ID] = append(ids, m.ID), true
+				}
+			}
+		}
+	}
+	return ids
+}
+
+// servedModels asks the provider which models it serves (OpenAI-style
+// GET <base>/models). Errors are returned as text for the panel, never fatal.
+func (o ModelsOptions) servedModels(r *http.Request, baseURL, keyEnv string) ([]string, string) {
+	u := strings.TrimRight(strings.TrimSpace(baseURL), "/") + "/models"
+	req, err := http.NewRequestWithContext(r.Context(), http.MethodGet, u, nil)
+	if err != nil {
+		return nil, err.Error()
+	}
+	if key := strings.TrimSpace(os.Getenv(keyEnv)); key != "" {
+		req.Header.Set("Authorization", "Bearer "+key)
+	}
+	client := o.ProbeClient
+	if client == nil {
+		client = &http.Client{Timeout: 15 * time.Second}
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, "could not reach " + u + ": " + err.Error()
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode >= 400 {
+		return nil, u + " answered HTTP " + itoa(resp.StatusCode)
+	}
+	var out struct {
+		Data []struct {
+			ID string `json:"id"`
+		} `json:"data"`
+	}
+	if err := json.NewDecoder(io.LimitReader(resp.Body, 1<<20)).Decode(&out); err != nil {
+		return nil, u + " did not return a model list"
+	}
+	var ids []string
+	for _, d := range out.Data {
+		if d.ID != "" {
+			ids = append(ids, d.ID)
+		}
+	}
+	return ids, ""
+}
+
+// ModelSlugHandler points a routed model at another slug the provider serves
+// (ISSUE-134): the "Use this" button in a provider test. Only a slug the
+// provider's own /models lists is accepted, so a typo cannot be saved; the
+// edit is applied live and audited like any model save.
+func ModelSlugHandler(opts ModelsOptions) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		_ = r.ParseForm()
+		id, slug := strings.TrimSpace(r.FormValue("id")), strings.TrimSpace(r.FormValue("slug"))
+		w.Header().Set("Content-Type", "application/json")
+		fail := func(code int, msg string) {
+			w.WriteHeader(code)
+			_ = json.NewEncoder(w).Encode(map[string]string{"error": msg})
+		}
+		if opts.Roster == nil {
+			fail(http.StatusConflict, "roster is read-only (no data dir configured)")
+			return
+		}
+		ms, err := opts.Roster.LoadRosterModels()
+		if err != nil {
+			fail(http.StatusInternalServerError, err.Error())
+			return
+		}
+		for _, m := range ms {
+			if m.ID != id {
+				continue
+			}
+			baseURL, keyEnv, ok := opts.providerConnByID(m.ProviderID)
+			if !ok {
+				fail(http.StatusConflict, "no provider connection for "+m.ProviderID)
+				return
+			}
+			served, serr := opts.servedModels(r, baseURL, keyEnv)
+			if serr != "" {
+				fail(http.StatusBadGateway, serr)
+				return
+			}
+			listed := false
+			for _, s := range served {
+				listed = listed || s == slug
+			}
+			if !listed {
+				fail(http.StatusBadRequest, "the provider does not serve "+slug)
+				return
+			}
+			m.ProviderModelID = slug
+			if err := opts.Roster.UpsertRosterModel(m); err != nil {
+				fail(http.StatusInternalServerError, err.Error())
+				return
+			}
+			okMsg, errMsg := applyRosterEdit(r.Context(), opts.Reloader, AdminUserFromContext(r.Context()), "Model "+m.ID+" now uses "+slug)
+			_ = json.NewEncoder(w).Encode(map[string]string{"ok": okMsg, "error": errMsg})
+			return
+		}
+		fail(http.StatusNotFound, "unknown model id")
+	}
+}
