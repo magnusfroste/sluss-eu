@@ -160,11 +160,15 @@ func LogPageHandler(opts LogOptions) http.HandlerFunc {
 }
 
 var logTmpl = template.Must(template.New("log").Funcs(template.FuncMap{
-	"adminCSS": adminCSSFunc,
-	"adminNav": adminNavFunc,
-	"usd":      readableUSD,
-	"clock":    func(t time.Time) string { return t.Local().Format("15:04:05") },
-	"day":      func(t time.Time) string { return t.Local().Format("2006-01-02") },
+	"adminCSS":    adminCSSFunc,
+	"adminNav":    adminNavFunc,
+	"dsHead":      dsHeadFunc,
+	"task":        taskLabel,
+	"dataClass":   dataClassLabel,
+	"blockReason": blockLabel,
+	"usd":         readableUSD,
+	"clock":       func(t time.Time) string { return t.Local().Format("15:04:05") },
+	"day":         func(t time.Time) string { return t.Local().Format("2006-01-02") },
 	"tierClass": func(model string) string {
 		switch {
 		case model == "":
@@ -257,17 +261,12 @@ const logPageHTML = `<!doctype html>
 <div class="tk-shell">
 {{adminNav "log"}}
 <div class="tk-main">
-<header>
-  <div>
-    <h1>Request log</h1>
-    <div class="sub">{{if .Filter}}{{.Count}} of {{.Total}}{{else}}{{.Count}}{{end}} requests · <span class="badge-src">{{if .Durable}}durable (SQLite){{else}}in-memory (set ROUTER_DATA_DIR to persist){{end}}</span> · {{.Version}}</div>
-  </div>
-  <nav class="filters" aria-label="Filter requests">
+{{dsHead "log" "Request log" "Every request: what it was, where it went, and why. Click a row for the rules that decided it."}}
+<div class="wrap">
+<div class="ds-toolbar"><nav class="filters" aria-label="Filter requests">
     <a href="/router/log"{{if not .Filter}} class="on"{{end}}>All</a>
     {{range .Filters}}<a href="/router/log?show={{.Key}}"{{if .Active}} class="on"{{end}}>{{.Key}} <span>{{.Count}}</span></a>{{end}}
-  </nav>
-</header>
-<div class="wrap">
+  </nav><span class="ds-toolbar-note">{{if .Filter}}{{.Count}} of {{.Total}}{{else}}{{.Count}}{{end}} requests · <span class="badge-src">{{if .Durable}}durable (SQLite){{else}}in-memory (set ROUTER_DATA_DIR to persist){{end}}</span> · {{.Version}}</span></div>
 <p class="hint">Click a row to see why it was routed that way.</p>
 <table>
 <thead><tr><th>Time</th><th>Task</th><th>Risk</th><th>Data class</th><th>Egress</th><th>Model</th>
@@ -277,17 +276,17 @@ const logPageHTML = `<!doctype html>
 {{if .DayBreak}}<tr class="dayrow"><td colspan="8">{{.DayBreak}}</td></tr>{{end}}
 <tr class="main{{if .Blocked}} row-blocked{{end}}" onclick="tg(this)" tabindex="0" onkeydown="if(event.key==='Enter')tg(this)">
   <td class="mono">{{clock .Time}}</td>
-  <td>{{.TaskType}}{{if and .Blocked .BlockCode}}<div class="slug code" title="{{.BlockCode}}">{{.BlockCode}}</div>{{end}}</td>
+  <td title="{{.TaskType}}">{{task .TaskType}}{{if and .Blocked .BlockCode}}<div class="slug code" title="{{.BlockCode}}">{{blockReason .BlockCode}}</div>{{end}}</td>
   <td class="{{riskClass .RiskLevel}}">{{.RiskLevel}}</td>
-  <td>{{if and .Sensitivity (ne .Sensitivity "none")}}<span class="cls">{{.Sensitivity}}</span>{{else}}<span style="color:#475569">—</span>{{end}}</td>
+  <td>{{if and .Sensitivity (ne .Sensitivity "none")}}<span class="cls" title="{{.Sensitivity}}">{{dataClass .Sensitivity}}</span>{{else}}<span style="color:#475569">—</span>{{end}}</td>
   <td>{{if .Blocked}}<span class="eg eg-blocked">blocked</span>{{else if eq .Egress "local"}}<span class="eg eg-local">local</span>{{else if eq .Egress "cloud"}}<span class="eg eg-cloud">cloud</span>{{else}}<span style="color:#475569">—</span>{{end}}</td>
   <td>{{if .Model}}<span class="pill {{tierClass .Model}}">{{.Model}}</span><div class="slug">{{.Provider}}{{if .ProviderModelID}} · {{.ProviderModelID}}{{end}}</div>{{else}}<span style="color:#475569">—</span>{{end}}</td>
   <td class="num mono">{{.InputTokens}} / {{.OutputTokens}}</td>
   <td class="num mono">{{usd .CostUSD}}</td>
 </tr>
 <tr class="why" hidden><td colspan="8">
-  <div class="why-head">{{if .Blocked}}<span class="eg eg-blocked">blocked</span> fail-closed — <span class="mono">{{.BlockCode}}</span>. No provider was called.{{else if eq .Egress "local"}}<span class="eg eg-local">local</span> Sent to <b>{{.Model}}</b> on {{.Provider}}, a local/on-prem model — the data stayed in the house.{{else if eq .Egress "cloud"}}<span class="eg eg-cloud">cloud</span> Sent to <b>{{.Model}}</b> on {{.Provider}} — no rule required a local model for this classification.{{else}}Destination unknown — an older row whose model and provider were removed.{{end}}</div>
-  <div class="why-cls">Classified (deterministic rules, no LLM): task <b>{{.TaskType}}</b> · risk <b>{{.RiskLevel}}</b> · data class <b>{{if .Sensitivity}}{{.Sensitivity}}{{else}}none{{end}}</b> · request <span class="mono">{{.RequestID}}</span></div>
+  <div class="why-head">{{if .Blocked}}<span class="eg eg-blocked">blocked</span> Stopped by policy — {{blockReason .BlockCode}} (<span class="mono">{{.BlockCode}}</span>). No model was called.{{else if eq .Egress "local"}}<span class="eg eg-local">local</span> Sent to <b>{{.Model}}</b> on {{.Provider}}, a local/on-prem model — the data stayed in the house.{{else if eq .Egress "cloud"}}<span class="eg eg-cloud">cloud</span> Sent to <b>{{.Model}}</b> on {{.Provider}} — no rule required a local model for this classification.{{else}}Destination unknown — an older row whose model and provider were removed.{{end}}</div>
+  <div class="why-cls">Classified (deterministic rules, no LLM): task <b>{{task .TaskType}}</b> · risk <b>{{.RiskLevel}}</b> · data <b>{{dataClass .Sensitivity}}</b> · request <span class="mono">{{.RequestID}}</span></div>
   {{if .Actor}}<div class="why-cls">Asked by <b>{{.Actor}}</b>{{if .TenantID}} · department <b>{{.TenantID}}</b>{{end}} (signed in with the company account)</div>{{else if .TenantID}}<div class="why-cls">Department <b>{{.TenantID}}</b> (API key)</div>{{end}}
   {{if .Why}}<div class="why-rules">Rules in the current policy that match this classification:
     <ol>{{range .Why}}<li><span class="w">{{.When}}</span> → <b class="k-{{.Kind}}">{{.Then}}</b> <span class="mono rid">{{.ID}}</span></li>{{end}}</ol>

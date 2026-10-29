@@ -237,6 +237,7 @@ func redirectSetup(w http.ResponseWriter, r *http.Request, ok, errMsg string) {
 var setupTmpl = template.Must(template.New("setup").Funcs(template.FuncMap{
 	"adminCSS": adminCSSFunc,
 	"adminNav": adminNavFunc,
+	"dsHead":   dsHeadFunc,
 	"join":     func(s []string) string { return strings.Join(s, ", ") },
 }).Parse(`<!doctype html>
 <html lang="en"><head>
@@ -286,10 +287,7 @@ var setupTmpl = template.Must(template.New("setup").Funcs(template.FuncMap{
 <div class="tk-shell">
 {{adminNav "setup"}}
 <div class="tk-main">
-<header>
-  <h1>Quick start</h1>
-  <div class="sub">Two models and one rule: harmless prompts go to a cheap cloud model, personal data stays on your own hardware. Each step shows its live state. Step by step in plain language: <a href="/manual/quick-start" style="color:#7fd3ff">the manual</a>.</div>
-</header>
+{{dsHead "setup" "Quick start" "Two models and one rule: harmless prompts to a cheap cloud model, personal data on your own hardware. Each step shows its live state."}}
 <div class="wrap">
   {{if .Notice}}<div class="banner ok">{{.Notice}}</div>{{end}}
   {{if .Error}}<div class="banner err">{{.Error}}</div>{{end}}

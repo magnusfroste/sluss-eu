@@ -70,3 +70,15 @@ func TestLabelsAreHumanAndNeverRaw(t *testing.T) {
 		t.Fatal("task/block labels")
 	}
 }
+
+func TestPlainRuleReadsLikeASentence(t *testing.T) {
+	if got := plainRule("data is pii or secrets_possible"); got != "data is personal data or secrets and keys" {
+		t.Fatalf("got %q", got)
+	}
+	if got := plainRule("task is security_review"); got != "task is security review" {
+		t.Fatalf("got %q", got)
+	}
+	if got := plainRule("every request"); got != "every request" {
+		t.Fatalf("got %q", got)
+	}
+}

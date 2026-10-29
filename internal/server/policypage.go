@@ -208,10 +208,11 @@ func PolicyPageHandler(o PolicyPageOptions) http.HandlerFunc {
 }
 
 var policyTmpl = template.Must(template.New("policy").Funcs(template.FuncMap{
-	"adminCSS": adminCSSFunc,
-	"adminNav": adminNavFunc,
-	"dsHead":   dsHeadFunc,
-	"inc":      func(i int) int { return i + 1 },
+	"adminCSS":  adminCSSFunc,
+	"adminNav":  adminNavFunc,
+	"dsHead":    dsHeadFunc,
+	"plainRule": plainRule,
+	"inc":       func(i int) int { return i + 1 },
 }).Parse(policyHTML))
 
 const policyHTML = `<!doctype html>
@@ -274,7 +275,7 @@ textarea{width:100%;background:#081328;border:1px solid #2c4066;border-radius:8p
     {{range $i, $r := .ActiveRules}}
     <tr class="k-{{$r.Kind}}">
       <td class="mono" style="color:#64748b">{{inc $i}}</td>
-      <td>{{$r.When}}<div class="rid">{{$r.ID}}{{if $r.Description}} — {{$r.Description}}{{end}}</div></td>
+      <td title="{{$r.When}}">{{plainRule $r.When}}<div class="rid">{{$r.ID}}{{if $r.Description}} — {{$r.Description}}{{end}}</div></td>
       <td class="then">{{$r.Then}}</td>
     </tr>
     {{end}}

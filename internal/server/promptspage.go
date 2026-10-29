@@ -148,6 +148,7 @@ func redirectPrompts(w http.ResponseWriter, r *http.Request, ok, errMsg string) 
 var promptsTmpl = template.Must(template.New("prompts").Funcs(template.FuncMap{
 	"adminCSS": adminCSSFunc,
 	"adminNav": adminNavFunc,
+	"dsHead":   dsHeadFunc,
 }).Parse(promptsHTML))
 
 const promptsHTML = `<!doctype html>
@@ -183,8 +184,7 @@ input,textarea{width:100%;background:#081328;border:1px solid #2c4066;border-rad
 <div class="tk-shell">
 {{adminNav "prompts"}}
 <div class="tk-main">
-<div class="hd"><h1>Demo prompts</h1>
-<div class="sub">The quick-prompt chips in the live demo (<a href="/chat" style="color:#7fd3ff">/chat</a>). Send a link to a CISO — they click through the value, then you call.</div></div>
+{{dsHead "prompts" "Demo link" "A link that opens the chat for someone outside the company, with the example prompts they can click."}}
 <div class="wrap">
 
 {{if .Notice}}<div class="notice">{{.Notice}}</div>{{end}}

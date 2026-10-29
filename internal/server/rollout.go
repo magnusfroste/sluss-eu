@@ -468,6 +468,7 @@ func RolloutPageHandler(o RolloutOptions) http.HandlerFunc {
 var rolloutTmpl = template.Must(template.New("rollout").Funcs(template.FuncMap{
 	"adminCSS": adminCSSFunc,
 	"adminNav": adminNavFunc,
+	"dsHead":   dsHeadFunc,
 	"ago": func(t time.Time) string {
 		if t.IsZero() {
 			return "never"
@@ -524,10 +525,7 @@ var rolloutTmpl = template.Must(template.New("rollout").Funcs(template.FuncMap{
 <div class="tk-shell">
 {{adminNav "rollout"}}
 <div class="tk-main">
-<header>
-  <h1>Rollout</h1>
-  <div class="sub">Make Sluss the only AI path on managed devices with the tools you already have: your MDM points the apps here, your DNS filter or web gateway blocks the direct way out, and a daily check proves it per device. No agent of ours on the desktop, nothing inspects traffic. New to this? The <a href="/manual/stop-chatgpt" style="color:#7fd3ff">manual</a> walks through it without assuming any training.</div>
-</header>
+{{dsHead "rollout" "Managed devices" "Make Sluss the only AI path on company devices with the tools you already run: your MDM points the apps here, your filter blocks the direct way out, and a daily check proves it per device."}}
 <div class="wrap">
   {{if .Notice}}<div class="banner">{{.Notice}}</div>{{end}}
 
