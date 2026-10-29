@@ -135,5 +135,8 @@ const designFrameCSS = `
 .tk-main>.wrap form.addf{max-width:none}
 .tk-main>.wrap th{font-size:.72rem;color:var(--ds-muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
 .tk-main>.wrap td{border-bottom-color:var(--ds-line-soft)}
+.ds-toolbar{display:flex;align-items:center;gap:var(--ds-s3);flex-wrap:wrap}
+.ds-toolbar nav,.ds-toolbar .acts{display:flex;gap:var(--ds-s2);flex-wrap:wrap}
+.ds-toolbar-note{margin-left:auto;color:var(--ds-muted);font-size:.82rem}
 @media(max-width:900px){.ds-top{padding:var(--ds-s5) var(--ds-s4) 0}.tk-main>.wrap{padding:0 var(--ds-s4) var(--ds-s7)!important}}
 `

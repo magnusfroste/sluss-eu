@@ -227,6 +227,7 @@ const demoChatTemplate = `<!doctype html>
   .composer input{flex:1;background:var(--panel2);border:1px solid var(--line);color:var(--ink);
     border-radius:10px;padding:13px 15px;font-size:15px;outline:none}
   .composer input:focus{border-color:var(--accent)}
+  .composer input{min-width:0}
   .composer button{background:var(--accent);color:#081328;border:0;border-radius:10px;
     padding:0 20px;font-weight:700;font-size:15px;cursor:pointer}
   .composer button:disabled{opacity:.5;cursor:not-allowed}
@@ -252,7 +253,8 @@ const demoChatTemplate = `<!doctype html>
     .modelpick{width:100%}.modelpick select{flex:1;min-width:0;max-width:100%}
     .ident{margin-left:0;width:100%}
     main{padding:14px 10px}.msg{max-width:100%}.bubble{max-width:100%}
-    footer{padding:10px 10px}.composer button{padding:0 14px}.hint{display:none}}
+    footer{padding:10px 10px}.composer{gap:6px}.composer button{padding:0 14px}.composer .tool{padding:0 9px}.hint{display:none}
+    .tk-nav{display:none}}
 </style>
 </head>
 <body>

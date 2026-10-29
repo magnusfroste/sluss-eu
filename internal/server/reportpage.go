@@ -211,6 +211,7 @@ func markdownToHTML(md string) template.HTML {
 var reportTmpl = template.Must(template.New("report").Funcs(template.FuncMap{
 	"adminCSS": adminCSSFunc,
 	"adminNav": adminNavFunc,
+	"dsHead":   dsHeadFunc,
 }).Parse(`<!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -250,11 +251,9 @@ var reportTmpl = template.Must(template.New("report").Funcs(template.FuncMap{
 <div class="tk-shell">
 {{adminNav "reports"}}
 <div class="tk-main">
-<header>
-  <div><h1>{{.Title}}</h1><div class="sub">{{.Subtitle}}</div></div>
-  <div class="acts"><a class="btn primary" href="{{.DownloadURL}}" download>Download as Markdown</a><a class="btn" href="{{.JSONURL}}">JSON</a></div>
-</header>
+{{dsHead "reports" .Title .Subtitle}}
 <div class="wrap">
+<div class="ds-toolbar"><div class="acts"><a class="btn primary" href="{{.DownloadURL}}" download>Download as Markdown</a><a class="btn" href="{{.JSONURL}}">JSON</a></div></div>
   {{if .Stats}}<div class="stats">{{range .Stats}}<div class="stat {{.Tone}}"><div class="l">{{.Label}}</div><div class="v">{{.Value}}</div>{{if .Sub}}<div class="s">{{.Sub}}</div>{{end}}</div>{{end}}</div>{{end}}
   <div class="doc">{{.Body}}</div>
   <div class="foot">Counts and classifications only — never prompt content. A control report, not a legal attestation. The Markdown download is the paste-ready version of this page.</div>

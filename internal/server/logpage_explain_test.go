@@ -51,7 +51,7 @@ func TestLogFiltersAndExplanation(t *testing.T) {
 	if !strings.Contains(all, "the data stayed in the house") || !strings.Contains(all, "data is pii") {
 		t.Fatal("pii row should explain itself with the matching rule")
 	}
-	if !strings.Contains(all, "No provider was called") {
+	if !strings.Contains(all, "No model was called") {
 		t.Fatal("blocked row should say nothing was sent")
 	}
 	if !strings.Contains(all, `show=blocked"`) || !strings.Contains(all, "blocked <span>1</span>") {

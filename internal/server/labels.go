@@ -70,3 +70,18 @@ func humanize(code string) string {
 	}
 	return strings.ToUpper(s[:1]) + s[1:]
 }
+
+// plainRule rewrites a policy rule summary ("data is pii or secrets_possible",
+// "task is security_review") for the Policy page: codes become lower-case
+// labels mid-sentence. Reports and MCP keep the code form.
+func plainRule(s string) string {
+	words := strings.Fields(s)
+	for i, w := range words {
+		if l, ok := dataClassLabels[w]; ok && w != "" && w != "none" {
+			words[i] = strings.ToLower(l)
+		} else if l, ok := taskLabels[w]; ok {
+			words[i] = strings.ToLower(l)
+		}
+	}
+	return strings.Join(words, " ")
+}
