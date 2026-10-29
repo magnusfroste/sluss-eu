@@ -30,6 +30,7 @@ const adminShellCSS = `
 .tk-sublink{color:#8fa1bf;text-decoration:none;font-size:13px;padding:6px 10px;border-radius:0 7px 7px 0}
 .tk-sublink:hover{color:#fff;background:#101c34}.tk-sublink.on{color:#fff;font-weight:600;box-shadow:inset 2px 0 0 #fad100}
 .tk-bottom{margin-top:auto;border-top:1px solid #17253f;padding-top:8px;display:flex;flex-direction:column;gap:3px}
+.tk-upd{display:inline-block;width:7px;height:7px;border-radius:50%;background:#fad100;margin-left:6px;vertical-align:1px;box-shadow:0 0 0 3px rgba(250,209,0,.18)}
 .tk-bottom .tk-foot{margin-top:4px;border-top:0}
 .tk-foot{margin-top:auto;color:#5f6e87;font-size:11px;padding:12px 12px 4px;border-top:1px solid #17253f}
 .tk-build{color:inherit;text-decoration:none;font-family:ui-monospace,Menlo,monospace}.tk-build:hover{text-decoration:underline}
@@ -112,7 +113,12 @@ func adminNavHTML(active string) string {
 		b.WriteString(`<a class="` + cls + `" href="` + it.href + `"><span class="tk-ic">` + it.icon + `</span><span class="tk-lbl">` + it.label + `</span></a>`)
 	}
 	b.WriteString(`<a class="tk-link" href="/router/logout"><span class="tk-ic">` + icSignOut + `</span><span class="tk-lbl">Sign out</span></a>`)
-	b.WriteString(`<div class="tk-foot">admin · <a class="tk-build" href="https://github.com/magnusfroste/sluss-eu/commit/` + template.HTMLEscapeString(buildinfo.FullCommit()) + `" title="Built ` + template.HTMLEscapeString(buildinfo.BuiltAt()) + `">` + template.HTMLEscapeString(buildinfo.Short()) + `</a></div></div></nav>`)
+	dot, tip := "", "Built "+buildinfo.BuiltAt()+" · version and upgrades"
+	if s := activeUpdates.Status(); s.Available {
+		dot = `<span class="tk-upd" aria-hidden="true"></span>`
+		tip = "A newer version is available (" + itoa(s.Behind) + " changes) · see what is new"
+	}
+	b.WriteString(`<div class="tk-foot">admin · <a class="tk-build" href="/router/system" title="` + template.HTMLEscapeString(tip) + `">` + template.HTMLEscapeString(buildinfo.Short()) + dot + `</a></div></div></nav>`)
 	return b.String()
 }
 

@@ -56,6 +56,9 @@ services:
       - ROUTER_OIDC_LABEL=${ROUTER_OIDC_LABEL:-}
       # --- Chat web search: a SearXNG-compatible endpoint (optional). ---
       - ROUTER_SEARCH_URL=${ROUTER_SEARCH_URL:-}
+      # --- Version check and the upgrade step shown on the Version page. ---
+      - ROUTER_UPDATE_CHECK=${ROUTER_UPDATE_CHECK:-on}
+      - ROUTER_DEPLOYMENT=${ROUTER_DEPLOYMENT:-compose}
       # --- Provider: set OPENROUTER_API_KEY for a real provider; omit → mock. ---
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
       - OPENROUTER_REFERER=${OPENROUTER_REFERER:-}

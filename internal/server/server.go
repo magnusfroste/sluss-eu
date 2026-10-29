@@ -92,6 +92,10 @@ type Config struct {
 	// dashboard URL directly and log in.
 	DashboardPassword string
 
+	// Updates checks the public repository for a newer version (ISSUE-138);
+	// nil disables the Version page's check.
+	Updates *UpdateChecker
+
 	// SearchURL (ROUTER_SEARCH_URL) is a SearXNG-compatible endpoint the chat
 	// may query when the user asks for web search (ISSUE-129). Empty = off.
 	SearchURL string
@@ -472,6 +476,10 @@ func New(cfg Config) http.Handler {
 		// key like /v1 does; the block page is public (a sinkhole points at it).
 		rolloutOpts := RolloutOptions{History: cfg.History, PublicURL: cfg.PublicURL, Auditor: cfg.Auditor, Logger: cfg.Logger}
 		mux.Handle("GET /router/rollout", dashGuard(RolloutPageHandler(rolloutOpts)))
+		// Version and upgrades (ISSUE-138).
+		activeUpdates = cfg.Updates
+		mux.Handle("GET /router/system", dashGuard(VersionPageHandler(cfg.Updates, cfg.Logger)))
+		mux.Handle("POST /router/system/check", dashGuard(VersionCheckHandler(cfg.Updates)))
 		mux.Handle("GET /router/rollout/file/{name}", dashGuard(RolloutFileHandler(rolloutOpts)))
 		mux.Handle("POST /router/coverage", auth.Middleware(cfg.KeyStore)(http.HandlerFunc(CoverageReportHandler(rolloutOpts))))
 		mux.HandleFunc("GET /blocked", BlockedPageHandler(rolloutOpts))

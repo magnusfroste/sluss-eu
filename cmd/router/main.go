@@ -547,6 +547,14 @@ func main() {
 
 	buildinfo.Register()
 
+	// Version check (ISSUE-138): one request to the public GitHub API every
+	// 6 hours, nothing about the instance sent. ROUTER_UPDATE_CHECK=off for
+	// air-gapped installs.
+	updates := server.NewUpdateChecker(server.UpdateConfig{
+		Disabled:   strings.EqualFold(strings.TrimSpace(os.Getenv("ROUTER_UPDATE_CHECK")), "off"),
+		Deployment: strings.ToLower(strings.TrimSpace(os.Getenv("ROUTER_DEPLOYMENT"))),
+	}, logger)
+	updates.Start(workerCtx)
 	handler := server.New(server.Config{
 		Logger:                     logger,
 		KeyStore:                   keyStore,
@@ -595,6 +603,7 @@ func main() {
 		Profile:                    strings.TrimSpace(os.Getenv("ROUTER_PROFILE")),
 		PublicURL:                  strings.TrimSpace(os.Getenv("ROUTER_PUBLIC_URL")),
 		OIDC:                       oidcFromEnv(),
+		Updates:                    updates,
 		SearchURL:                  strings.TrimSpace(os.Getenv("ROUTER_SEARCH_URL")),
 	})
 	// Named-user console (accountability): seed an initial admin from env when
