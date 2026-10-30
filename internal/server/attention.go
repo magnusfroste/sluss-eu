@@ -47,9 +47,9 @@ func buildAttention(opts DashboardOptions, d *DashboardData, now time.Time) []at
 			out = append(out, attentionItem{
 				Level:  "bad",
 				Title:  k.model + " on " + k.provider + " is failing",
-				Detail: plural(counts[k], "failed request") + " in the last hour (" + humanize(k.code) + "). Press Test on the provider to see what it serves now.",
-				Href:   "/router/providers",
-				Action: "Test provider",
+				Detail: plural(counts[k], "failed request") + " in the last hour (" + humanize(k.code) + "). Open the model to test it and see what the provider serves now.",
+				Href:   "/router/models?m=" + urlQueryEscape(k.model),
+				Action: "Open model",
 			})
 		}
 	}

@@ -21,7 +21,7 @@ func TestAttentionNamesFailingModelAndSetup(t *testing.T) {
 	items := buildAttention(DashboardOptions{ErrorRing: ring}, d, now)
 	var failing, setup bool
 	for _, it := range items {
-		if it.Level == "bad" && strings.Contains(it.Title, "glm-local on dgx is failing") && strings.Contains(it.Detail, "3 failed requests") && it.Href == "/router/providers" {
+		if it.Level == "bad" && strings.Contains(it.Title, "glm-local on dgx is failing") && strings.Contains(it.Detail, "3 failed requests") && it.Href == "/router/models?m=glm-local" {
 			failing = true
 		}
 		if strings.Contains(it.Title, "Setup is not finished") {

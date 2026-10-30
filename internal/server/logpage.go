@@ -4,6 +4,7 @@ import (
 	"html/template"
 	"log/slog"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/magnusfroste/sluss/internal/engine"
@@ -69,6 +70,9 @@ type LogPageData struct {
 	Durable bool
 	Filter  string
 	Filters []logFilterChip
+	// Model narrows the log to one roster model (?model=, from the model
+	// panel, ISSUE-142).
+	Model string
 }
 
 // LogPageHandler renders the full per-request routing log — every message with
@@ -96,6 +100,15 @@ func LogPageHandler(opts LogOptions) http.HandlerFunc {
 			if rows[i].Egress == "" && !rows[i].Blocked {
 				rows[i].Egress = legacy.legacyEgress(rows[i].Model, rows[i].Provider)
 			}
+		}
+		if model := strings.TrimSpace(r.URL.Query().Get("model")); model != "" {
+			kept := rows[:0]
+			for _, row := range rows {
+				if row.Model == model {
+					kept = append(kept, row)
+				}
+			}
+			rows = kept
 		}
 		filter := r.URL.Query().Get("show")
 		known := false
@@ -148,7 +161,7 @@ func LogPageHandler(opts LogOptions) http.HandlerFunc {
 			view = append(view, lr)
 		}
 		data := LogPageData{Version: opts.Version, Rows: view, Count: len(view), Total: len(rows),
-			Durable: durable, Filter: filter, Filters: chips}
+			Durable: durable, Filter: filter, Filters: chips, Model: strings.TrimSpace(r.URL.Query().Get("model"))}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		if err := logTmpl.Execute(w, data); err != nil {
 			if opts.Logger != nil {
@@ -264,8 +277,9 @@ const logPageHTML = `<!doctype html>
 {{dsHead "log" "Request log" "Every request: what it was, where it went, and why. Click a row for the rules that decided it."}}
 <div class="wrap">
 <div class="ds-toolbar"><nav class="filters" aria-label="Filter requests">
-    <a href="/router/log"{{if not .Filter}} class="on"{{end}}>All</a>
-    {{range .Filters}}<a href="/router/log?show={{.Key}}"{{if .Active}} class="on"{{end}}>{{.Key}} <span>{{.Count}}</span></a>{{end}}
+    {{if .Model}}<a class="on" href="/router/log" title="Show all models">model {{.Model}} ×</a>{{end}}
+    <a href="/router/log{{if .Model}}?model={{.Model}}{{end}}"{{if not .Filter}} class="on"{{end}}>All</a>
+    {{range .Filters}}<a href="/router/log?show={{.Key}}{{if $.Model}}&amp;model={{$.Model}}{{end}}"{{if .Active}} class="on"{{end}}>{{.Key}} <span>{{.Count}}</span></a>{{end}}
   </nav><span class="ds-toolbar-note">{{if .Filter}}{{.Count}} of {{.Total}}{{else}}{{.Count}}{{end}} requests · <span class="badge-src">{{if .Durable}}durable (SQLite){{else}}in-memory (set ROUTER_DATA_DIR to persist){{end}}</span> · {{.Version}}</span></div>
 <p class="hint">Click a row to see why it was routed that way.</p>
 <table>

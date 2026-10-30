@@ -443,8 +443,12 @@ func New(cfg Config) http.Handler {
 	// re-tier/delete), persisted to the data volume; changes apply on restart.
 	if cfg.Engine != nil {
 		modelOpts := ModelsOptions{Engine: cfg.Engine, Logger: cfg.Logger,
-			Version: cfg.RegistryVersion, Roster: cfg.Roster, Reloader: cfg.RosterReloader}
+			Version: cfg.RegistryVersion, Roster: cfg.Roster, Reloader: cfg.RosterReloader,
+			History: cfg.History, RequestLog: cfg.RequestLog, ErrorRing: cfg.ErrorRing}
 		mux.Handle("GET /router/models", dashGuard(ModelsPageHandler(modelOpts)))
+		// Model panel (ISSUE-142): recent traffic and the provider's own list.
+		mux.Handle("GET /router/models/activity", dashGuard(ModelActivityHandler(modelOpts)))
+		mux.Handle("POST /router/models/served", dashGuard(ModelServedHandler(modelOpts)))
 		// Per-row live test (ISSUE-098): works read-only too (registry fallback),
 		// so it is registered regardless of roster CRUD.
 		mux.Handle("POST /router/models/test", dashGuard(ModelTestHandler(modelOpts)))

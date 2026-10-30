@@ -8,6 +8,10 @@ The cloud key is not in the server's environment. Whoever runs the server adds `
 
 That is a rule working as intended. The question contained data that may only go to a local model, and no local model was available. Check on [Models]({{BASE}}/router/models) that your local model is enabled and tagged *local*. Then try the [dry-run]({{BASE}}/router/policy) to see which rule matched.
 
+## A model stopped answering, or the chat says "model unavailable"
+
+Often the provider renamed or swapped the model, which happens a lot on your own lab hardware. Open [Models]({{BASE}}/router/models) and click the model. In the panel, press *Test now*. If the provider no longer knows the name, the panel lists the models it serves now. Press *Use this* on the right one. The change applies at once, and the panel also shows the model's failures from the last 24 hours.
+
 ## The "Sign in with …" button does not show
 
 The sign-in settings are not in the server's environment, or the server has not been restarted since they were added. All three values must be set: the issuer, the client ID and the client secret.
