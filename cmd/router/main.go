@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"syscall"
@@ -43,6 +44,10 @@ func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
 		Level: parseLogLevel(os.Getenv("LOG_LEVEL")),
 	}))
+
+	// First line of every boot (ISSUE-141): which build is starting, before
+	// anything below can fail.
+	logger.Info("sluss starting", "version", buildinfo.Release(), "commit", buildinfo.FullCommit(), "built", buildinfo.BuiltAt())
 
 	// Security audit trail (ISSUE-044): structured logs plus an in-memory ring
 	// buffer for in-process retrieval. Wired into the key store before any keys
@@ -82,6 +87,7 @@ func main() {
 	if mockURL == "" {
 		mockURL = "http://localhost:18080"
 	}
+	var providerMode string // for the boot banner
 
 	mock := &provider.MockAdapter{
 		BaseURL: mockURL,
@@ -290,6 +296,7 @@ func main() {
 		}
 		adapters = startBuild.Adapters
 		primaryProvider = adapters["openrouter"]
+		providerMode = "openrouter"
 		logger.Info("using OpenRouter provider", "base_url", "https://openrouter.ai/api/v1")
 	} else {
 		// Build from the default definition so dev/mock can also carry provider
@@ -305,6 +312,7 @@ func main() {
 			"openai":    mock,
 			"anthropic": mock,
 		}
+		providerMode = "mock at " + mockURL
 		logger.Info("using mock provider", "mock_provider", mockURL)
 	}
 	if snapErr != nil {
@@ -632,7 +640,13 @@ func main() {
 	defer stop()
 
 	go func() {
-		logger.Info("router starting", "addr", addr, "mock_provider", mockURL, "commit", buildinfo.FullCommit(), "built", buildinfo.BuiltAt())
+		boot := currentBootInfo(addr, providerMode)
+		if !strings.EqualFold(strings.TrimSpace(os.Getenv("ROUTER_LOG_BANNER")), "off") {
+			writeBanner(os.Stderr, boot)
+		}
+		logger.Info("sluss ready", "version", boot.Version, "commit", buildinfo.FullCommit(), "built", boot.Built,
+			"addr", addr, "console", boot.consoleURL(), "providers", providerMode, "data_dir", boot.DataDir,
+			"deployment", boot.Deployment, "update_check", boot.UpdateCheck, "go", runtime.Version())
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			logger.Error("server failed", "err", err)
 			os.Exit(1)

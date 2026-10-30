@@ -23,7 +23,7 @@ kunna säga vilken build den kör.
   - konsolens sidfot: `admin · 3d79212`, länkad till commiten på GitHub,
     byggtid i tooltip (ersätter det hårdkodade "v1.0")
   - MCP `server_info`: `build_commit`, `build_time`
-  - startloggen: `router starting … commit=… built=…`
+  - startloggen: `sluss starting` och `sluss ready` med commit och build (ISSUE-141)
 
 Commiten är inte hemlig (öppen källkod); `/metrics` exponerade redan
 processens starttid.
