@@ -1,0 +1,64 @@
+name: release
+
+# Publishes a release from the CHANGELOG (ISSUE-140). Run it from Actions →
+# release → Run workflow with a version (v1.0.0). It refuses unless
+# CHANGELOG.md has a "## <version>" section and the tag does not exist yet;
+# it then creates the tag on the commit it runs on (main), the GitHub release
+# with that section as notes, and starts the image build for the tag — a tag
+# created with GITHUB_TOKEN does not start other workflows by itself.
+#
+# Uses the repository's own GITHUB_TOKEN (contents + actions write on this
+# repository only). Every run is logged with who started it.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release, e.g. v1.0.0 (must have a section in CHANGELOG.md)"
+        required: true
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    env:
+      VERSION: ${{ inputs.version }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check the version
+        run: |
+          set -eu
+          case "$VERSION" in
+            v[0-9]*.[0-9]*.[0-9]*) ;;
+            *) echo "::error::version must look like v1.2.3, got '$VERSION'"; exit 1 ;;
+          esac
+          if git rev-parse -q --verify "refs/tags/$VERSION" >/dev/null; then
+            echo "::error::tag $VERSION already exists"; exit 1
+          fi
+
+      - name: Release notes from CHANGELOG.md
+        run: |
+          set -eu
+          awk -v v="$VERSION" '
+            index($0, "## " v) == 1 { on = 1; next }
+            on && /^## / { exit }
+            on { print }
+          ' CHANGELOG.md > notes.md
+          if [ ! -s notes.md ]; then
+            echo "::error::CHANGELOG.md has no '## $VERSION' section"; exit 1
+          fi
+          printf '\n**Image:** `ghcr.io/%s:%s`\n' "$GITHUB_REPOSITORY" "$VERSION" >> notes.md
+
+      - name: Create the tag and the release
+        run: gh release create "$VERSION" --target "$GITHUB_SHA" --title "Sluss $VERSION" --notes-file notes.md
+
+      - name: Build the image for the tag
+        run: gh workflow run publish-image.yml --ref "$VERSION"
