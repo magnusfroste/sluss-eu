@@ -2,7 +2,7 @@
 
 All notable changes to Sluss. Versions follow [semantic versioning](https://semver.org): a patch release fixes, a minor release adds, a major release may change how you configure or run Sluss.
 
-Every release is published as a container image you can pin:
+Releases are published from this file by the `release` workflow (Actions → release → Run workflow). Every release is a container image you can pin:
 
 ```
 ghcr.io/magnusfroste/sluss-eu:v1.0.0   # this release
