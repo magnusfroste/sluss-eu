@@ -34,9 +34,11 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/${{ github.repository }}
+          # The tag itself (v1.0.0) outranks the short semver tag (1.0), so
+          # the image's org.opencontainers.image.version label says v1.0.0.
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
-            type=ref,event=tag
+            type=ref,event=tag,priority=1000
             type=semver,pattern={{major}}.{{minor}}
             type=sha,format=short
 
