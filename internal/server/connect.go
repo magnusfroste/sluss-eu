@@ -22,6 +22,9 @@ type connectClient struct {
 	Wire  string // openai | anthropic
 	How   string // where to put the base URL + key
 	Setup template.HTML
+	// Copy is the plain-text snippet for the console's copy button
+	// (ISSUE-143); <key> is filled in client-side when the admin pastes one.
+	Copy string
 }
 
 // connectClients is the catalog. OpenAI-wire clients use the /v1 base; Anthropic
@@ -30,17 +33,35 @@ type connectClient struct {
 func connectClients(base string) []connectClient {
 	oa := base + "/v1"
 	return []connectClient{
-		{"Cursor", "ide", "openai", "Settings → Models → OpenAI API Key → Override Base URL", template.HTML("Base URL <code>" + oa + "</code>, paste your key, add a model named <code>auto</code>.")},
-		{"Cline / Continue", "ide", "openai", "OpenAI Compatible provider", template.HTML("Base URL <code>" + oa + "</code>, API key = your department key, model <code>auto</code>.")},
-		{"Claude Code", "agent", "anthropic", "Environment variables", template.HTML("<code>ANTHROPIC_BASE_URL=" + base + "</code> and <code>ANTHROPIC_API_KEY=</code>your key. Uses the <code>/v1/messages</code> shim.")},
-		{"Codex CLI", "agent", "openai", "config / env", template.HTML("Point the OpenAI base URL at <code>" + oa + "</code> and set the API key to your department key.")},
-		{"Aider", "agent", "openai", "--openai-api-base", template.HTML("<code>aider --openai-api-base " + oa + " --openai-api-key &lt;key&gt; --model auto</code>")},
-		{"OpenWebUI", "chat", "openai", "Admin → Settings → Connections → OpenAI API", template.HTML("API Base URL <code>" + oa + "</code>, API Key = your key. Models appear from <code>/v1/models</code>.")},
-		{"AnythingLLM", "chat", "openai", "LLM Preference → Generic OpenAI", template.HTML("Base URL <code>" + oa + "</code>, API key = your key, model <code>auto</code>, chat token limit as you like.")},
-		{"LibreChat / Jan", "chat", "openai", "Custom OpenAI endpoint", template.HTML("Base URL <code>" + oa + "</code>, API key = your key.")},
-		{"OpenAI SDK (Python/JS)", "sdk", "openai", "client base_url", template.HTML("<code>OpenAI(base_url=\"" + oa + "\", api_key=\"&lt;key&gt;\")</code> then call <code>model=\"auto\"</code>.")},
-		{"Anthropic SDK", "sdk", "anthropic", "client base_url", template.HTML("<code>Anthropic(base_url=\"" + base + "\", api_key=\"&lt;key&gt;\")</code> — routed via <code>/v1/messages</code>.")},
+		{"Cursor", "ide", "openai", "Settings → Models → OpenAI API Key → Override Base URL", template.HTML("Base URL <code>" + oa + "</code>, paste your key, add a model named <code>auto</code>."), oa},
+		{"Cline / Continue", "ide", "openai", "OpenAI Compatible provider", template.HTML("Base URL <code>" + oa + "</code>, API key = your department key, model <code>auto</code>."), oa},
+		{"Claude Code", "agent", "anthropic", "Environment variables", template.HTML("<code>ANTHROPIC_BASE_URL=" + base + "</code> and <code>ANTHROPIC_API_KEY=</code>your key. Uses the <code>/v1/messages</code> shim."),
+			"export ANTHROPIC_BASE_URL=" + base + "\nexport ANTHROPIC_API_KEY=<key>"},
+		{"Codex CLI", "agent", "openai", "config / env", template.HTML("Point the OpenAI base URL at <code>" + oa + "</code> and set the API key to your department key."),
+			"export OPENAI_BASE_URL=" + oa + "\nexport OPENAI_API_KEY=<key>"},
+		{"Aider", "agent", "openai", "--openai-api-base", template.HTML("<code>aider --openai-api-base " + oa + " --openai-api-key &lt;key&gt; --model openai/auto</code>"),
+			"aider --openai-api-base " + oa + " --openai-api-key <key> --model openai/auto"},
+		{"OpenWebUI", "chat", "openai", "Admin → Settings → Connections → OpenAI API", template.HTML("API Base URL <code>" + oa + "</code>, API Key = your key. Models appear from <code>/v1/models</code>."), oa},
+		{"AnythingLLM", "chat", "openai", "LLM Preference → Generic OpenAI", template.HTML("Base URL <code>" + oa + "</code>, API key = your key, model <code>auto</code>, chat token limit as you like."), oa},
+		{"LibreChat / Jan", "chat", "openai", "Custom OpenAI endpoint", template.HTML("Base URL <code>" + oa + "</code>, API key = your key."), oa},
+		{"OpenAI SDK (Python/JS)", "sdk", "openai", "client base_url", template.HTML("<code>OpenAI(base_url=\"" + oa + "\", api_key=\"&lt;key&gt;\")</code> then call <code>model=\"auto\"</code>."),
+			"from openai import OpenAI\nclient = OpenAI(base_url=\"" + oa + "\", api_key=\"<key>\")\nprint(client.chat.completions.create(model=\"auto\", messages=[{\"role\": \"user\", \"content\": \"Say hello\"}]).choices[0].message.content)"},
+		{"Anthropic SDK", "sdk", "anthropic", "client base_url", template.HTML("<code>Anthropic(base_url=\"" + base + "\", api_key=\"&lt;key&gt;\")</code> — routed via <code>/v1/messages</code>."),
+			"from anthropic import Anthropic\nclient = Anthropic(base_url=\"" + base + "\", api_key=\"<key>\")\nprint(client.messages.create(model=\"auto\", max_tokens=200, messages=[{\"role\": \"user\", \"content\": \"Say hello\"}]).content[0].text)"},
 	}
+}
+
+// requestBase is this instance's public base URL: ROUTER_PUBLIC_URL when set,
+// otherwise the scheme and host the browser used to reach it.
+func requestBase(publicURL string, r *http.Request) string {
+	if b := strings.TrimRight(strings.TrimSpace(publicURL), "/"); b != "" {
+		return b
+	}
+	scheme := "http"
+	if r.TLS != nil || strings.EqualFold(r.Header.Get("X-Forwarded-Proto"), "https") {
+		scheme = "https"
+	}
+	return scheme + "://" + r.Host
 }
 
 type connectData struct {
@@ -53,11 +74,8 @@ type connectData struct {
 // ConnectHandler serves the public/instance Connect catalog.
 func ConnectHandler(opts LandingOptions) http.HandlerFunc {
 	base := strings.TrimRight(opts.PublicURL, "/")
-	display := base
-	if display == "" {
-		display = "https://tokenizer.your-company" // placeholder for the public/dev view
-	}
 	return func(w http.ResponseWriter, r *http.Request) {
+		display := requestBase(base, r)
 		d := connectData{
 			Name: brandName, Tagline: "Point your clients at the router",
 			PublicURL: base, Base: display, OpenAIBase: display + "/v1", HasBase: base != "",
@@ -117,7 +135,7 @@ footer{border-top:1px solid var(--line);margin-top:40px;padding:26px 0;color:var
 <section class="hero">
   <span class="lbl">Connect</span>
   <h1>Point your client at the router.</h1>
-  <p class="sub">Sluss is OpenAI- and Anthropic-compatible. Set the base URL and your key, keep the model on <code>auto</code>, and the router classifies each prompt and picks the right model — with egress control and an audit trail.{{if not .HasBase}} <span class="note">(Examples use a placeholder host — set <code>ROUTER_PUBLIC_URL</code> so this page shows your instance's real base URL.)</span>{{end}}</p>
+  <p class="sub">Sluss is OpenAI- and Anthropic-compatible. Set the base URL and your key, keep the model on <code>auto</code>, and the router classifies each prompt and picks the right model — with egress control and an audit trail.{{if not .HasBase}} <span class="note">(Examples use the address you opened this page with. Set <code>ROUTER_PUBLIC_URL</code> if clients reach Sluss under another one.)</span>{{end}}</p>
 </section>
 
 <div class="recipe">
