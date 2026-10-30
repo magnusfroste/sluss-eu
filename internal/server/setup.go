@@ -331,7 +331,7 @@ var setupTmpl = template.Must(template.New("setup").Funcs(template.FuncMap{
         <div class="try"><span class="p">Summarise the case for customer 811218-9876 who complained about an invoice</span><span class="res" data-p="Summarise the case for customer 811218-9876 who complained about an invoice">—</span></div>
         <div class="try"><span class="p">write a concise git commit message for a bugfix</span><span class="res" data-p="write a concise git commit message for a bugfix">—</span></div>
       </div>
-      <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap"><button class="btn" type="button" onclick="tryAll()">Run the dry-run</button><a class="btn ghost" href="/chat">Open the live chat</a><a class="btn ghost" href="/connect">Connect a client</a></div>
+      <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap"><button class="btn" type="button" onclick="tryAll()">Run the dry-run</button><a class="btn ghost" href="/chat">Open the live chat</a><a class="btn ghost" href="/router/connect">Connect a client</a></div>
     </div>
   </div>
 </div></div></div>

@@ -79,7 +79,7 @@ var adminNavGroups = []navGroup{
 	{"policy", "Policy", icPolicy, []navItem{{key: "policy", href: "/router/policy", label: "Policy"}}},
 	{"models", "Models", icModels, []navItem{{key: "models", href: "/router/models", label: "Models"}, {key: "providers", href: "/router/providers", label: "Providers"}, {key: "risk", href: "/router/risk", label: "Risk register"}}},
 	{"access", "Access", icKeys, []navItem{{key: "keys", href: "/router/keys", label: "Department keys"}, {key: "users", href: "/router/users", label: "Console users"}}},
-	{"rollout", "Rollout", icRollout, []navItem{{key: "setup", href: "/router/setup", label: "Quick start"}, {key: "rollout", href: "/router/rollout", label: "Managed devices"}, {key: "connect", href: "/connect", label: "Connect clients"}, {key: "prompts", href: "/router/prompts", label: "Demo link"}}},
+	{"rollout", "Rollout", icRollout, []navItem{{key: "setup", href: "/router/setup", label: "Quick start"}, {key: "rollout", href: "/router/rollout", label: "Managed devices"}, {key: "connect", href: "/router/connect", label: "Connect clients"}, {key: "prompts", href: "/router/prompts", label: "Demo link"}}},
 }
 
 // adminNavBottom is the fixed foot of the menu: leave the console for the

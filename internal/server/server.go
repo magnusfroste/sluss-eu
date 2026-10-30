@@ -480,6 +480,8 @@ func New(cfg Config) http.Handler {
 		// key like /v1 does; the block page is public (a sinkhole points at it).
 		rolloutOpts := RolloutOptions{History: cfg.History, PublicURL: cfg.PublicURL, Auditor: cfg.Auditor, Logger: cfg.Logger}
 		mux.Handle("GET /router/rollout", dashGuard(RolloutPageHandler(rolloutOpts)))
+		// Connect clients inside the console (ISSUE-143); /connect stays public.
+		mux.Handle("GET /router/connect", dashGuard(ConsoleConnectHandler(cfg.PublicURL, cfg.Logger)))
 		// Version and upgrades (ISSUE-138).
 		activeUpdates = cfg.Updates
 		mux.Handle("GET /router/system", dashGuard(VersionPageHandler(cfg.Updates, cfg.Logger)))
