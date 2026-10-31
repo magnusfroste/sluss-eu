@@ -159,8 +159,14 @@ const demoChatTemplate = `<!doctype html>
   .chat{flex:1;display:flex;min-height:0;height:100%;position:relative}
 
   /* ---- history sidebar ---- */
-  .side{width:260px;flex:none;background:var(--side);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0;transition:margin .18s ease}
-  .chat.side-off .side{margin-left:-260px}
+  /* The panel collapses by width inside the chat area — it never slides over
+     the admin menu — and is hidden from focus once closed (ISSUE-144 fix). */
+  .chat{overflow:hidden}
+  .side{width:260px;flex:none;background:var(--side);border-right:1px solid var(--line);min-height:0;overflow:hidden;
+    transition:width .2s ease,border-color .2s ease,visibility 0s linear 0s}
+  .side-in{width:260px;height:100%;display:flex;flex-direction:column}
+  .chat.side-off .side{width:0;border-right-width:0;visibility:hidden;transition:width .2s ease,border-color .2s ease,visibility 0s linear .2s}
+  @media (prefers-reduced-motion: reduce){.side{transition:none!important}}
   .side-top{display:flex;gap:6px;padding:12px 10px 8px}
   .newbtn{flex:1;display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:10px;border:1px solid var(--line2);
     background:transparent;color:var(--ink);font-size:14px;font-weight:500;cursor:pointer}
@@ -313,11 +319,13 @@ const demoChatTemplate = `<!doctype html>
   .chat.dragging .composer{border-color:var(--accent);border-style:dashed}
 
   @media (max-width:900px){
-    .side{position:absolute;top:0;bottom:0;left:0;z-index:30;box-shadow:12px 0 40px rgba(0,0,0,.45);margin-left:0}
-    .chat:not(.side-open) .side{margin-left:-280px;box-shadow:none}
+    /* Narrow: a drawer over the chat, whatever the desktop choice was. */
+    .side,.chat.side-off .side{position:absolute;top:0;bottom:0;left:0;z-index:30;width:280px;border-right:1px solid var(--line);
+      transform:translateX(-100%);visibility:hidden;transition:transform .2s ease,visibility 0s linear .2s}
+    .side-in{width:280px}
+    .chat.side-open .side{transform:none;visibility:visible;box-shadow:12px 0 40px rgba(0,0,0,.45);transition:transform .2s ease,visibility 0s}
     .chat.side-open .scrim{display:block;position:absolute;inset:0;background:rgba(3,8,18,.55);z-index:25}
     #sideopen{display:inline-flex}
-    #sideclose{display:inline-flex}
   }
   @media (max-width:760px){
     .tk-nav{display:none}
@@ -341,6 +349,7 @@ const demoChatTemplate = `<!doctype html>
 <div class="tk-main">
 <div class="chat is-empty" id="chat">
   <aside class="side" id="side" aria-label="Chat history">
+   <div class="side-in">
     <div class="side-top">
       <button class="newbtn" id="newchat" type="button"><svg class="i" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>New chat</button>
       <button class="iconbtn" id="sideclose" type="button" aria-label="Hide chat history" title="Hide chat history"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg></button>
@@ -348,6 +357,7 @@ const demoChatTemplate = `<!doctype html>
     <div class="ssearch"><input id="ssearch" type="search" placeholder="Search chats" aria-label="Search chats" autocomplete="off"></div>
     <nav id="sessions"></nav>
     <div class="side-foot">Chats are kept for you on this server. Delete one with ×.</div>
+   </div>
   </aside>
   <div class="scrim" id="scrim"></div>
   <div class="col">
@@ -616,7 +626,11 @@ function setSide(open){
   const narrow=matchMedia('(max-width:900px)').matches;
   if(narrow){chatEl.classList.toggle('side-open',open);}
   else{chatEl.classList.toggle('side-off',!open);try{localStorage.setItem(LS_SIDE,open?'1':'0');}catch(e){}}
+  // Move focus with the panel so keyboard users never land in a hidden one.
+  (open?document.getElementById('newchat'):document.getElementById('sideopen')).focus({preventScroll:true});
 }
+// Leaving the narrow layout closes the drawer; the desktop choice stays.
+matchMedia('(max-width:900px)').addEventListener('change',()=>chatEl.classList.remove('side-open'));
 document.getElementById('sideopen').onclick=()=>setSide(true);
 document.getElementById('sideclose').onclick=()=>setSide(false);
 document.getElementById('scrim').onclick=()=>setSide(false);
@@ -794,6 +808,7 @@ const _ask=ask;ask=async function(t,o){try{await _ask(t,o);}finally{if(streaming
 document.getElementById('newchat').onclick=newChat;
 document.addEventListener('keydown',e=>{
   if((e.metaKey||e.ctrlKey)&&e.shiftKey&&(e.key==='o'||e.key==='O')){e.preventDefault();newChat();}
+  if(e.key==='Escape'&&chatEl.classList.contains('side-open')){setSide(false);return;}
   if(e.key==='Escape'&&streaming)streaming.abort();
 });
 // Boot: load sessions from the server (SQLite) first, then localStorage.
