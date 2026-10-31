@@ -16,6 +16,7 @@ type RouteDecision struct {
 	RequiresVerifier bool            `json:"requires_verifier"`
 	DecisionReasons  []string        `json:"decision_reasons"`
 	PolicyVersion    string          `json:"policy_version"`
+	MatchedRules     []string        `json:"matched_rules,omitempty"` // policy rule IDs that matched
 	EstimatedCostUSD float64         `json:"estimated_cost_usd"`
 	Blocked          bool            `json:"blocked,omitempty"`
 	BlockCode        string          `json:"block_code,omitempty"`

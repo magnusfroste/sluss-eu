@@ -82,6 +82,8 @@ func (t *RequestLogTracker) addDecision(d *DecisionEvent) {
 		Blocked:         d.Blocked,
 		BlockCode:       d.BlockCode,
 		Egress:          d.Egress,
+		TenantID:        d.TenantID,
+		Actor:           d.Actor,
 	}
 	t.mu.Lock()
 	defer t.mu.Unlock()
