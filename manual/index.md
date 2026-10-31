@@ -16,6 +16,7 @@ If Sluss is new, do these in order. Each one works on its own, so you can stop a
 
 ## When you need it
 
+- [How Sluss picks a model](/manual/choosing-models): the three steps, what a model's level means, and why a question went where it went.
 - [Words used in this manual](/manual/glossary): short explanations of IdP, MDM, OIDC, DNS filter and the rest.
 - [When something does not work](/manual/troubleshooting): the errors people actually hit, and what to do.
 

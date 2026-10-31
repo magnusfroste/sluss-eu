@@ -18,6 +18,10 @@
 
 The progress bar on Quick start says *4 of 4 done*, and the yellow banner on the dashboard disappears.
 
+## Next
+
+[How Sluss picks a model](/manual/choosing-models) explains the level each model has, and why a question goes where it goes.
+
 ## If you are unsure
 
 The dry-run sends nothing to any model. Try your own sentences there as many times as you like.
