@@ -37,3 +37,11 @@ ingen stopp-knapp. Användare jämför med de stora AI-assistenterna.
   kodblock och injektionsförsök (`<script>`, `<img onerror>`, `javascript:`).
 - Webbläsarkontroll desktop och mobil: tom chatt, strömmat svar, Regenerate
   ersätter, historiklåda på mobil, riktigt anrop genom routern med PII-notis.
+
+## Rättelse 2026-10-31
+
+Att fälla in historiken fick panelen att glida åt vänster över adminmenyn
+(negativ marginal), och mellan 760 och 900 px blandades skrivbords- och
+mobilläget. Nu krymper panelen på bredden inom chattytan, döljs för
+tangentbordsfokus när den är stängd, och under 900 px är den alltid en låda
+(Escape eller klick utanför stänger). Fokus flyttas med panelen.
