@@ -865,7 +865,7 @@ function renderInspector(){
         '</div>';
       h+='<div class="igrp"><div class="ig">Result</div>'+
         kv('First word',fmtMs(meta.ttfb))+kv('Total',fmtMs(meta.total))+
-        (FULL?kv('Tokens',meta.inTok!=null?(meta.inTok+' in · '+meta.outTok+' out'):(meta.reqId?'<span class="sub">counting…</span>':'')):'')+
+        (FULL?kv('Tokens',meta.inTok!=null?(meta.inTok+' in · '+meta.outTok+' out'):(meta.reqId&&!meta.noUsage?'<span class="sub">counting…</span>':'')):'')+
         (FULL?kv('Cost',meta.cost!=null?fmtUSD(meta.cost):''):'')+
         (meta.search?kv('Web search',meta.search.state==='done'?meta.search.n+' sources':(meta.search.state==='skipped'?'<span class="warn">Skipped — '+esc(meta.search.why||'sensitive')+' in the prompt</span>':esc(human(meta.search.state)))):'')+
         (meta.files&&meta.files.length?kv('Attached',meta.files.map(esc).join(', ')+'<div class="sub">classified before any model saw it</div>'):'')+
@@ -903,6 +903,8 @@ async function fetchUsage(s,msg){
       if(j.found&&(j.input_tokens||j.output_tokens||j.cost_usd)){meta.inTok=j.input_tokens;meta.outTok=j.output_tokens;meta.cost=j.cost_usd;
         persist();if(cur()===s)renderInspector();return;}}catch(e){}
   }
+  // Not available (e.g. signed in with the break-glass password): stop saying "counting".
+  meta.noUsage=true;persist();if(cur()===s)renderInspector();
 }
 
 // ---- composer
