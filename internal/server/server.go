@@ -527,6 +527,12 @@ func New(cfg Config) http.Handler {
 		// localStorage otherwise.
 		getS, putS := DemoSessionsHandlers(cfg.History)
 		mux.Handle("GET /chat/sessions", demoGuard(getS))
+		// The signed-in person's own profile (ISSUE-155).
+		mux.Handle("GET /me", demoGuard(ProfilePageHandler(cfg.History, cfg.Logger)))
+		mux.Handle("POST /me/password", demoGuard(ProfilePasswordHandler(cfg.History, cfg.Auditor)))
+		dlH, delH := ProfileHistoryHandler(cfg.History, cfg.Auditor)
+		mux.Handle("GET /me/history", demoGuard(dlH))
+		mux.Handle("POST /me/history/delete", demoGuard(delH))
 		mux.Handle("PUT /chat/sessions", demoGuard(putS))
 		// Chat inspector (ISSUE-145): tokens and cost of the caller's own request.
 		mux.Handle("GET /chat/request", demoGuard(ChatRequestInfoHandler(cfg.History, cfg.RequestLog)))

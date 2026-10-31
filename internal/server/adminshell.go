@@ -33,7 +33,7 @@ const adminShellCSS = `
 .tk-upd{display:inline-block;width:7px;height:7px;border-radius:50%;background:#fad100;margin-left:6px;vertical-align:1px;box-shadow:0 0 0 3px rgba(250,209,0,.18)}
 .tk-bottom .tk-foot{margin-top:4px;border-top:0}
 .tk-foot{margin-top:auto;color:#5f6e87;font-size:11px;padding:12px 12px 4px;border-top:1px solid #17253f}
-.tk-who{color:#9fb0cc;overflow-wrap:anywhere}.tk-who.bg{color:#f4b740}
+.tk-who{color:#9fb0cc;overflow-wrap:anywhere;text-decoration:none}.tk-who:hover{color:#e8eef7;text-decoration:underline}.tk-who.bg{color:#f4b740}
 .tk-build{color:inherit;text-decoration:none;font-family:ui-monospace,Menlo,monospace}.tk-build:hover{text-decoration:underline}
 .tk-main{flex:1;min-width:0;display:flex;flex-direction:column}
 @media(max-width:760px){.tk-sub{display:none}.tk-nav{width:58px;padding:12px 8px}
@@ -121,7 +121,7 @@ func adminNavHTML(active string) string {
 	}
 	// Who is signed in (ISSUE-153): the menu is rendered once per page, so the
 	// name is filled in from /router/whoami; a break-glass login is marked.
-	b.WriteString(`<div class="tk-foot"><span class="tk-who" id="tk-who" title="Signed in">signed in</span> · <a class="tk-build" href="/router/system" title="` + template.HTMLEscapeString(tip) + `">` + template.HTMLEscapeString(buildinfo.Label()) + dot + `</a></div></div></nav>`)
+	b.WriteString(`<div class="tk-foot"><a class="tk-who" id="tk-who" href="/me" title="Your profile">signed in</a> · <a class="tk-build" href="/router/system" title="` + template.HTMLEscapeString(tip) + `">` + template.HTMLEscapeString(buildinfo.Label()) + dot + `</a></div></div></nav>`)
 	b.WriteString(`<script>fetch('/router/whoami',{credentials:'same-origin'}).then(function(r){return r.ok?r.json():null}).then(function(w){if(!w)return;var e=document.getElementById('tk-who');if(!e)return;e.textContent=w.user||'signed in';e.title='Signed in as '+(w.user||'?')+' · role '+(w.role||'?')+(w.break_glass?' · with the break-glass password, not a named account':'');if(w.break_glass){e.classList.add('bg');e.textContent=(w.user||'')+' · break-glass';}}).catch(function(){});</script>`)
 	return b.String()
 }
