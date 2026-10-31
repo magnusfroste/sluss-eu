@@ -472,6 +472,21 @@ func (s *Store) KVSet(key, value string) error {
 	return err
 }
 
+// KVDeletePrefix removes every key that starts with prefix and returns how
+// many were removed. Used to clear all per-person chat histories at once.
+func (s *Store) KVDeletePrefix(prefix string) (int64, error) {
+	if s == nil {
+		return 0, nil
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	res, err := s.db.Exec(`DELETE FROM kv WHERE substr(key, 1, ?) = ?`, len(prefix), prefix)
+	if err != nil {
+		return 0, err
+	}
+	return res.RowsAffected()
+}
+
 // TotalRequests returns the number of non-blocked requests recorded.
 func (s *Store) TotalRequests() int64 {
 	var n int64

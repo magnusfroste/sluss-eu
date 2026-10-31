@@ -128,6 +128,7 @@ P2:
 4. Uppdatera dokumentation om kontrakt ändras.
 5. Kontrollera latency om issue påverkar fast path.
 6. Merge efter review.
+- ISSUE-154 — Chatthistorik per person: tidigare delade admins, nödinloggning, API, lokala konton och demogäster en gemensam historik; nu en per identitet (demolänkens gäster delar länkens), webbläsarkopian per person, reset rensar alla. `epic: EPIC-14`, `priority: P1`, `state: done`, klar 2026-10-31.
 - ISSUE-153 — Visa vem som är inloggad: menyns fot visar namnet (nödinloggning i gult som break-glass), Console users markerar "you" och förklarar nödinloggning. `epic: EPIC-14`, `priority: P2`, `state: done`, klar 2026-10-31.
 - ISSUE-148 — Manualsida "How Sluss picks a model": tre steg, nivåer, konsekvens av en gratis lokal modell, två inställningar; kursiv i manualens Markdown. `epic: EPIC-14`, `priority: P2`, `state: done`, klar 2026-10-31.
 - ISSUE-147 — Inspector i hopfällbara kort (som i Claude) med sammanfattning i rubriken: This chat, Route (med klassificerarens säkerhet), Context (skickat, tillbakahållet, storlek, bilagor, webbkällor), Output (tid, längd, tokens, kostnad, audit), Setup (modell, sök, vem du är, version). Blockerade turer skickas aldrig igen. Nya huvuden X-Router-Task-Confidence/-Prompt-Tokens. `epic: EPIC-14`, `priority: P2`, `state: done`, klar 2026-10-31.

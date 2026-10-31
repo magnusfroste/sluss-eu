@@ -39,8 +39,9 @@ func DataResetHandler(o DataResetOptions) http.HandlerFunc {
 			if n, err := o.History.ResetRequests(); err == nil {
 				rows = n
 			}
-			// Demo chat sessions are a KV blob; clearing it resets the demo UI.
-			_ = o.History.KVSet(demoSessionsKey, "")
+			// Chat histories are KV blobs, one per person (and the old shared
+			// one); clearing them resets the chat for everyone.
+			_, _ = o.History.KVDeletePrefix(demoSessionsKey)
 		}
 		if o.Spend != nil {
 			o.Spend.Reset()
