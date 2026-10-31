@@ -140,7 +140,7 @@ func DemoChatPageHandler(searchOn bool) http.HandlerFunc {
 						return ` · ` + template.HTMLEscapeString(dept)
 					}
 					return ""
-				}() + ` · <a href="/router/logout">Sign out</a></div>`
+				}() + ` · <a href="/me">Profile</a> · <a href="/router/logout">Sign out</a></div>`
 		}
 		flags := "const EMPLOYEE=" + strconv.FormatBool(employee) + ",SEARCH_ON=" + strconv.FormatBool(searchOn) +
 			",WHO=" + jsString(user) + ",DEPT=" + jsString(dept) + ",VERSION=" + jsString(buildinfo.Label()) + ";"

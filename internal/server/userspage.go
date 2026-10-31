@@ -74,7 +74,7 @@ func UsersAddHandler(h *history.Store, auditor audit.Sink) http.HandlerFunc {
 			return
 		}
 		if err := h.UpsertAdminUser(history.AdminUser{Username: username, PasswordHash: hash, Role: role, CreatedAt: time.Now()}); err != nil {
-			redirectUsers(w, r, "", "spara: "+err.Error())
+			redirectUsers(w, r, "", "save: "+err.Error())
 			return
 		}
 		auditUserChange(r.Context(), auditor, "admin_user.upsert", username)
@@ -101,7 +101,7 @@ func UsersDisableHandler(h *history.Store, auditor audit.Sink) http.HandlerFunc 
 			msg = "User " + username + " enabled."
 		}
 		if err := h.SetAdminUserDisabled(username, at); err != nil {
-			redirectUsers(w, r, "", "spara: "+err.Error())
+			redirectUsers(w, r, "", "save: "+err.Error())
 			return
 		}
 		auditUserChange(r.Context(), auditor, audit.Action(action), username)
