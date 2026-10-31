@@ -54,7 +54,7 @@ var (
 	// non-space, not touching a word character (so 2*3*4 stays as it is).
 	mdEm      = regexp.MustCompile(`(^|[^*\w])\*([^*\s](?:[^*]*[^*\s])?)\*($|[^*\w])`)
 	mdCodeTag = regexp.MustCompile(`<code>.*?</code>`)
-	mdCode = regexp.MustCompile("`([^`]+)`")
+	mdCode    = regexp.MustCompile("`([^`]+)`")
 	// Links only to http(s) or a path on this instance — never javascript:
 	// or data: — and matched after escaping, so the text cannot carry markup.
 	mdLink = regexp.MustCompile(`\[([^\]]+)\]\(((?:https?://|/|#)[^)\s]*)\)`)
