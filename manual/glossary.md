@@ -5,6 +5,7 @@
 | **Sluss** | Your AI gateway. It sits between people and tools on one side and AI models on the other. |
 | **Model** | An AI service that answers questions, in the cloud (for example GPT-4o) or on your own hardware. |
 | **Local model** | A model on hardware the company controls. Data sent to it does not leave the company. |
+| **Level (tier)** | How hard a question a model is trusted with: cheap, balanced or premium. You set it per model. A question goes to a model at or above the level it needs. See [How Sluss picks a model](/manual/choosing-models). |
 | **Rule / policy** | What Sluss may do with a question, for example "personal data only to local models". |
 | **Fail-closed** | When no allowed model exists, the question is refused. It is never sent somewhere else just to get an answer. |
 | **Audit log** | The record of every decision and change. Each line is chained to the one before, so a changed line is detected. |

@@ -48,3 +48,12 @@ func TestMarkdownToHTMLCoversReportDialect(t *testing.T) {
 		t.Error("the H1 belongs to the page header, not the body")
 	}
 }
+
+func TestMarkdownItalicOutsideCode(t *testing.T) {
+	got := mdInline("a *local* model, **bold**, `a*b*c` and 2*3*4")
+	for _, want := range []string{"a <em>local</em> model", "<strong>bold</strong>", "<code>a*b*c</code>", "2*3*4"} {
+		if !strings.Contains(got, want) {
+			t.Errorf("mdInline = %q, want %q", got, want)
+		}
+	}
+}

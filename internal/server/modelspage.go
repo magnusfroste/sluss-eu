@@ -448,6 +448,7 @@ tr.mrow:focus{outline:none}tr.mrow:focus-visible td:first-child{box-shadow:inset
     <b>Tier is the router's USP.</b> The router picks a model per task automatically (task → tier);
     here you curate the <b>tier per model</b> — not a model per task. A model points at a
     <a href="/router/providers" style="color:#7fd3ff">provider connection</a>. Changes apply <b>{{if .Live}}immediately{{else}}on restart{{end}}</b>.
+    <a href="/manual/choosing-models" style="color:#7fd3ff">How Sluss picks a model ›</a>
   </div>
   <div class="card">
     <table>

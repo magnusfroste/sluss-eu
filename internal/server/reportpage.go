@@ -50,6 +50,10 @@ func renderReportPage(w http.ResponseWriter, d reportPageData) {
 
 var (
 	mdBold = regexp.MustCompile(`\*\*(.+?)\*\*`)
+	// *italic*: a single star pair around text that starts and ends with a
+	// non-space, not touching a word character (so 2*3*4 stays as it is).
+	mdEm      = regexp.MustCompile(`(^|[^*\w])\*([^*\s](?:[^*]*[^*\s])?)\*($|[^*\w])`)
+	mdCodeTag = regexp.MustCompile(`<code>.*?</code>`)
 	mdCode = regexp.MustCompile("`([^`]+)`")
 	// Links only to http(s) or a path on this instance — never javascript:
 	// or data: — and matched after escaping, so the text cannot carry markup.
@@ -57,13 +61,27 @@ var (
 	mdOL   = regexp.MustCompile(`^\d{1,3}\. `)
 )
 
+// outsideCode applies f to the parts of s that are not inside <code>…</code>.
+func outsideCode(s string, f func(string) string) string {
+	var b strings.Builder
+	last := 0
+	for _, loc := range mdCodeTag.FindAllStringIndex(s, -1) {
+		b.WriteString(f(s[last:loc[0]]))
+		b.WriteString(s[loc[0]:loc[1]])
+		last = loc[1]
+	}
+	b.WriteString(f(s[last:]))
+	return b.String()
+}
+
 // mdInline renders the inline subset the report and manual writers use:
-// bold, code and links. Input is HTML-escaped first, so content can never
+// bold, italic, code and links. Input is HTML-escaped first, so content can never
 // inject markup.
 func mdInline(s string) string {
 	s = html.EscapeString(s)
 	s = mdCode.ReplaceAllString(s, "<code>$1</code>")
 	s = mdBold.ReplaceAllString(s, "<strong>$1</strong>")
+	s = outsideCode(s, func(t string) string { return mdEm.ReplaceAllString(t, "$1<em>$2</em>$3") })
 	s = mdLink.ReplaceAllStringFunc(s, func(m string) string {
 		p := mdLink.FindStringSubmatch(m)
 		ext := ""
