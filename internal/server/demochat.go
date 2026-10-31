@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"html/template"
 	"io"
 	"net/http"
@@ -8,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/magnusfroste/sluss/internal/auth"
+	"github.com/magnusfroste/sluss/internal/buildinfo"
 	"github.com/magnusfroste/sluss/internal/history"
 	"github.com/magnusfroste/sluss/internal/tenant"
 )
@@ -126,7 +128,8 @@ func DemoChatPageHandler(searchOn bool) http.HandlerFunc {
 					return ""
 				}() + ` · <a href="/router/logout">Sign out</a></div>`
 		}
-		flags := "const EMPLOYEE=" + strconv.FormatBool(employee) + ",SEARCH_ON=" + strconv.FormatBool(searchOn) + ";"
+		flags := "const EMPLOYEE=" + strconv.FormatBool(employee) + ",SEARCH_ON=" + strconv.FormatBool(searchOn) +
+			",WHO=" + jsString(user) + ",DEPT=" + jsString(dept) + ",VERSION=" + jsString(buildinfo.Label()) + ";"
 		_, _ = w.Write([]byte(strings.NewReplacer(
 			"<!--IDENTITY-->", ident, "<!--TAGLINE-->", tagline, "/*FLAGS*/", flags,
 		).Replace(page)))
@@ -335,7 +338,26 @@ const demoChatTemplate = `<!doctype html>
   .chat.insp-on .insp{width:320px;border-left-width:1px;visibility:visible;transition:width .2s ease,visibility 0s}
   .insp-in{width:320px;height:100%;display:flex;flex-direction:column}
   .insp-h{display:flex;align-items:center;justify-content:space-between;padding:10px 10px 6px 18px;min-height:56px;font-weight:600;font-size:14px}
-  .insp-b{flex:1;overflow-y:auto;padding:0 18px 24px}
+  .insp-b{flex:1;overflow-y:auto;padding:4px 12px 24px}
+  /* Cards (ISSUE-147): everything visible at once, each can fold to one line
+     with a summary — like the side panels in Claude. */
+  .icard{border:1px solid var(--line);border-radius:12px;background:var(--surface);margin-bottom:10px}
+  .ich{display:flex;align-items:center;gap:8px;width:100%;border:0;background:transparent;color:var(--ink);padding:11px 12px 11px 14px;font-size:13.5px;font-weight:600;cursor:pointer;text-align:left;font-family:inherit;border-radius:12px}
+  .ich:hover{background:var(--raised)}
+  .ich:focus-visible{outline:2px solid #3d5380;outline-offset:-2px}
+  .ics{margin-left:auto;font-weight:400;color:var(--faint);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  .ics .ok{color:#4fd08a}.ics .cl{color:#7fb2ff}.ics .bad{color:#f87171}
+  .icv{width:16px;height:16px;color:var(--faint);transition:transform .15s}
+  .ich[aria-expanded="false"] .icv{transform:rotate(-90deg)}
+  .icb{padding:2px 14px 12px}
+  .icb[hidden]{display:none}
+  .icb .igrp:last-child{margin-bottom:0}
+  #inavw .inav{margin:2px 0 10px}
+  #inavw:empty{display:none}
+  .srcl{display:flex;flex-direction:column;gap:4px;margin-top:6px}
+  .srcl a{display:flex;gap:7px;color:var(--ink2);text-decoration:none;font-size:12.5px;line-height:1.35}
+  .srcl a b{color:var(--faint);font-weight:600;min-width:12px}
+  .srcl a:hover{color:#7fd3ff}
   .isec{padding:14px 0;border-top:1px solid var(--line)}
   .isec:first-child{border-top:0;padding-top:4px}
   .isec h4{margin:0 0 10px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);font-weight:600}
@@ -451,13 +473,22 @@ const demoChatTemplate = `<!doctype html>
    <div class="insp-in">
     <div class="insp-h"><span>Inspector</span><button class="iconbtn" id="inspclose" type="button" aria-label="Close the inspector" title="Close"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M15 4v16"/></svg></button></div>
     <div class="insp-b">
-      <section class="isec"><h4>This answer</h4><div id="ians"></div></section>
-      <section class="isec"><h4>This chat</h4><div id="ichat"></div></section>
-      <section class="isec"><h4>Settings</h4>
-        <div class="kv kvsel"><span class="k">Model</span><span class="v" id="imodel"><!--MODEL_PICKER--></span></div>
-        <div class="kv"><span class="k">Web search</span><span class="v" id="isearch"></span></div>
-        <div class="kv"><span class="k">Routing</span><span class="v" id="iroute"></span></div>
-      </section>
+      <section class="icard" data-card="chat"><button class="ich" type="button" aria-expanded="true" aria-controls="card-chat"><span class="ict">This chat</span><span class="ics" id="sum-chat"></span><svg class="i icv" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button><div class="icb" id="card-chat"></div></section>
+      <div id="inavw"></div>
+      <section class="icard" data-card="route"><button class="ich" type="button" aria-expanded="true" aria-controls="card-route"><span class="ict">Route</span><span class="ics" id="sum-route"></span><svg class="i icv" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button><div class="icb" id="card-route"></div></section>
+      <section class="icard" data-card="context"><button class="ich" type="button" aria-expanded="true" aria-controls="card-context"><span class="ict">Context</span><span class="ics" id="sum-context"></span><svg class="i icv" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button><div class="icb" id="card-context"></div></section>
+      <section class="icard" data-card="output"><button class="ich" type="button" aria-expanded="true" aria-controls="card-output"><span class="ict">Output</span><span class="ics" id="sum-output"></span><svg class="i icv" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button><div class="icb" id="card-output"></div></section>
+      <section class="icard" data-card="setup"><button class="ich" type="button" aria-expanded="true" aria-controls="card-setup"><span class="ict">Setup</span><span class="ics" id="sum-setup"></span><svg class="i icv" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button><div class="icb" id="card-setup">
+        <div class="igrp"><div class="ig">Next message</div>
+          <div class="kv kvsel"><span class="k">Model</span><span class="v" id="imodel"><!--MODEL_PICKER--></span></div>
+          <div class="kv"><span class="k">Web search</span><span class="v" id="isearch"></span></div>
+          <div class="kv"><span class="k">Routing</span><span class="v" id="iroute"></span></div>
+        </div>
+        <div class="igrp"><div class="ig">You and this instance</div>
+          <div class="kv"><span class="k">Signed in</span><span class="v" id="iwho"></span></div>
+          <div class="kv"><span class="k">Sluss</span><span class="v" id="iver"></span></div>
+        </div>
+      </div></section>
     </div>
    </div>
   </aside>
@@ -755,7 +786,7 @@ function blockHTML(code,msg){
   return '<div class="blockcard"><b>Stopped by your policy — nothing was sent to any model.</b><br>'+esc(blockWhy(code,msg))+
     '<div class="bnote">Recorded in the tamper-evident audit log as <span class="mono">'+esc(code)+'</span>. The inspector shows which rule fired.</div></div>';
 }
-function wireRoute(b,idx){b.row.dataset.idx=idx;b.route.onclick=()=>{selIdx=idx;renderInspector();setInsp(true,true);};}
+function wireRoute(b,idx){b.row.dataset.idx=idx;b.route.onclick=()=>{selIdx=idx;renderInspector();setInsp(true,true);openCard('route');};}
 function botFromHistory(m,i,isLast){
   const b=botShell(),meta=metaOf(m);
   b.route.innerHTML=rlineHTML(meta);
@@ -834,64 +865,123 @@ function dataText(meta){
   return t;
 }
 function renderInspector(){
-  const box=document.getElementById('ians'),tot=document.getElementById('ichat');
   const s=cur();
   const bots=s?s.messages.map((m,i)=>({m,i})).filter(x=>x.m.role==='assistant'):[];
   if(selIdx<0&&bots.length)selIdx=bots[bots.length-1].i;
   wrap.querySelectorAll('.msg.bot').forEach(r=>r.classList.toggle('sel',+r.dataset.idx===selIdx));
+  renderSummary(bots);
   const m=s&&selIdx>=0?s.messages[selIdx]:null;
-  if(!m){box.innerHTML='<p class="ihint">Ask something. What Sluss decided — which model, why, and where the data went — shows up here.</p>';}
-  else{
-    const meta=metaOf(m),local=meta.egress==='local';let h='';
-    if(meta.blocked){
-      h+='<div class="ibadge bad">Blocked — nothing was sent</div>';
-    }else if(meta.model){
-      h+='<div class="ibadge '+(local?'ok':'cld')+'">'+(local?'Stayed in the house':'Sent to a cloud model')+'</div>';
-    }
-    h+='<div class="igrp"><div class="ig">Decision</div>'+
-      kv('Task',esc(human(meta.task))||'—')+
-      kv('Risk',meta.risk?esc(human(meta.risk)):'')+
-      kv('Data',dataText(meta))+
-      (FULL&&meta.rules&&meta.rules.length?kv('Rules',meta.rules.map(r=>'<code>'+esc(r)+'</code>').join(' ')+(ADMIN?'<div class="sub"><a href="/router/policy">Open Policy ›</a></div>':'')):'')+
-      (FULL&&meta.policy?kv('Policy',esc(meta.policy)):'')+
-      (meta.blocked?kv('Outcome','<span class="bad">'+esc(meta.blocked)+'</span>'+(meta.blockMsg?'<div class="sub">'+esc(meta.blockMsg)+'</div>':'')):'')+
+  const nav=document.getElementById('inavw');
+  const pos=bots.findIndex(x=>x.i===selIdx);
+  nav.innerHTML=m&&bots.length>1?'<div class="inav"><button type="button" id="iprev"'+(pos<=0?' disabled':'')+'>‹ Earlier</button><span>Answer '+(pos+1)+' of '+bots.length+'</span><button type="button" id="inext"'+(pos>=bots.length-1?' disabled':'')+'>Later ›</button></div>':'';
+  const go=d=>{const t=bots[pos+d];if(!t)return;selIdx=t.i;renderInspector();const r=wrap.querySelector('.msg.bot[data-idx="'+t.i+'"]');if(r)r.scrollIntoView({block:'nearest',behavior:'smooth'});};
+  const p=document.getElementById('iprev'),n=document.getElementById('inext');if(p)p.onclick=()=>go(-1);if(n)n.onclick=()=>go(1);
+  const empty='<p class="ihint">Ask something. What Sluss decided — which model, why, what was sent and where the data went — shows up here.</p>';
+  const body=k=>document.getElementById('card-'+k),sum=(k,h)=>{const e=document.getElementById('sum-'+k);if(e)e.innerHTML=h;};
+  if(!m){['route','context','output'].forEach(k=>{if(body(k)){body(k).innerHTML=empty;sum(k,'');}});return;}
+  const meta=metaOf(m),local=meta.egress==='local';
+  body('route').innerHTML=routeTab(meta,local);
+  sum('route',meta.blocked?'<span class="bad">blocked</span>':(meta.model?esc(meta.model)+' · '+(local?'<span class="ok">local</span>':'<span class="cl">cloud</span>'):''));
+  if(body('context')){body('context').innerHTML=contextTab(meta,s,selIdx);
+    sum('context',meta.sent!=null?meta.sent+' sent'+(meta.held?' · '+meta.held+' held back':''):(meta.files&&meta.files.length?meta.files.length+' file(s)':''));}
+  body('output').innerHTML=outputTab(meta,m);
+  sum('output',meta.blocked?'no model called':[fmtMs(meta.total),FULL&&meta.cost!=null?fmtUSD(meta.cost):''].filter(Boolean).join(' · '));
+}
+function outcomeBadge(meta,local){
+  if(meta.blocked)return '<div class="ibadge bad">Blocked — nothing was sent</div>';
+  if(meta.model)return '<div class="ibadge '+(local?'ok':'cld')+'">'+(local?'Stayed in the house':'Sent to a cloud model')+'</div>';
+  return '';
+}
+// Route: why the answer went where it went.
+function routeTab(meta,local){
+  let h=outcomeBadge(meta,local);
+  h+='<div class="igrp"><div class="ig">Classification</div>'+
+    kv('Task',(esc(human(meta.task))||'—')+(meta.conf?'<div class="sub">'+Math.round(meta.conf*100)+'% sure'+(meta.conf<0.5?' — unclear prompts are treated with more care':'')+'</div>':''))+
+    kv('Risk',meta.risk?esc(human(meta.risk)):'')+
+    kv('Data',dataText(meta))+'</div>';
+  h+='<div class="igrp"><div class="ig">Policy</div>'+
+    (FULL&&meta.rules&&meta.rules.length?kv('Rules',meta.rules.map(r=>'<code>'+esc(r)+'</code>').join(' ')+(ADMIN?'<div class="sub"><a href="/router/policy">Open Policy ›</a></div>':'')):'')+
+    (FULL&&meta.policy?kv('Version',esc(meta.policy)):'')+
+    (meta.blocked?kv('Outcome','<span class="bad">'+esc(meta.blocked)+'</span>'+(meta.blockMsg?'<div class="sub">'+esc(meta.blockMsg)+'</div>':'')+(ADMIN?'<div class="sub">The dry-run on Policy shows which models were skipped and why.</div>':'')):kv('Outcome','Allowed'))+
+    '</div>';
+  if(!meta.blocked&&meta.model){
+    h+='<div class="igrp"><div class="ig">Model</div>'+
+      kv('Model','<b>'+esc(meta.model)+'</b>'+(meta.pinned?' <span class="tagx">pinned</span>':''))+
+      (FULL&&meta.provider?kv('Provider',esc(meta.provider)):'')+
+      kv('Where',(local?'<span class="ok">Local</span>':'<span class="cl">Cloud</span>')+(meta.tags?'<div class="sub">'+esc(meta.tags)+'</div>':''))+
+      kv('Fallback',meta.fallback?'<span class="warn">Yes — '+esc(meta.primary||'the first choice')+' did not answer</span>':'No')+
       '</div>';
-    if(!meta.blocked&&meta.model){
-      h+='<div class="igrp"><div class="ig">Model</div>'+
-        kv('Model','<b>'+esc(meta.model)+'</b>'+(meta.pinned?' <span class="tagx">pinned</span>':''))+
-        (FULL&&meta.provider?kv('Provider',esc(meta.provider)):'')+
-        kv('Where',(local?'<span class="ok">Local</span>':'<span class="cl">Cloud</span>')+(meta.tags?'<div class="sub">'+esc(meta.tags)+'</div>':''))+
-        kv('Fallback',meta.fallback?'<span class="warn">Yes — '+esc(meta.primary||'the first choice')+' did not answer</span>':'No')+
-        '</div>';
-      h+='<div class="igrp"><div class="ig">Result</div>'+
-        kv('First word',fmtMs(meta.ttfb))+kv('Total',fmtMs(meta.total))+
-        (FULL?kv('Tokens',meta.inTok!=null?(meta.inTok+' in · '+meta.outTok+' out'):(meta.reqId&&!meta.noUsage?'<span class="sub">counting…</span>':'')):'')+
-        (FULL?kv('Cost',meta.cost!=null?fmtUSD(meta.cost):''):'')+
-        (meta.search?kv('Web search',meta.search.state==='done'?meta.search.n+' sources':(meta.search.state==='skipped'?'<span class="warn">Skipped — '+esc(meta.search.why||'sensitive')+' in the prompt</span>':esc(human(meta.search.state)))):'')+
-        (meta.files&&meta.files.length?kv('Attached',meta.files.map(esc).join(', ')+'<div class="sub">classified before any model saw it</div>'):'')+
-        (meta.stopped?kv('Stopped','by you'):'')+
-        '</div>';
-    }
-    if(FULL&&meta.reqId)h+='<div class="igrp"><div class="ig">Audit</div>'+kv('Request','<code>'+esc(meta.reqId.slice(0,16))+'…</code>'+(ADMIN?'<div class="sub"><a href="/router/log?model='+encodeURIComponent(meta.model||'')+'">Request log ›</a></div>':''))+'</div>';
-    const pos=bots.findIndex(x=>x.i===selIdx);
-    if(bots.length>1)h+='<div class="inav"><button type="button" id="iprev"'+(pos<=0?' disabled':'')+'>‹ Earlier</button><span>Answer '+(pos+1)+' of '+bots.length+'</span><button type="button" id="inext"'+(pos>=bots.length-1?' disabled':'')+'>Later ›</button></div>';
-    box.innerHTML=h;
-    const go=d=>{const t=bots[pos+d];if(!t)return;selIdx=t.i;renderInspector();const r=wrap.querySelector('.msg.bot[data-idx="'+t.i+'"]');if(r)r.scrollIntoView({block:'nearest',behavior:'smooth'});};
-    const p=document.getElementById('iprev'),n=document.getElementById('inext');if(p)p.onclick=()=>go(-1);if(n)n.onclick=()=>go(1);
   }
-  // Chat totals.
-  if(!bots.length){tot.innerHTML='<p class="ihint">No answers yet.</p>';return;}
-  let loc=0,cld=0,blk=0,cost=0,costKnown=false,tok=0;const models={};
+  return h;
+}
+// Context: what was actually sent with this answer.
+function contextTab(meta,s,idx){
+  let h='<div class="igrp"><div class="ig">Conversation</div>';
+  if(meta.sent!=null){
+    h+=kv('Sent',meta.sent+' message'+(meta.sent===1?'':'s')+(meta.held?'<div class="sub">'+meta.held+' held back — a blocked turn is never sent again</div>':''));
+  }else{
+    const upto=s.messages.slice(0,idx).length;h+=kv('Sent',upto+' earlier message'+(upto===1?'':'s'));
+  }
+  h+=(meta.promptTok?kv('Size','about '+meta.promptTok+' tokens'):'')+
+    (meta.sensSrc?kv('Data found',meta.sensSrc==='conversation'?'<span class="warn">Earlier in this chat</span><div class="sub">the whole chat is classified, so a harmless follow-up stays local too</div>':'In this message'):'')+
+    (meta.ctxSaved?kv('Trimmed','<span class="ok">'+meta.ctxSaved+' tokens</span><div class="sub">by the context pipeline before sending</div>'):'')+
+    '</div>';
+  h+='<div class="igrp"><div class="ig">Added to the prompt</div>';
+  const files=meta.files||[];
+  h+=kv('Files',files.length?files.map(esc).join('<br>')+'<div class="sub">read in your browser, classified before any model saw them</div>':'None');
+  if(meta.search&&meta.search.state==='done'){
+    const src=(s.messages[idx]&&s.messages[idx].sources)||[];
+    h+=kv('Web',meta.search.n+' source'+(meta.search.n===1?'':'s')+(src.length?'<div class="srcl">'+src.map((x,i)=>'<a href="'+esc(x.u)+'" target="_blank" rel="noopener noreferrer"><b>'+(i+1)+'</b>'+esc(x.t||x.u)+'</a>').join('')+'</div>':''));
+  }else if(meta.search&&meta.search.state==='skipped'){
+    h+=kv('Web','<span class="warn">Skipped — '+esc(meta.search.why||'sensitive')+' in the prompt</span><div class="sub">nothing was sent to a search engine</div>');
+  }else h+=kv('Web',meta.search?esc(human(meta.search.state)):'Not used');
+  return h+'</div>';
+}
+// Output: how it went and what it cost.
+function outputTab(meta,m){
+  if(meta.blocked)return '<div class="ibadge bad">Blocked — nothing was sent</div><p class="ihint">No model was called, so there is no output, time or cost.</p>'+auditGrp(meta);
+  const words=(m.content||'').trim()?(m.content||'').trim().split(/\s+/).length:0;
+  return '<div class="igrp"><div class="ig">Timing</div>'+kv('First word',fmtMs(meta.ttfb))+kv('Total',fmtMs(meta.total))+(meta.stopped?kv('Stopped','by you'):'')+'</div>'+
+    '<div class="igrp"><div class="ig">Size and cost</div>'+kv('Answer',words?words+' words':'empty')+
+    (FULL?kv('Tokens',meta.inTok!=null?(meta.inTok+' in · '+meta.outTok+' out'):(meta.reqId&&!meta.noUsage?'<span class="sub">counting…</span>':'')):'')+
+    (FULL?kv('Cost',meta.cost!=null?fmtUSD(meta.cost)+(meta.cost===0&&meta.egress==='local'?'<div class="sub">own hardware</div>':''):''):'')+'</div>'+
+    auditGrp(meta);
+}
+function auditGrp(meta){
+  if(!FULL||!meta.reqId)return '';
+  return '<div class="igrp"><div class="ig">Audit</div>'+kv('Request','<code>'+esc(meta.reqId.slice(0,16))+'…</code><div class="sub">recorded in the tamper-evident audit log</div>'+(ADMIN?'<div class="sub"><a href="/router/log?model='+encodeURIComponent(meta.model||'')+'">Request log ›</a></div>':''))+'</div>';
+}
+// This chat: the local/cloud/blocked split is the demo, so it comes first.
+function renderSummary(bots){
+  const tot=document.getElementById('card-chat'),sumc=document.getElementById('sum-chat');
+  if(!bots.length){tot.innerHTML='<p class="ihint">No answers in this chat yet.</p>';sumc.innerHTML='';return;}
+  let loc=0,cld=0,blk=0,cost=0,costKnown=false;const models={};
   bots.forEach(x=>{const mt=metaOf(x.m);if(mt.blocked)blk++;else if(mt.model){mt.egress==='local'?loc++:cld++;models[mt.model]=(models[mt.model]||0)+1;}
-    if(mt.cost!=null){cost+=mt.cost;costKnown=true;}if(mt.inTok!=null)tok+=mt.inTok+mt.outTok;});
-  const n=bots.length;
+    if(mt.cost!=null){cost+=mt.cost;costKnown=true;}});
+  const nm=Object.keys(models).length;
   tot.innerHTML='<div class="ibar" title="'+loc+' local · '+cld+' cloud · '+blk+' blocked">'+
     (loc?'<i class="loc" style="flex:'+loc+'"></i>':'')+(cld?'<i class="cld" style="flex:'+cld+'"></i>':'')+(blk?'<i class="bad" style="flex:'+blk+'"></i>':'')+'</div>'+
     '<div class="ilegend"><span><i class="loc"></i>'+loc+' local</span><span><i class="cld"></i>'+cld+' cloud</span>'+(blk?'<span><i class="bad"></i>'+blk+' blocked</span>':'')+'</div>'+
-    kv('Answers',String(n))+
-    kv('Models',Object.keys(models).map(k=>esc(k)+(models[k]>1?' ×'+models[k]:'')).join('<br>')||'—')+
-    (FULL&&costKnown?kv('Cost',fmtUSD(cost)):'')+(FULL&&tok?kv('Tokens',String(tok)):'');
+    kv('Answers',String(bots.length))+kv('Models',Object.keys(models).map(k=>esc(k)+(models[k]>1?' ×'+models[k]:'')).join('<br>')||'—')+(FULL&&costKnown?kv('Cost',fmtUSD(cost)):'');
+  sumc.innerHTML=(loc?'<span class="ok">'+loc+' local</span>':'')+(cld?(loc?' · ':'')+'<span class="cl">'+cld+' cloud</span>':'')+(blk?((loc||cld)?' · ':'')+'<span class="bad">'+blk+' blocked</span>':'');
 }
+// Cards (ISSUE-147): each folds to a one-line summary and remembers it.
+// Employees see This chat, Route and Output.
+const CARD_KEY='sluss_insp_cards';
+let cardState={};try{cardState=JSON.parse(localStorage.getItem(CARD_KEY))||{};}catch(e){}
+if(!('setup' in cardState))cardState.setup=false;
+function setCard(name,open){
+  const c=document.querySelector('.icard[data-card="'+name+'"]');if(!c)return;
+  c.querySelector('.ich').setAttribute('aria-expanded',String(open));c.querySelector('.icb').hidden=!open;
+  cardState[name]=open;try{localStorage.setItem(CARD_KEY,JSON.stringify(cardState));}catch(e){}
+}
+function openCard(name){setCard(name,true);const c=document.querySelector('.icard[data-card="'+name+'"]');if(c)c.scrollIntoView({block:'nearest',behavior:'smooth'});}
+document.querySelectorAll('.icard').forEach(c=>{
+  const name=c.dataset.card;
+  if(!FULL&&(name==='context'||name==='setup')){c.remove();return;}
+  c.querySelector('.ich').onclick=()=>setCard(name,c.querySelector('.ich').getAttribute('aria-expanded')!=='true');
+  setCard(name,cardState[name]!==false);
+});
 
 // Tokens and cost arrive after the stream: ask for them by request id.
 async function fetchUsage(s,msg){
@@ -949,9 +1039,12 @@ async function ask(text,opts){
   b.mdEl.innerHTML='<span class="dots"><i></i><i></i><i></i></span>';
   wrap.appendChild(b.row);scroll(true);
   // Blocked turns stay in the history for the inspector but are never sent back to a model.
-  const apiMsgs=s.messages.filter(m=>!(m.meta&&m.meta.blocked)).map(m=>({role:m.role,content:m.parts?m.parts:m.content}));
+  // A blocked turn (the question and its block) is held back: never sent to a
+  // model, and its content does not keep classifying the rest of the chat.
+  const held=new Set();s.messages.forEach((m,i)=>{if(m.meta&&m.meta.blocked){held.add(i);if(i>0&&s.messages[i-1].role==='user')held.add(i-1);}});
+  const apiMsgs=s.messages.filter((m,i)=>!held.has(i)).map(m=>({role:m.role,content:m.parts?m.parts:m.content}));
   const pick=pickedModel(), pinned=pick!=='auto';
-  const meta={pinned:pinned,files:files};
+  const meta={pinned:pinned,files:files,sent:apiMsgs.length,held:held.size};
   let acc='',sources=[],stopped=false;
   streaming=new AbortController();syncSend();
   const t0=performance.now();
@@ -961,7 +1054,8 @@ async function ask(text,opts){
     Object.assign(meta,{reqId:H('x-router-request-id'),model:H('x-router-selected-model'),task:H('x-router-route-class'),risk:H('x-router-risk'),
       sens:H('x-router-sensitivity'),sensSrc:H('x-router-sensitivity-source'),reason:H('x-router-route-reason'),egress:H('x-router-egress'),
       tags:H('x-router-selected-tags'),provider:H('x-router-selected-provider'),policy:H('x-router-policy-version'),
-      rules:H('x-router-policy-rules')?H('x-router-policy-rules').split(','):[],primary:H('x-router-primary-model'),fallback:!!H('x-router-fallback-index')});};
+      rules:H('x-router-policy-rules')?H('x-router-policy-rules').split(','):[],primary:H('x-router-primary-model'),fallback:!!H('x-router-fallback-index'),
+      conf:parseFloat(H('x-router-task-confidence'))||0,promptTok:parseInt(H('x-router-prompt-tokens'),10)||0,ctxSaved:parseInt(H('x-router-context-savings'),10)||0});};
   try{
     const res=await fetch('/chat/send',{method:'POST',credentials:'same-origin',signal:streaming.signal,
       headers:{'Content-Type':'application/json'},body:JSON.stringify({model:pick,stream:true,messages:apiMsgs,search:searchOn})});
@@ -1035,6 +1129,13 @@ async function boot(){
   if(!document.getElementById('modelsel'))document.getElementById('imodel').textContent=EMPLOYEE?'Chosen by company policy':'Auto — the router picks per prompt';
   const setSearchText=()=>{document.getElementById('isearch').textContent=!SEARCH_ON?'Not configured on this instance':(searchOn?'On for the next message':'Off — turn on with Search below');};
   setSearchText();searchBtn.addEventListener('click',setSearchText);
+  // Setup's folded summary: the model and search state for the next message.
+  const setSetupSum=()=>{const ms=document.getElementById('modelsel');
+    document.getElementById('sum-setup').textContent=(ms?(ms.value==='auto'?'Auto':ms.value):(EMPLOYEE?'Policy':'Auto'))+' · search '+(SEARCH_ON?(searchOn?'on':'off'):'n/a');};
+  setSetupSum();searchBtn.addEventListener('click',setSetupSum);
+  const msel=document.getElementById('modelsel');if(msel)msel.addEventListener('change',setSetupSum);
+  document.getElementById('iwho').innerHTML=WHO?esc(WHO)+(DEPT?'<div class="sub">'+esc(DEPT)+'</div>':''):'Demo link';
+  document.getElementById('iver').textContent=VERSION;
   document.getElementById('iroute').innerHTML=EMPLOYEE?'Company policy decides; personal data stays on company models.'
     :(ADMIN?'Auto classifies each prompt. Pinning a model skips classification; policy still applies.':'Auto classifies each prompt before anything is sent.');
   // Admin-managed quick prompts (DB-backed); fall back to the built-in list.
@@ -1081,3 +1182,10 @@ var demoChatHTMLGuest = strings.NewReplacer(
 	"<!--FAVICON-->", faviconLinks,
 	"<!--LOGO-->", brandLogoSVG,
 ).Replace(demoChatTemplate)
+
+// jsString is a JavaScript string literal for s, safe inside a <script>
+// element: JSON encoding escapes quotes, and <, > and & as \u escapes.
+func jsString(s string) string {
+	b, _ := json.Marshal(s)
+	return string(b)
+}

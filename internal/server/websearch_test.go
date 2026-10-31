@@ -180,7 +180,7 @@ func TestChatPageVariantsByRole(t *testing.T) {
 	if strings.Contains(emp, `href="/router/dashboard"`) || strings.Contains(emp, `id="modelsel"`) {
 		t.Fatal("an employee must not see the admin nav or the model picker")
 	}
-	for _, want := range []string{"anna@example.eu", "finance", "/router/logout", "const EMPLOYEE=true,SEARCH_ON=true;", "company AI"} {
+	for _, want := range []string{"anna@example.eu", "finance", "/router/logout", "const EMPLOYEE=true,SEARCH_ON=true,WHO=\"anna@example.eu\",DEPT=\"finance\"", "company AI"} {
 		if !strings.Contains(emp, want) {
 			t.Fatalf("employee page lacks %q", want)
 		}
@@ -188,6 +188,10 @@ func TestChatPageVariantsByRole(t *testing.T) {
 	adm := render(roleAdmin, "ops", "")
 	if !strings.Contains(adm, `href="/router/dashboard"`) || !strings.Contains(adm, `id="modelsel"`) || !strings.Contains(adm, "const EMPLOYEE=false") || strings.Contains(adm, "/router/logout\">Sign out</a></div>") {
 		t.Fatal("admin page should keep nav and picker and carry no identity line")
+	}
+	// A name from the identity provider must not be able to end the script.
+	if evil := render(roleUser, "x</script><script>alert(1)//", "d"); strings.Contains(evil, "x</script><script>alert(1)") {
+		t.Fatal("WHO must be escaped inside the script")
 	}
 	guest := render(roleDemo, "demo-guest", "")
 	if strings.Contains(guest, `href="/router/dashboard"`) || !strings.Contains(guest, "live routing demo") {

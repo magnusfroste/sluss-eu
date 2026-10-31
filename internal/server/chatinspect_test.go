@@ -15,7 +15,7 @@ import (
 
 func TestInspectorHeadersAreASCIITokens(t *testing.T) {
 	rec := httptest.NewRecorder()
-	job := &router.JobDescriptor{RiskLevel: "high"}
+	job := &router.JobDescriptor{RiskLevel: "high", TaskConfidence: 0.345, PromptTokensEstimate: 812}
 	setInspectorHeaders(rec, job, engine.RouteDecision{
 		SelectedProvider: "dgx",
 		MatchedRules:     []string{"pii-local-only", "bad rule\r\nX-Evil: 1", "ö-rule"},
@@ -23,6 +23,9 @@ func TestInspectorHeadersAreASCIITokens(t *testing.T) {
 	h := rec.Header()
 	if h.Get("X-Router-Risk") != "high" || h.Get("X-Router-Selected-Provider") != "dgx" {
 		t.Fatalf("headers = %v", h)
+	}
+	if h.Get("X-Router-Task-Confidence") != "0.34" && h.Get("X-Router-Task-Confidence") != "0.35" || h.Get("X-Router-Prompt-Tokens") != "812" {
+		t.Fatalf("context headers = %q %q", h.Get("X-Router-Task-Confidence"), h.Get("X-Router-Prompt-Tokens"))
 	}
 	if got := h.Get("X-Router-Policy-Rules"); got != "pii-local-only,badruleX-Evil:1,-rule" {
 		t.Fatalf("rules = %q", got)
