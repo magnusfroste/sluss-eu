@@ -1151,12 +1151,22 @@ func (o *ChatOptions) setRouteReasonHeaders(w http.ResponseWriter, job *router.J
 //   - X-Router-Risk: the classified risk level.
 //   - X-Router-Selected-Provider: the provider connection id.
 //   - X-Router-Policy-Rules: comma-separated rule ids that matched.
+//   - X-Router-Task-Confidence, X-Router-Prompt-Tokens: classifier confidence
+//     and the prompt size estimate (ISSUE-147).
 func setInspectorHeaders(w http.ResponseWriter, job *router.JobDescriptor, dec engine.RouteDecision) {
 	if job.RiskLevel != "" {
 		w.Header().Set("X-Router-Risk", headerToken(string(job.RiskLevel)))
 	}
 	if dec.SelectedProvider != "" {
 		w.Header().Set("X-Router-Selected-Provider", headerToken(dec.SelectedProvider))
+	}
+	// Context tab (ISSUE-147): how sure the classifier was, and roughly how
+	// big the prompt that was routed is. Numbers only.
+	if job.TaskConfidence > 0 {
+		w.Header().Set("X-Router-Task-Confidence", strconv.FormatFloat(job.TaskConfidence, 'f', 2, 64))
+	}
+	if job.PromptTokensEstimate > 0 {
+		w.Header().Set("X-Router-Prompt-Tokens", strconv.Itoa(job.PromptTokensEstimate))
 	}
 	var rules []string
 	for _, id := range dec.MatchedRules {
