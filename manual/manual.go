@@ -23,6 +23,7 @@ var Pages = []Page{
 	{"stop-chatgpt", "Stop ChatGPT, offer the company chat"},
 	{"developer-tools", "Developer tools through Sluss"},
 	{"prove-it", "Show that it works"},
+	{"works-with-your-stack", "Works with your stack"},
 	{"glossary", "Words used"},
 	{"troubleshooting", "When something does not work"},
 }
