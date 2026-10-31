@@ -198,7 +198,17 @@ func New(cfg Config) http.Handler {
 	mux.HandleFunc("GET /healthz", HealthzHandler())
 	// The manual (ISSUE-133): public product instructions with this
 	// instance's address filled in; raw Markdown at /manual/<page>.md.
-	manualH := ManualHandler(ManualOptions{PublicURL: cfg.PublicURL, Logger: cfg.Logger})
+	// A signed-in admin reads it inside the console frame (ISSUE-146);
+	// manualAuth is set below once the session store exists.
+	var manualAuth *AdminAuth
+	manualPage := ManualHandler(ManualOptions{PublicURL: cfg.PublicURL, Logger: cfg.Logger})
+	manualH := func(w http.ResponseWriter, r *http.Request) {
+		if manualAuth != nil {
+			manualAuth.Optional(manualPage)(w, r)
+			return
+		}
+		manualPage(w, r)
+	}
 	mux.HandleFunc("GET /manual", manualH)
 	mux.HandleFunc("GET /manual/{page}", manualH)
 	mux.HandleFunc("GET /readyz", ReadyzHandler(cfg.Readiness...))
@@ -308,6 +318,7 @@ func New(cfg Config) http.Handler {
 		mux.HandleFunc("GET /router/logout", adminAuth.LogoutHandler())
 		dashGuard = adminAuth.Require
 		demoGuard = adminAuth.RequireDemo
+		manualAuth = adminAuth
 		// Shareable CISO demo link: /demo?token=<token> starts a demo-only session.
 		mux.HandleFunc("GET /demo", DemoEntryHandler(adminAuth, cfg.History, cfg.Auditor))
 		// Named-user admin page (audited actor = the logged-in user).

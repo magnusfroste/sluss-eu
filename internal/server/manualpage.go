@@ -42,11 +42,15 @@ func manualSource(slug, base string) (string, bool) {
 }
 
 type manualPageData struct {
-	Title  string
-	Slug   string
-	Pages  []manual.Page
-	Body   template.HTML
-	RawURL string
+	// Console renders the page inside the admin frame (left menu) for a
+	// signed-in admin; Chat adds a way back for an employee from the chat.
+	Console bool
+	Chat    bool
+	Title   string
+	Slug    string
+	Pages   []manual.Page
+	Body    template.HTML
+	RawURL  string
 }
 
 // ManualHandler serves GET /manual and GET /manual/{page}[.md].
@@ -78,7 +82,8 @@ func ManualHandler(o ManualOptions) http.HandlerFunc {
 		if first, _, found := strings.Cut(src, "\n"); found && strings.HasPrefix(first, "# ") {
 			title = strings.TrimPrefix(first, "# ")
 		}
-		d := manualPageData{Title: title, Slug: slug, Pages: manual.Pages, Body: markdownToHTML(src), RawURL: "/manual/" + slug + ".md"}
+		role := RoleFromContext(r.Context())
+		d := manualPageData{Console: role != "" && role != roleUser && role != roleDemo, Chat: role == roleUser || role == roleDemo, Title: title, Slug: slug, Pages: manual.Pages, Body: markdownToHTML(src), RawURL: "/manual/" + slug + ".md"}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		if err := manualTmpl.Execute(w, d); err != nil && o.Logger != nil {
 			o.Logger.Error("manual render failed", "err", err)
@@ -86,22 +91,26 @@ func ManualHandler(o ManualOptions) http.HandlerFunc {
 	}
 }
 
-var manualTmpl = template.Must(template.New("manual").Parse(`<!doctype html>
+var manualTmpl = template.Must(template.New("manual").Funcs(template.FuncMap{
+	"adminCSS": adminCSSFunc,
+	"adminNav": adminNavFunc,
+}).Parse(`<!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Sluss manual — {{.Title}}</title>
 <style>
+  {{if .Console}}{{adminCSS}}{{end}}
   *,*::before,*::after{box-sizing:border-box}
   body{margin:0;background:#081328;color:#e8eef7;font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
   .shell{display:flex;min-height:100vh}
-  nav{width:250px;flex-shrink:0;background:#060f22;border-right:1px solid #22324f;padding:18px 12px;position:sticky;top:0;height:100vh;overflow-y:auto}
-  nav .brand{font-weight:700;padding:4px 10px 14px;display:flex;align-items:center;gap:8px}
-  nav .brand .dot{width:10px;height:10px;border-radius:3px;background:#fad100}
-  nav a{display:block;padding:8px 10px;border-radius:8px;color:#b7c4dc;text-decoration:none;font-size:.9rem}
-  nav a:hover{background:#101c34;color:#fff}
-  nav a.on{background:#182a4a;color:#fff;box-shadow:inset 3px 0 0 #fad100}
-  nav .back{margin-top:14px;border-top:1px solid #17253f;padding-top:10px;font-size:.82rem}
+  .shell>nav{width:250px;flex-shrink:0;background:#060f22;border-right:1px solid #22324f;padding:18px 12px;position:sticky;top:0;height:100vh;overflow-y:auto}
+  .shell>nav .brand{font-weight:700;padding:4px 10px 14px;display:flex;align-items:center;gap:8px}
+  .shell>nav .brand .dot{width:10px;height:10px;border-radius:3px;background:#fad100}
+  .shell>nav a{display:block;padding:8px 10px;border-radius:8px;color:#b7c4dc;text-decoration:none;font-size:.9rem}
+  .shell>nav a:hover{background:#101c34;color:#fff}
+  .shell>nav a.on{background:#182a4a;color:#fff;box-shadow:inset 3px 0 0 #fad100}
+  .shell>nav .back{margin-top:14px;border-top:1px solid #17253f;padding-top:10px;font-size:.82rem}
   main{flex:1;min-width:0;padding:26px 30px 50px}
   .doc{max-width:760px;line-height:1.65;font-size:1rem}
   .doc h1{font-size:1.5rem;margin:0 0 14px}
@@ -119,16 +128,36 @@ var manualTmpl = template.Must(template.New("manual").Parse(`<!doctype html>
   .doc th{text-align:left;font-size:.74rem;color:#8fa1bf;text-transform:uppercase;letter-spacing:.05em;padding:8px 10px;border-bottom:1px solid #22324f}
   .doc td{padding:8px 10px;border-bottom:1px solid #17253f;vertical-align:top}
   .raw{margin-top:30px;font-size:.8rem;color:#64748b}.raw a{color:#8fa1bf}
-  @media(max-width:760px){.shell{flex-direction:column}nav{width:100%;height:auto;position:static;border-right:0;border-bottom:1px solid #22324f}main{padding:18px 16px 40px}}
+  @media(max-width:760px){.shell{flex-direction:column}.shell>nav{width:100%;height:auto;position:static;border-right:0;border-bottom:1px solid #22324f}main{padding:18px 16px 40px}}
+  /* Inside the console (ISSUE-146): the admin menu stays on the left and
+     the manual's pages become a contents column beside the text. */
+  .mwrap{display:flex;gap:34px;padding:26px 32px 50px;align-items:flex-start}
+  .toc{width:220px;flex:none;position:sticky;top:20px;background:none;border:0;padding:0;height:auto}
+  .toc .h{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#64748b;font-weight:600;padding:0 10px 8px}
+  .toc a{display:block;padding:7px 10px;border-radius:8px;color:#b7c4dc;text-decoration:none;font-size:.88rem}
+  .toc a:hover{background:#101c34;color:#fff}
+  .toc a.on{background:#182a4a;color:#fff;box-shadow:inset 3px 0 0 #fad100}
+  .mwrap .doc{flex:1;min-width:0}
+  @media(max-width:1000px){.mwrap{flex-direction:column;align-items:stretch;gap:14px;padding:18px 16px 40px}
+    .toc{position:static;width:100%;display:flex;gap:4px;overflow-x:auto;padding-bottom:4px}.toc .h{display:none}.toc a{white-space:nowrap}}
 </style></head>
-<body><div class="shell">
+<body>{{if .Console}}<div class="tk-shell">
+{{adminNav "manual"}}
+<div class="tk-main">
+<div class="mwrap">
+  <nav class="toc" aria-label="Manual contents"><div class="h">Manual</div>
+  {{$cur := .Slug}}{{range .Pages}}<a href="/manual/{{if ne .Slug "index"}}{{.Slug}}{{end}}" class="{{if eq .Slug $cur}}on{{end}}">{{.Title}}</a>{{end}}</nav>
+  <div class="doc"><article><h1>{{.Title}}</h1>{{.Body}}</article>
+  <div class="raw">For agents and scripts: <a href="{{.RawURL}}">this page as Markdown</a>. Source: <code>manual/</code> in the repository.</div></div>
+</div>
+</div></div>{{else}}<div class="shell">
 <nav>
   <div class="brand"><span class="dot"></span>Sluss manual</div>
   {{$cur := .Slug}}{{range .Pages}}<a href="/manual/{{if ne .Slug "index"}}{{.Slug}}{{end}}" class="{{if eq .Slug $cur}}on{{end}}">{{.Title}}</a>{{end}}
-  <div class="back"><a href="/router/dashboard">← Admin console</a><a href="/chat">Company AI chat</a></div>
+  <div class="back">{{if .Chat}}<a href="/chat">← Back to the chat</a>{{else}}<a href="/router/dashboard">← Admin console</a><a href="/chat">Company AI chat</a>{{end}}</div>
 </nav>
 <main>
   <article class="doc"><h1>{{.Title}}</h1>{{.Body}}</article>
   <div class="raw">For agents and scripts: <a href="{{.RawURL}}">this page as Markdown</a>. Source: <code>manual/</code> in the repository.</div>
 </main>
-</div></body></html>`))
+</div>{{end}}</body></html>`))
