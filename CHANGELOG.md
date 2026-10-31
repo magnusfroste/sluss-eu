@@ -5,10 +5,37 @@ All notable changes to Sluss. Versions follow [semantic versioning](https://semv
 Releases are published from this file by the `release` workflow (Actions → release → Run workflow). Every release is a container image you can pin:
 
 ```
-ghcr.io/magnusfroste/sluss-eu:v1.0.0   # this release
-ghcr.io/magnusfroste/sluss-eu:1.0      # the newest 1.0.x
+ghcr.io/magnusfroste/sluss-eu:v1.1.0   # this release
+ghcr.io/magnusfroste/sluss-eu:1.1      # the newest 1.1.x
 ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 ```
+
+## v1.1.0 — 2026-10-31
+
+A new chat, an inspector that shows what Sluss decided and what was sent, and a console that is easier to find your way around.
+
+### Chat
+- **A modern assistant layout.** History on the left, grouped by day and searchable; a centred message box on an empty chat; Enter sends and Shift+Enter starts a new line; Stop while an answer streams; files can be dropped in. Answers render as Markdown — code blocks with a copy button, tables, lists — through a renderer that escapes everything a model writes, so an answer can never inject markup or script. Copy on every answer, Regenerate on the latest.
+- **Inspector beside the chat.** Each answer gets one short line in the flow (`● deepseek · stayed local · personal data`); the details sit in foldable cards on the right, each with a one-line summary when folded:
+  - **This chat** — how many answers stayed local, went to the cloud or were blocked.
+  - **Route** — task and how sure the classifier was, risk, kind of data, the policy rules that matched, model, provider, local or cloud, fallback.
+  - **Context** — what was actually sent: messages, size, whether the data came from earlier in the chat, attachments, web sources.
+  - **Output** — time to the first word, total time, tokens, cost, request id.
+  - **Setup** — model, web search, who you are, which version runs.
+
+  Employees see a plain version without rule ids, providers or costs.
+- **A blocked question is never sent again.** The blocked turn is held back from later messages, so a secret in it does not ride along or keep steering the rest of the chat.
+
+### Console
+- **Model panel.** Click a model on Models: status, a live test, the provider's own model list with Use this, settings with explanations, and the last 24 hours of traffic and failures. "Needs you" on the Overview links straight to a failing model.
+- **Connect clients** inside the console, with copy buttons and a key field that fills every recipe in the browser only.
+- **The manual opens inside the console**, so the menu is one click away.
+- **Clearer blocks.** When a request is blocked because no allowed model could take it, the reason now names the local models that were skipped and why (for example below the minimum tier for the task).
+
+### Operations
+- **Boot banner.** On start Sluss prints its version, commit, console address, data directory and update-check setting, plus one JSON line for log pipelines (`ROUTER_LOG_BANNER=off` for JSON only).
+- New response headers for clients that want to show the routing: `X-Router-Risk`, `X-Router-Selected-Provider`, `X-Router-Policy-Rules`, `X-Router-Task-Confidence`, `X-Router-Prompt-Tokens` — classification and numbers only, never content.
+- The image's version label now reads the release tag (`v1.1.0`).
 
 ## v1.0.0 — 2026-10-29
 
