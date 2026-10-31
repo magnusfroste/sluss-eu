@@ -1,0 +1,39 @@
+# Sluss
+
+> Sluss is a self-hosted, open-source AI gateway for EU organisations. Every question an employee or a tool sends to an AI model passes Sluss first: it is classified with fixed rules (never by an AI), routed under a fail-closed policy — personal data to the organisation's own hardware, nothing at all when no allowed model exists — and recorded in a hash-chained audit log. It speaks the OpenAI and Anthropic APIs, runs as one container with SQLite, and is licensed AGPL-3.0. It is a control and evidence tool, not a certificate of legal compliance.
+
+Agents installing or operating Sluss: read "Operate" first. Agents changing the code: read AGENTS.md.
+
+## Operate
+
+- [AGENTS.md — Deploying or operating Sluss](https://github.com/magnusfroste/sluss-eu/blob/main/AGENTS.md#deploying-or-operating-sluss): reading order and rules for an operating agent
+- [Self-host with Docker](https://github.com/magnusfroste/sluss-eu/blob/main/docs/07-operations/self-host-docker.md): run, sign-in, TLS, upgrade, back up, air-gapped
+- [Every setting](https://github.com/magnusfroste/sluss-eu/blob/main/deploy/example.env): the environment variables, explained
+- [CHANGELOG](https://github.com/magnusfroste/sluss-eu/blob/main/CHANGELOG.md): releases and which image to pin
+
+## Manual
+
+The administrator's manual. A running instance serves the same pages at /manual, with its own address filled in.
+
+- [Start here](https://github.com/magnusfroste/sluss-eu/blob/main/manual/index.md)
+- [Models and the first rule](https://github.com/magnusfroste/sluss-eu/blob/main/manual/quick-start.md)
+- [How Sluss picks a model](https://github.com/magnusfroste/sluss-eu/blob/main/manual/choosing-models.md)
+- [Stop ChatGPT, offer the company chat](https://github.com/magnusfroste/sluss-eu/blob/main/manual/stop-chatgpt.md)
+- [Developer tools through Sluss](https://github.com/magnusfroste/sluss-eu/blob/main/manual/developer-tools.md)
+- [Show that it works](https://github.com/magnusfroste/sluss-eu/blob/main/manual/prove-it.md)
+- [Works with your stack](https://github.com/magnusfroste/sluss-eu/blob/main/manual/works-with-your-stack.md)
+- [Words used](https://github.com/magnusfroste/sluss-eu/blob/main/manual/glossary.md)
+- [When something does not work](https://github.com/magnusfroste/sluss-eu/blob/main/manual/troubleshooting.md)
+
+## Understand
+
+- [README](https://github.com/magnusfroste/sluss-eu/blob/main/README.md): what it does, a 60-second try-out, how it compares
+- [Documentation map](https://github.com/magnusfroste/sluss-eu/blob/main/docs/README.md): what lives in manual/ and in docs/
+- [System overview](https://github.com/magnusfroste/sluss-eu/blob/main/docs/01-architecture/01-system-overview.md)
+- [Policy reference](https://github.com/magnusfroste/sluss-eu/blob/main/docs/06-engineering/01-routing-policy-reference.md): the rule language
+- [Architecture decisions](https://github.com/magnusfroste/sluss-eu/blob/main/docs/02-adr/)
+
+## Optional
+
+- [Product brief](https://github.com/magnusfroste/sluss-eu/blob/main/docs/00-product/13-product-brief.md)
+- [Issue index](https://github.com/magnusfroste/sluss-eu/blob/main/docs/05-issues/issue-index.md): the backlog, as shipped and what is next

@@ -2,13 +2,16 @@
 
 Sluss is one container and one data volume. It needs no database server and no Redis. Everything it keeps, including tenants and keys, the model roster, console rules, request history and the hash-chained audit log, lives in a SQLite file under `/data`.
 
-The image is public and is rebuilt on every merge to `main`:
+The image is public. Releases are listed in [CHANGELOG.md](../../CHANGELOG.md):
 
 | Tag | Use |
 |---|---|
-| `ghcr.io/magnusfroste/sluss-eu:latest` | Trying it out |
-| `ghcr.io/magnusfroste/sluss-eu:sha-<short>` | Production: pin the exact build you reviewed |
-| `ghcr.io/magnusfroste/sluss-eu:v<semver>` | Production, once releases are tagged |
+| `ghcr.io/magnusfroste/sluss-eu:v1.1.0` | Production: pin a release |
+| `ghcr.io/magnusfroste/sluss-eu:1.1` | Production: the newest 1.1.x, patch fixes included |
+| `ghcr.io/magnusfroste/sluss-eu:latest` | Trying it out: rebuilt on every merge to `main` |
+| `ghcr.io/magnusfroste/sluss-eu:sha-<short>` | Pin the exact build you reviewed |
+
+Set `ROUTER_DEPLOYMENT=docker` (or `compose`, `easypanel`, `agenthotel`) so the Version page shows your upgrade step first.
 
 ## 1. Run it
 
@@ -93,9 +96,10 @@ docker rm -f sluss
 docker run … ghcr.io/magnusfroste/sluss-eu:<tag>   # same flags, same volume
 ```
 
-You can check which build is running in two places:
+You can check which build is running in three places:
 
-- The console footer shows the commit, linked to GitHub.
+- The start of the log prints a banner with the version, commit, console address and data directory.
+- The console footer shows the version, linked to the Version page. A yellow dot there means a newer release is out, and the Version page lists what changed and the upgrade step.
 - `curl -s http://localhost:8080/metrics | grep sluss_build_info` prints it too.
 
 Schema migrations run on start, and nothing in `/data` needs manual steps.
