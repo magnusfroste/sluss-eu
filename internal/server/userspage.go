@@ -21,10 +21,12 @@ type userView struct {
 	Created   string
 	LastLogin string
 	Disabled  bool
+	You       bool // the signed-in person's own account
 }
 
 type usersPageData struct {
 	Users  []userView
+	Me     whoami
 	Notice string
 	Error  string
 }
@@ -40,7 +42,11 @@ func UsersPageHandler(h *history.Store, auditor audit.Sink) http.HandlerFunc {
 				Created: fmtTime(u.CreatedAt), LastLogin: fmtTime(u.LastLoginAt), Disabled: u.Disabled(),
 			})
 		}
-		data := usersPageData{Users: views, Notice: r.URL.Query().Get("ok"), Error: r.URL.Query().Get("err")}
+		me := currentWho(r)
+		for i := range views {
+			views[i].You = !me.BreakGlass && views[i].Username == me.User
+		}
+		data := usersPageData{Users: views, Me: me, Notice: r.URL.Query().Get("ok"), Error: r.URL.Query().Get("err")}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		if err := usersTmpl.Execute(w, data); err != nil {
 			http.Error(w, "users render error", http.StatusInternalServerError)
@@ -164,6 +170,8 @@ input{width:100%;background:#081328;border:1px solid #2c4066;border-radius:8px;c
 
 {{if .Notice}}<div class="notice">{{.Notice}}</div>{{end}}
 {{if .Error}}<div class="err">{{.Error}}</div>{{end}}
+{{if .Me.BreakGlass}}<div class="err">You are signed in with the <b>break-glass password</b> as <span class="mono">{{.Me.User}}</span>. That name is not an account — it is only recorded in the audit log as typed. Create a named account below for everyday use, and keep the break-glass password for emergencies.</div>
+{{else if .Me.User}}<div class="notice">You are signed in as <span class="mono">{{.Me.User}}</span> ({{.Me.Role}}).</div>{{end}}
 
 <div class="card">
 <table>
@@ -171,7 +179,7 @@ input{width:100%;background:#081328;border:1px solid #2c4066;border-radius:8px;c
 <tbody>
 {{range .Users}}
 <tr>
-  <td class="mono">{{.Username}}</td>
+  <td class="mono">{{.Username}}{{if .You}} <span class="tag ok">you</span>{{end}}</td>
   <td>{{.Role}}</td>
   <td class="mono">{{.Created}}</td>
   <td class="mono">{{if .LastLogin}}{{.LastLogin}}{{else}}—{{end}}</td>
@@ -180,7 +188,7 @@ input{width:100%;background:#081328;border:1px solid #2c4066;border-radius:8px;c
     <form method="post" action="/router/users/disable" style="margin:0">
       <input type="hidden" name="username" value="{{.Username}}">
       <input type="hidden" name="enable" value="{{if .Disabled}}1{{else}}0{{end}}">
-      <button class="btn{{if not .Disabled}} del{{end}}" type="submit">{{if .Disabled}}Aktivera{{else}}Inaktivera{{end}}</button>
+      <button class="btn{{if not .Disabled}} del{{end}}" type="submit">{{if .Disabled}}Enable{{else}}Disable{{end}}</button>
     </form>
   </td>
 </tr>
