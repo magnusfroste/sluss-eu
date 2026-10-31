@@ -18,9 +18,9 @@ import (
 // persisted in the history store.
 const demoSessionsKey = "demo_sessions"
 
-// DemoSessionsHandlers returns GET and PUT handlers that persist the demo chat
-// sessions (an opaque JSON blob managed by the browser) in SQLite, so a curated
-// demo survives restarts and redeploys. When no history store is configured the
+// DemoSessionsHandlers returns GET and PUT handlers that persist each
+// person's chat sessions (an opaque JSON blob managed by the browser) in
+// SQLite, so history survives restarts and redeploys. When no history store is configured the
 // handlers are gentle no-ops and the browser keeps using localStorage.
 func DemoSessionsHandlers(h *history.Store) (get, put http.HandlerFunc) {
 	get = func(w http.ResponseWriter, r *http.Request) {
@@ -29,7 +29,12 @@ func DemoSessionsHandlers(h *history.Store) (get, put http.HandlerFunc) {
 			w.WriteHeader(http.StatusNoContent)
 			return
 		}
-		v, ok := h.KVGet(chatSessionsKey(r))
+		key := chatSessionsKey(r)
+		if key == "" {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		v, ok := h.KVGet(key)
 		if !ok {
 			_, _ = w.Write([]byte("[]"))
 			return
@@ -46,7 +51,12 @@ func DemoSessionsHandlers(h *history.Store) (get, put http.HandlerFunc) {
 			http.Error(w, "read error", http.StatusBadRequest)
 			return
 		}
-		if err := h.KVSet(chatSessionsKey(r), string(body)); err != nil {
+		key := chatSessionsKey(r)
+		if key == "" {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		if err := h.KVSet(key, string(body)); err != nil {
 			http.Error(w, "save error", http.StatusInternalServerError)
 			return
 		}
@@ -89,13 +99,17 @@ func demoTenantInjector(next http.Handler) http.Handler {
 	})
 }
 
-// chatSessionsKey is where a session's chat history lives: the shared demo
-// blob for operators and demo guests, a private key per identified user.
+// chatSessionsKey is where a signed-in person's chat history lives: one key
+// per identity (ISSUE-154), so nobody sees another person's chats — not an
+// admin another admin's, and never a demo-link guest an admin's. Guests of
+// one demo link share that link's history ("demo:<label>"). No identity → no
+// server copy ("").
 func chatSessionsKey(r *http.Request) string {
-	if DepartmentFromContext(r.Context()) != "" {
-		return demoSessionsKey + ":" + AdminUserFromContext(r.Context())
+	user := AdminUserFromContext(r.Context())
+	if user == "" {
+		return ""
 	}
-	return demoSessionsKey
+	return demoSessionsKey + ":" + user
 }
 
 // DemoChatPageHandler serves the chat (ISSUE-144): a modern assistant layout
@@ -505,7 +519,9 @@ let QUICK=[
   {label:"Security-review a login",tier:"blocked",text:"security review this login form for XSS and secret leakage"},
 ];
 /*FLAGS*/
-const LS='tok_demo_sessions_v1', LS_SIDE='sluss_chat_side';
+// The browser copy is per person too, so a shared computer never shows the
+// previous person's chats.
+const LS='tok_demo_sessions_v1:'+(WHO||'anon'), LS_SIDE='sluss_chat_side';
 const IC={
   copy:'<svg class="i" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>',
   check:'<svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5L20 7"/></svg>',
