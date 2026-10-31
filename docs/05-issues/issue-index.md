@@ -12,6 +12,10 @@ Klart enligt kod- och test-evidens:
 - ISSUE-061 — Rebrand `tokenix` → `tokenizer`.
 - ISSUE-062 — Context-processor pipeline (interface only).
 
+Backlogg — användardriven (byggs när en användare ber om det):
+
+- ISSUE-149 — Modellval: tre lägen (Save / Balanced / Best answer) som ett enda val som bara påverkar valet bland tillåtna modeller, plus uppmätt kvalitet per uppgift. Relaterat: styra frågetyp till modell, "datahemvist går före tier-golvet", jämförelse sida vid sida, konkurrentgenomgång. `epic: EPIC-14`, `priority: P3`, `state: needs-info`.
+
 Redo för agent:
 
 - Inga öppna issues. Hela backlogen (ISSUE-001 till ISSUE-063) är `done` per
@@ -41,7 +45,7 @@ Klart i sprint 05–08 (kod- och test-evidens):
 - ISSUE-059 — Cost-quality frontier report (eval report frontier, deterministic recommendations).
 - ISSUE-063 — Policy-gated context pipeline activation (`route.force.context_pipeline`, runtime policy cache, server-side activation).
 
-Inga issues är markerade `needs-triage`, `needs-info`, `ready-for-human` eller `wontfix` efter denna pass.
+Inga issues är markerade `needs-triage`, `ready-for-human` eller `wontfix` efter denna pass, utom de som står uttryckligen; ISSUE-149 är `needs-info` (användardriven backlogg).
 
 ## Spec detail pass 2026-05-19
 
