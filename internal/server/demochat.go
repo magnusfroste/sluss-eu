@@ -338,17 +338,22 @@ const demoChatTemplate = `<!doctype html>
   .chat.insp-on .insp{width:320px;border-left-width:1px;visibility:visible;transition:width .2s ease,visibility 0s}
   .insp-in{width:320px;height:100%;display:flex;flex-direction:column}
   .insp-h{display:flex;align-items:center;justify-content:space-between;padding:10px 10px 6px 18px;min-height:56px;font-weight:600;font-size:14px}
-  .insp-b{flex:1;overflow-y:auto;padding:12px 18px 24px}
-  .isum{padding:0 18px 12px;border-bottom:1px solid var(--line)}
-  .isumt{font-size:12px;color:var(--faint)}
-  .itabs{display:flex;gap:2px;padding:8px 12px 0;border-bottom:1px solid var(--line)}
-  .itab{flex:1;border:0;background:transparent;color:var(--muted);font-size:13px;padding:8px 4px 9px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;border-radius:6px 6px 0 0}
-  .itab:hover{color:var(--ink);background:var(--surface)}
-  .itab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent);font-weight:600}
-  .itab:focus-visible{outline:2px solid #3d5380;outline-offset:-2px}
-  #inavw .inav{margin:0 0 12px}
-  #inavw[hidden]{display:none}
-  .ipanel[hidden]{display:none}
+  .insp-b{flex:1;overflow-y:auto;padding:4px 12px 24px}
+  /* Cards (ISSUE-147): everything visible at once, each can fold to one line
+     with a summary — like the side panels in Claude. */
+  .icard{border:1px solid var(--line);border-radius:12px;background:var(--surface);margin-bottom:10px}
+  .ich{display:flex;align-items:center;gap:8px;width:100%;border:0;background:transparent;color:var(--ink);padding:11px 12px 11px 14px;font-size:13.5px;font-weight:600;cursor:pointer;text-align:left;font-family:inherit;border-radius:12px}
+  .ich:hover{background:var(--raised)}
+  .ich:focus-visible{outline:2px solid #3d5380;outline-offset:-2px}
+  .ics{margin-left:auto;font-weight:400;color:var(--faint);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  .ics .ok{color:#4fd08a}.ics .cl{color:#7fb2ff}.ics .bad{color:#f87171}
+  .icv{width:16px;height:16px;color:var(--faint);transition:transform .15s}
+  .ich[aria-expanded="false"] .icv{transform:rotate(-90deg)}
+  .icb{padding:2px 14px 12px}
+  .icb[hidden]{display:none}
+  .icb .igrp:last-child{margin-bottom:0}
+  #inavw .inav{margin:2px 0 10px}
+  #inavw:empty{display:none}
   .srcl{display:flex;flex-direction:column;gap:4px;margin-top:6px}
   .srcl a{display:flex;gap:7px;color:var(--ink2);text-decoration:none;font-size:12.5px;line-height:1.35}
   .srcl a b{color:var(--faint);font-weight:600;min-width:12px}
@@ -467,19 +472,13 @@ const demoChatTemplate = `<!doctype html>
   <aside class="insp" id="insp" aria-label="Inspector">
    <div class="insp-in">
     <div class="insp-h"><span>Inspector</span><button class="iconbtn" id="inspclose" type="button" aria-label="Close the inspector" title="Close"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M15 4v16"/></svg></button></div>
-    <div class="isum" id="ichat"></div>
-    <div class="itabs" role="tablist" aria-label="Inspector views">
-      <button class="itab" role="tab" type="button" data-tab="route" aria-controls="tab-route">Route</button>
-      <button class="itab" role="tab" type="button" data-tab="context" aria-controls="tab-context">Context</button>
-      <button class="itab" role="tab" type="button" data-tab="output" aria-controls="tab-output">Output</button>
-      <button class="itab" role="tab" type="button" data-tab="setup" aria-controls="tab-setup">Setup</button>
-    </div>
     <div class="insp-b">
+      <section class="icard" data-card="chat"><button class="ich" type="button" aria-expanded="true" aria-controls="card-chat"><span class="ict">This chat</span><span class="ics" id="sum-chat"></span><svg class="i icv" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button><div class="icb" id="card-chat"></div></section>
       <div id="inavw"></div>
-      <div class="ipanel" id="tab-route" role="tabpanel"></div>
-      <div class="ipanel" id="tab-context" role="tabpanel" hidden></div>
-      <div class="ipanel" id="tab-output" role="tabpanel" hidden></div>
-      <div class="ipanel" id="tab-setup" role="tabpanel" hidden>
+      <section class="icard" data-card="route"><button class="ich" type="button" aria-expanded="true" aria-controls="card-route"><span class="ict">Route</span><span class="ics" id="sum-route"></span><svg class="i icv" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button><div class="icb" id="card-route"></div></section>
+      <section class="icard" data-card="context"><button class="ich" type="button" aria-expanded="true" aria-controls="card-context"><span class="ict">Context</span><span class="ics" id="sum-context"></span><svg class="i icv" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button><div class="icb" id="card-context"></div></section>
+      <section class="icard" data-card="output"><button class="ich" type="button" aria-expanded="true" aria-controls="card-output"><span class="ict">Output</span><span class="ics" id="sum-output"></span><svg class="i icv" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button><div class="icb" id="card-output"></div></section>
+      <section class="icard" data-card="setup"><button class="ich" type="button" aria-expanded="true" aria-controls="card-setup"><span class="ict">Setup</span><span class="ics" id="sum-setup"></span><svg class="i icv" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button><div class="icb" id="card-setup">
         <div class="igrp"><div class="ig">Next message</div>
           <div class="kv kvsel"><span class="k">Model</span><span class="v" id="imodel"><!--MODEL_PICKER--></span></div>
           <div class="kv"><span class="k">Web search</span><span class="v" id="isearch"></span></div>
@@ -489,7 +488,7 @@ const demoChatTemplate = `<!doctype html>
           <div class="kv"><span class="k">Signed in</span><span class="v" id="iwho"></span></div>
           <div class="kv"><span class="k">Sluss</span><span class="v" id="iver"></span></div>
         </div>
-      </div>
+      </div></section>
     </div>
    </div>
   </aside>
@@ -787,7 +786,7 @@ function blockHTML(code,msg){
   return '<div class="blockcard"><b>Stopped by your policy — nothing was sent to any model.</b><br>'+esc(blockWhy(code,msg))+
     '<div class="bnote">Recorded in the tamper-evident audit log as <span class="mono">'+esc(code)+'</span>. The inspector shows which rule fired.</div></div>';
 }
-function wireRoute(b,idx){b.row.dataset.idx=idx;b.route.onclick=()=>{selIdx=idx;showTab('route');renderInspector();setInsp(true,true);};}
+function wireRoute(b,idx){b.row.dataset.idx=idx;b.route.onclick=()=>{selIdx=idx;renderInspector();setInsp(true,true);openCard('route');};}
 function botFromHistory(m,i,isLast){
   const b=botShell(),meta=metaOf(m);
   b.route.innerHTML=rlineHTML(meta);
@@ -878,11 +877,15 @@ function renderInspector(){
   const go=d=>{const t=bots[pos+d];if(!t)return;selIdx=t.i;renderInspector();const r=wrap.querySelector('.msg.bot[data-idx="'+t.i+'"]');if(r)r.scrollIntoView({block:'nearest',behavior:'smooth'});};
   const p=document.getElementById('iprev'),n=document.getElementById('inext');if(p)p.onclick=()=>go(-1);if(n)n.onclick=()=>go(1);
   const empty='<p class="ihint">Ask something. What Sluss decided — which model, why, what was sent and where the data went — shows up here.</p>';
-  if(!m){['route','context','output'].forEach(k=>document.getElementById('tab-'+k).innerHTML=empty);return;}
+  const body=k=>document.getElementById('card-'+k),sum=(k,h)=>{const e=document.getElementById('sum-'+k);if(e)e.innerHTML=h;};
+  if(!m){['route','context','output'].forEach(k=>{if(body(k)){body(k).innerHTML=empty;sum(k,'');}});return;}
   const meta=metaOf(m),local=meta.egress==='local';
-  document.getElementById('tab-route').innerHTML=routeTab(meta,local);
-  document.getElementById('tab-context').innerHTML=contextTab(meta,s,selIdx);
-  document.getElementById('tab-output').innerHTML=outputTab(meta,m);
+  body('route').innerHTML=routeTab(meta,local);
+  sum('route',meta.blocked?'<span class="bad">blocked</span>':(meta.model?esc(meta.model)+' · '+(local?'<span class="ok">local</span>':'<span class="cl">cloud</span>'):''));
+  if(body('context')){body('context').innerHTML=contextTab(meta,s,selIdx);
+    sum('context',meta.sent!=null?meta.sent+' sent'+(meta.held?' · '+meta.held+' held back':''):(meta.files&&meta.files.length?meta.files.length+' file(s)':''));}
+  body('output').innerHTML=outputTab(meta,m);
+  sum('output',meta.blocked?'no model called':[fmtMs(meta.total),FULL&&meta.cost!=null?fmtUSD(meta.cost):''].filter(Boolean).join(' · '));
 }
 function outcomeBadge(meta,local){
   if(meta.blocked)return '<div class="ibadge bad">Blocked — nothing was sent</div>';
@@ -948,10 +951,10 @@ function auditGrp(meta){
   if(!FULL||!meta.reqId)return '';
   return '<div class="igrp"><div class="ig">Audit</div>'+kv('Request','<code>'+esc(meta.reqId.slice(0,16))+'…</code><div class="sub">recorded in the tamper-evident audit log</div>'+(ADMIN?'<div class="sub"><a href="/router/log?model='+encodeURIComponent(meta.model||'')+'">Request log ›</a></div>':''))+'</div>';
 }
-// The chat summary stays above the tabs: the local/cloud/blocked split is the demo.
+// This chat: the local/cloud/blocked split is the demo, so it comes first.
 function renderSummary(bots){
-  const tot=document.getElementById('ichat');
-  if(!bots.length){tot.innerHTML='<p class="ihint">No answers in this chat yet.</p>';return;}
+  const tot=document.getElementById('card-chat'),sumc=document.getElementById('sum-chat');
+  if(!bots.length){tot.innerHTML='<p class="ihint">No answers in this chat yet.</p>';sumc.innerHTML='';return;}
   let loc=0,cld=0,blk=0,cost=0,costKnown=false;const models={};
   bots.forEach(x=>{const mt=metaOf(x.m);if(mt.blocked)blk++;else if(mt.model){mt.egress==='local'?loc++:cld++;models[mt.model]=(models[mt.model]||0)+1;}
     if(mt.cost!=null){cost+=mt.cost;costKnown=true;}});
@@ -959,24 +962,26 @@ function renderSummary(bots){
   tot.innerHTML='<div class="ibar" title="'+loc+' local · '+cld+' cloud · '+blk+' blocked">'+
     (loc?'<i class="loc" style="flex:'+loc+'"></i>':'')+(cld?'<i class="cld" style="flex:'+cld+'"></i>':'')+(blk?'<i class="bad" style="flex:'+blk+'"></i>':'')+'</div>'+
     '<div class="ilegend"><span><i class="loc"></i>'+loc+' local</span><span><i class="cld"></i>'+cld+' cloud</span>'+(blk?'<span><i class="bad"></i>'+blk+' blocked</span>':'')+'</div>'+
-    '<div class="isumt">'+bots.length+' answer'+(bots.length===1?'':'s')+' · '+nm+' model'+(nm===1?'':'s')+(FULL&&costKnown?' · '+fmtUSD(cost):'')+'</div>';
+    kv('Answers',String(bots.length))+kv('Models',Object.keys(models).map(k=>esc(k)+(models[k]>1?' ×'+models[k]:'')).join('<br>')||'—')+(FULL&&costKnown?kv('Cost',fmtUSD(cost)):'');
+  sumc.innerHTML=(loc?'<span class="ok">'+loc+' local</span>':'')+(cld?(loc?' · ':'')+'<span class="cl">'+cld+' cloud</span>':'')+(blk?((loc||cld)?' · ':'')+'<span class="bad">'+blk+' blocked</span>':'');
 }
-// Tabs (ISSUE-147). Employees see Route and Output only.
-const TABS=FULL?['route','context','output','setup']:['route','output'];
-let curTab='route';try{const t=localStorage.getItem('sluss_insp_tab');if(TABS.indexOf(t)>=0)curTab=t;}catch(e){}
-function showTab(t){
-  curTab=t;try{localStorage.setItem('sluss_insp_tab',t);}catch(e){}
-  document.querySelectorAll('.itab').forEach(b=>{const on=b.dataset.tab===t;b.setAttribute('aria-selected',String(on));b.tabIndex=on?0:-1;});
-  document.querySelectorAll('.ipanel').forEach(p=>p.hidden=p.id!=='tab-'+t);
-  document.getElementById('inavw').hidden=t==='setup';
+// Cards (ISSUE-147): each folds to a one-line summary and remembers it.
+// Employees see This chat, Route and Output.
+const CARD_KEY='sluss_insp_cards';
+let cardState={};try{cardState=JSON.parse(localStorage.getItem(CARD_KEY))||{};}catch(e){}
+if(!('setup' in cardState))cardState.setup=false;
+function setCard(name,open){
+  const c=document.querySelector('.icard[data-card="'+name+'"]');if(!c)return;
+  c.querySelector('.ich').setAttribute('aria-expanded',String(open));c.querySelector('.icb').hidden=!open;
+  cardState[name]=open;try{localStorage.setItem(CARD_KEY,JSON.stringify(cardState));}catch(e){}
 }
-document.querySelectorAll('.itab').forEach(b=>{
-  if(TABS.indexOf(b.dataset.tab)<0){b.remove();return;}
-  b.onclick=()=>showTab(b.dataset.tab);
-  b.onkeydown=e=>{if(e.key!=='ArrowRight'&&e.key!=='ArrowLeft')return;e.preventDefault();
-    const i=TABS.indexOf(curTab),nx=TABS[(i+(e.key==='ArrowRight'?1:TABS.length-1))%TABS.length];showTab(nx);document.querySelector('.itab[data-tab="'+nx+'"]').focus();};
+function openCard(name){setCard(name,true);const c=document.querySelector('.icard[data-card="'+name+'"]');if(c)c.scrollIntoView({block:'nearest',behavior:'smooth'});}
+document.querySelectorAll('.icard').forEach(c=>{
+  const name=c.dataset.card;
+  if(!FULL&&(name==='context'||name==='setup')){c.remove();return;}
+  c.querySelector('.ich').onclick=()=>setCard(name,c.querySelector('.ich').getAttribute('aria-expanded')!=='true');
+  setCard(name,cardState[name]!==false);
 });
-showTab(curTab);
 
 // Tokens and cost arrive after the stream: ask for them by request id.
 async function fetchUsage(s,msg){
@@ -1124,6 +1129,11 @@ async function boot(){
   if(!document.getElementById('modelsel'))document.getElementById('imodel').textContent=EMPLOYEE?'Chosen by company policy':'Auto — the router picks per prompt';
   const setSearchText=()=>{document.getElementById('isearch').textContent=!SEARCH_ON?'Not configured on this instance':(searchOn?'On for the next message':'Off — turn on with Search below');};
   setSearchText();searchBtn.addEventListener('click',setSearchText);
+  // Setup's folded summary: the model and search state for the next message.
+  const setSetupSum=()=>{const ms=document.getElementById('modelsel');
+    document.getElementById('sum-setup').textContent=(ms?(ms.value==='auto'?'Auto':ms.value):(EMPLOYEE?'Policy':'Auto'))+' · search '+(SEARCH_ON?(searchOn?'on':'off'):'n/a');};
+  setSetupSum();searchBtn.addEventListener('click',setSetupSum);
+  const msel=document.getElementById('modelsel');if(msel)msel.addEventListener('change',setSetupSum);
   document.getElementById('iwho').innerHTML=WHO?esc(WHO)+(DEPT?'<div class="sub">'+esc(DEPT)+'</div>':''):'Demo link';
   document.getElementById('iver').textContent=VERSION;
   document.getElementById('iroute').innerHTML=EMPLOYEE?'Company policy decides; personal data stays on company models.'

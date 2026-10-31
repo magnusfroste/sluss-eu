@@ -1,4 +1,4 @@
-# ISSUE-147 — Inspector i flikar: Route, Context, Output, Setup
+# ISSUE-147 — Inspector i kort: This chat, Route, Context, Output, Setup
 
 `epic: EPIC-14` · `priority: P2` · `state: done`
 
@@ -10,8 +10,13 @@ skickades. Inspirerat av Claude Codes kategorier.
 
 ## Vad
 
-- **Sammanfattning överst** (alltid synlig): stapel lokal/moln/blockerad,
-  antal svar, modeller, kostnad.
+Först byggt som flikar; ändrat till **kort** efter feedback — flikar döljer
+helheten. Som i Claude: alla kort syns samtidigt, var och en fälls ihop till
+en rad med sammanfattning i rubriken (t.ex. "Context · 3 sent · 2 held back",
+"Output · 1.2 s · $0") och minns sitt läge.
+
+- **This chat:** stapel lokal/moln/blockerad, antal svar, modeller, kostnad.
+  Rubrik: "2 local · 1 blocked".
 - **Route:** utfall, uppgift med klassificerarens säkerhet ("34 % sure —
   unclear prompts are treated with more care"), risk, data, regler, version,
   utfall, modell, leverantör, lokal/moln, reserv.
@@ -22,8 +27,8 @@ skickades. Inspirerat av Claude Codes kategorier.
   (`$0 · own hardware` lokalt), request-id och auditlänk.
 - **Setup:** modellväljare, webbsök, routningsläge, vem du är, instansens
   version.
-- Fliken minns sitt val; klick på svarsraden öppnar Route; piltangenter byter
-  flik. Anställda ser bara Route och Output.
+- Klick på svarsraden öppnar och visar Route. Setup är hopfälld från början.
+  Anställda ser This chat, Route och Output.
 - **Blockerade turer hålls tillbaka:** frågan som blockerades och blocket
   skickas aldrig igen, så en hemlighet i ett blockerat meddelande inte följer
   med eller fortsätter klassificera resten av chatten. Context visar antalet.
@@ -37,5 +42,6 @@ skickades. Inspirerat av Claude Codes kategorier.
 ## Klart när
 
 - Tester: nya huvuden, flaggorna escapas (`</script>` i namnet).
-- Webbläsare: varje flik, tre turer där den blockerade hölls tillbaka (1, 3, 3
+- Webbläsare: alla kort öppna och hopfällda med sammanfattningar, läget
+  minns efter omladdning, tre turer där den blockerade hölls tillbaka (1, 3, 3
   meddelanden skickade).
