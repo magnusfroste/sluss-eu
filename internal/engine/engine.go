@@ -82,7 +82,7 @@ func (e *Engine) Decide(
 	pol *policy.CompiledPolicy,
 	health HealthSnapshot,
 	streaming bool,
-) (RouteDecision, error) {
+) (dec RouteDecision, err error) {
 	snap, err := e.Registry.Active()
 	if err != nil {
 		return RouteDecision{}, fmt.Errorf("engine: registry unavailable: %w", err)
@@ -102,6 +102,13 @@ func (e *Engine) Decide(
 
 	// Evaluate compiled policy.
 	eval := evaluatePolicy(pol, job)
+	// Which policy rules decided this route, for the chat inspector and any
+	// client that wants to show "why" (ISSUE-145). Rule IDs only.
+	defer func() {
+		if len(eval.MatchedRuleIDs) > 0 {
+			dec.MatchedRules = append([]string(nil), eval.MatchedRuleIDs...)
+		}
+	}()
 	if eval.Blocked {
 		b := eval.Route.Block
 		dec := RouteDecision{

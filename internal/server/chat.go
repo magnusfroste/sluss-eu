@@ -223,6 +223,7 @@ func ChatCompletionsHandler(p provider.Adapter, opts ...ChatOptions) http.Handle
 						w.Header().Set("X-Router-Sensitivity", string(job.Sensitivity))
 					}
 					w.Header().Set("X-Router-Blocked", dec.BlockCode)
+					setInspectorHeaders(w, job, dec)
 					setSensitivitySourceHeader(w, job, &req)
 					writeError(w, status, dec.BlockCode, dec.BlockReason)
 					return
@@ -246,6 +247,7 @@ func ChatCompletionsHandler(p provider.Adapter, opts ...ChatOptions) http.Handle
 			// when it routed to a local-tagged provider. Types/reasons only —
 			// never PII values.
 			cfg.setRouteReasonHeaders(w, job, dec)
+			setInspectorHeaders(w, job, dec)
 			setSensitivitySourceHeader(w, job, &req)
 
 			if req.Stream {
@@ -1140,6 +1142,47 @@ func (o *ChatOptions) setRouteReasonHeaders(w http.ResponseWriter, job *router.J
 		w.Header().Set("X-Router-Selected-Tags", strings.Join(tags, ", "))
 	}
 	w.Header().Set("X-Router-Egress", egressFromTags(tags))
+}
+
+// setInspectorHeaders adds what the chat inspector (ISSUE-145) shows beside an
+// answer: the risk level, the provider connection and the policy rules that
+// matched. Classification and configuration only — never prompt content — and
+// ASCII only, like every routing header.
+//   - X-Router-Risk: the classified risk level.
+//   - X-Router-Selected-Provider: the provider connection id.
+//   - X-Router-Policy-Rules: comma-separated rule ids that matched.
+func setInspectorHeaders(w http.ResponseWriter, job *router.JobDescriptor, dec engine.RouteDecision) {
+	if job.RiskLevel != "" {
+		w.Header().Set("X-Router-Risk", headerToken(string(job.RiskLevel)))
+	}
+	if dec.SelectedProvider != "" {
+		w.Header().Set("X-Router-Selected-Provider", headerToken(dec.SelectedProvider))
+	}
+	var rules []string
+	for _, id := range dec.MatchedRules {
+		if t := headerToken(id); t != "" && len(rules) < 12 {
+			rules = append(rules, t)
+		}
+	}
+	if len(rules) > 0 {
+		w.Header().Set("X-Router-Policy-Rules", strings.Join(rules, ","))
+	}
+}
+
+// headerToken keeps the characters a rule or provider id is made of, so a
+// configured name can never break or smuggle a header.
+func headerToken(s string) string {
+	var b strings.Builder
+	for _, r := range s {
+		if r < 128 && (r == '-' || r == '_' || r == '.' || r == ':' || r == '/' ||
+			(r >= '0' && r <= '9') || (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z')) {
+			b.WriteRune(r)
+		}
+		if b.Len() >= 64 {
+			break
+		}
+	}
+	return b.String()
 }
 
 // setSensitivitySourceHeader tells a client WHERE the sensitivity came from

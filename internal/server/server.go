@@ -516,6 +516,8 @@ func New(cfg Config) http.Handler {
 		getS, putS := DemoSessionsHandlers(cfg.History)
 		mux.Handle("GET /chat/sessions", demoGuard(getS))
 		mux.Handle("PUT /chat/sessions", demoGuard(putS))
+		// Chat inspector (ISSUE-145): tokens and cost of the caller's own request.
+		mux.Handle("GET /chat/request", demoGuard(ChatRequestInfoHandler(cfg.History, cfg.RequestLog)))
 
 		// Admin-managed demo quick prompts (the chips): served to the chat page
 		// and CRUD'd from the Demo-prompts admin page. Seeded in the DB on boot.
