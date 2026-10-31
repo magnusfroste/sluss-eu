@@ -8,6 +8,27 @@ Sluss (sluss.eu) is a self-hosted, data-sovereign LLM gateway written in Go for 
 
 The design target is routing overhead p95 under 100 ms before any provider call. The fast path must stay rule-based, in-memory, and free of LLM or external-service calls. Runtime storage is SQLite (`ROUTER_DATA_DIR`) — no Postgres or Redis.
 
+## Deploying or operating Sluss
+
+If your task is to install, configure or run Sluss for an organisation — not to change its code — read these, in order, and stop there:
+
+1. `README.md` — what Sluss is and the 60-second try-out.
+2. `docs/07-operations/self-host-docker.md` — run it, sign-in, TLS, upgrade, back up, air-gapped.
+3. `deploy/example.env` — every setting, explained. `deploy/docker-compose.yml` for Compose.
+4. `manual/index.md` and the pages it links — what to set up in the console, in the order an administrator does it. `manual/choosing-models.md` explains how a question finds its model.
+5. `CHANGELOG.md` — which release to pin, and what changed.
+
+Rules for an operating agent:
+
+- **Secrets go in the environment, never in files you commit or paste.** Provider keys are referenced by the *name* of an environment variable; the console never asks for a key's value.
+- **Mount a volume at `/data`** (`ROUTER_DATA_DIR`). Without it, history, keys and the audit chain live in memory and are lost on restart; the boot banner says so.
+- **Pin a release** (`:v1.1.0` or `:1.1`) in production, not `:latest`.
+- **Keep the fail-closed rule** that keeps personal data on local models unless the organisation decides otherwise. A block is the product working, not an error to route around.
+- **Verify, do not assume:** the boot banner, the Version page, `GET /metrics` (`sluss_build_info`) and the dry-run on Policy show what actually runs and where a question would go.
+- A running instance serves its own manual as Markdown: start at `/manual/index.md`, and add `.md` to any page link. The instance itself is not indexed (no `/llms.txt`, robots disallow all); the repository's `llms.txt` is the public index.
+
+The rest of this file is for agents changing the code.
+
 ## Bootstrap Flow
 
 For substantive tasks, use this mental model:

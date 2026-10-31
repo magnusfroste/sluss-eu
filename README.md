@@ -172,12 +172,15 @@ Decisions live in [`docs/02-adr/`](docs/02-adr/); the policy DSL is specified in
 ```
 cmd/              router · routerctl (dry-run CLI) · audit-verify · mcp · mock-provider
 internal/         classifier · policy · engine · provider · history (SQLite) · server · audit
-docs/
+manual/           the administrator's manual — also served at /manual on every instance
+docs/             how it is built (map: docs/README.md)
   00-product/     positioning, NIS2 controls, market + ecosystem research, product brief
   01-architecture/  system design       02-adr/   architecture decisions
   05-issues/      the backlog, as shipped (ISSUE-001 → …)   06-engineering/  references
   07-operations/  runbooks, SLOs, the open-source release runbook
 DECISION_LOG.md   dated product/tech decisions
+AGENTS.md         for agents: operating Sluss first, then changing the code
+llms.txt          index for agents and LLMs
 ```
 
 ## Develop

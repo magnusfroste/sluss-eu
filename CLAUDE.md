@@ -8,6 +8,8 @@ Sluss (sluss.eu, module `github.com/magnusfroste/sluss`) is a self-hosted, data-
 
 The design target is routing overhead p95 < 100 ms before any provider call.
 
+**Installing or running Sluss rather than changing it?** See `AGENTS.md` → *Deploying or operating Sluss*, and `docs/README.md` for what lives in `manual/` versus `docs/`.
+
 ## Development commands
 
 ```bash
