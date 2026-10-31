@@ -323,6 +323,7 @@ func New(cfg Config) http.Handler {
 		mux.HandleFunc("GET /demo", DemoEntryHandler(adminAuth, cfg.History, cfg.Auditor))
 		// Named-user admin page (audited actor = the logged-in user).
 		mux.Handle("GET /router/users", dashGuard(UsersPageHandler(cfg.History, cfg.Auditor)))
+		mux.Handle("GET /router/whoami", dashGuard(WhoAmIHandler()))
 		mux.Handle("POST /router/users", dashGuard(UsersAddHandler(cfg.History, cfg.Auditor)))
 		mux.Handle("POST /router/users/disable", dashGuard(UsersDisableHandler(cfg.History, cfg.Auditor)))
 	} else {
