@@ -331,6 +331,21 @@ func (a *AdminAuth) Require(next http.HandlerFunc) http.Handler {
 	})
 }
 
+// Optional puts a signed-in session's user and role in the context when there
+// is one, and serves anyone otherwise. For public pages that look different
+// to a signed-in admin, such as the manual inside the console (ISSUE-146).
+func (a *AdminAuth) Optional(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if c, err := r.Cookie(sessionCookie); err == nil {
+			if s, ok := a.Sessions.get(c.Value); ok {
+				grant(next, w, r, s.user, s.role, s.dept)
+				return
+			}
+		}
+		next(w, r)
+	}
+}
+
 // RequireDemo gates the live demo chat. A full admin session, a shareable
 // demo-link session, or a Bearer admin key all pass. It differs from Require
 // only by also admitting the least-privileged demo role — and only the /chat
