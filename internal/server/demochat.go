@@ -640,7 +640,7 @@ function scroll(force){if(force||stick){mainEl.scrollTop=mainEl.scrollHeight;sti
 toBottom.onclick=()=>{mainEl.scrollTo({top:mainEl.scrollHeight,behavior:'smooth'});};
 
 function blockWhy(code,msg){
-  if(code==='residency_no_compliant_provider')return 'This kind of request may only go to a model with specific compliance tags (for example local or air-gapped), and no such model is configured — so it was blocked instead of falling back to another model.';
+  if(code==='residency_no_compliant_provider')return 'This request may only go to a model with specific tags (for example local), and none of those could take it — none is configured, its provider is down, or it is below the minimum tier for this kind of task. It was blocked instead of going to the cloud.';
   return msg||'The request matched a blocking rule.';
 }
 function badgeHTML(task,model){return (task?'<span class="pill task">'+esc(task)+'</span>':'')+

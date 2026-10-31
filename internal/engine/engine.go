@@ -3,6 +3,7 @@ package engine
 import (
 	"errors"
 	"fmt"
+	"sort"
 	"sync/atomic"
 
 	"github.com/magnusfroste/sluss/internal/policy"
@@ -151,7 +152,7 @@ func (e *Engine) Decide(
 				BlockCode:       residencyBlockCode,
 				BlockReason:     reason,
 				BlockStatus:     403,
-				DecisionReasons: append(append(eval.Explanations, reason), filterRes.ResidencyReasons...),
+				DecisionReasons: append(append(append(eval.Explanations, reason), filterRes.ResidencyReasons...), otherExclusions(filterRes)...),
 				PolicyVersion:   eval.PolicyVersion,
 			}, ErrBlocked
 		}
@@ -348,4 +349,23 @@ func routeID(job *router.JobDescriptor, modelID string) string {
 		return fmt.Sprintf("route_%s_%s", job.RequestID, modelID)
 	}
 	return fmt.Sprintf("route_%s", modelID)
+}
+
+// otherExclusions lists the models a residency block did not reach for reasons
+// other than their tags — a compliant local model below the task's minimum
+// tier, or with an unhealthy provider — so the block explains itself instead
+// of naming only the non-compliant cloud models.
+func otherExclusions(res FilterResult) []string {
+	residency := make(map[string]bool, len(res.ResidencyReasons))
+	for _, r := range res.ResidencyReasons {
+		residency[r] = true
+	}
+	var out []string
+	for id, r := range res.Excluded {
+		if !residency[r] {
+			out = append(out, "model "+id+" excluded: "+r)
+		}
+	}
+	sort.Strings(out)
+	return out
 }
