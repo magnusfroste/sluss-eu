@@ -5,10 +5,32 @@ All notable changes to Sluss. Versions follow [semantic versioning](https://semv
 Releases are published from this file by the `release` workflow (Actions → release → Run workflow). Every release is a container image you can pin:
 
 ```
-ghcr.io/magnusfroste/sluss-eu:v1.1.0   # this release
-ghcr.io/magnusfroste/sluss-eu:1.1      # the newest 1.1.x
+ghcr.io/magnusfroste/sluss-eu:v1.2.0   # this release
+ghcr.io/magnusfroste/sluss-eu:1.2      # the newest 1.2.x
 ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 ```
+
+## v1.2.0 — 2026-11-01
+
+Sharper protection, a trustworthy audit chain, and Sluss as a multi-user service.
+
+### Protection
+- **A pasted key is caught.** A prompt that *contains* an API key, token or private key (AWS, `sk-…`, GitHub, Slack, PEM, `aws_secret_access_key`) is classified as secrets, even when it never says "key". Before, a pasted AWS key could reach a cloud model.
+- **Swedish and NATO/EU security markings.** The protection levels and the law (*begränsat hemlig*, *säkerhetsskyddslagen*, …), stamps written in capitals (`HEMLIG`, `KONFIDENTIELL`, `KVALIFICERAT HEMLIG`), and NATO/EU markings classify as security-classified. Lower-case everyday words do not.
+- **Rules match every kind of data in a question**, not only the strongest. A rule that blocks classified material now fires when the same question also holds a key. Stricter, never weaker. The dry-run and the inspector show every class found.
+
+### Evidence
+- **The audit chain cannot fork.** During an overlapping deploy two containers could append to the same chain, which then failed verification although nothing was changed. Each record now locks the file and continues from the record that is really last.
+- **`audit-verify` explains a broken chain** line by line: a changed record, a removed record, or two writers at once — and says so plainly when every record is intact and none is missing.
+
+### People
+- **One chat history per person.** Before, admins, the break-glass login and demo-link guests shared one history. Each identity now has its own, and the browser copy is per person.
+- **Your profile** (`/me`): who you are and how you signed in, change the password of a local account, download or delete your chat history, sign out. Reached from your name in the menu.
+- **The console shows who is signed in**, and marks a login with the break-glass password.
+
+### Docs
+- New manual pages: **How Sluss picks a model** (the three steps, what a model's level means) and **Works with your stack** (web filters, an AI proxy you already run, chat apps).
+- `docs/README.md` explains what lives in `manual/` and in `docs/`; `AGENTS.md` starts with a section for agents that install or operate Sluss; `llms.txt` indexes it all.
 
 ## v1.1.0 — 2026-10-31
 
