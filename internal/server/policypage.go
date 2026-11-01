@@ -113,6 +113,7 @@ func PolicyDryRunHandler(eng *engine.Engine, cache *policy.Cache) http.HandlerFu
 			"task_confidence": job.TaskConfidence,
 			"risk":            string(job.RiskLevel),
 			"sensitivity":     string(job.Sensitivity),
+			"sensitivities":   job.AllSensitivities(),
 			"pii_types":       job.PIITypes,
 			"policy_version":  dec.PolicyVersion,
 			"reasons":         dec.DecisionReasons,

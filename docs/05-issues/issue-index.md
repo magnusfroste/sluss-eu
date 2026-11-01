@@ -128,6 +128,7 @@ P2:
 4. Uppdatera dokumentation om kontrakt ändras.
 5. Kontrollera latency om issue påverkar fast path.
 6. Merge efter review.
+- ISSUE-158 — Regler matchar alla dataklasser i en fråga (inte bara den högst rankade): en blockeringsregel på säkerhetsklassat fiar även när frågan också innehåller en nyckel. Strängare, aldrig svagare. Synligt i dry-run och Inspector. `epic: EPIC-14`, `priority: P1`, `state: done`, klar 2026-11-01.
 - ISSUE-157 — Klassificeraren ser nyckelvärden (AWS, sk-, ghp_, PEM, Slack, aws_secret) och svenska säkerhetsskyddsmarkeringar (säkerhetsskyddslagen, begränsat hemlig). Tidigare gick en inklistrad AWS-nyckel till molnet. Förkontroll håller det snabbt. `epic: EPIC-14`, `priority: P0`, `state: done`, klar 2026-11-01.
 - ISSUE-156 — Auditkedjan förgrenades vid överlappande deploy (två processer, samma fil): skrivaren låser filen och fortsätter från diskens sista rad; audit-verify förklarar ändrad/borttagen/förgrening. Inga rader var ändrade eller saknades. `epic: EPIC-14`, `priority: P0`, `state: done`, klar 2026-11-01.
 - ISSUE-155 — Profilsida `/me`: vem du är och hur du loggade in, byt lösenord (lokala konton, auditloggat), ladda ner eller radera din chatthistorik, logga ut. Nås från namnet i foten och från chatten. `epic: EPIC-14`, `priority: P2`, `state: done`, klar 2026-10-31.
