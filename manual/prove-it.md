@@ -22,7 +22,7 @@ Open [Request log]({{BASE}}/router/log) and click a row. It shows which rules ma
 
 ## Documents for an auditor
 
-- **Audit log:** the tamper-evident record of every decision and every admin change. Download it from the console. The auditor checks it on their own computer with the free `audit-verify` tool: if a single line was changed, the check fails.
+- **Audit log:** the tamper-evident record of every decision and every admin change. Download it from the console. The auditor checks it on their own computer with the free `audit-verify` tool: if a single line was changed, the check fails. When it fails, the tool also says why, line by line: a changed record, a removed record, or two Sluss processes that wrote at the same moment (which versions before v1.2 could do during an overlapping deploy).
 - **Incident evidence:** one page with everything needed for the 24-hour and 72-hour reports that NIS2 asks for.
 - **Control report:** the active rules and what they did, ready to attach to a report.
 

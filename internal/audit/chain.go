@@ -21,6 +21,7 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 )
@@ -114,6 +115,16 @@ func NewChainSink(path string, logger *slog.Logger) (*ChainSink, error) {
 func (s *ChainSink) Record(_ context.Context, e Entry) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	// Another Sluss process may share this file — during an overlapping
+	// deploy the old and the new container both run for a few seconds. Lock
+	// the file across processes and continue from the record that is really
+	// last on disk, not the one this process remembers, so the chain never
+	// forks.
+	unlock := lockFile(s.file)
+	defer unlock()
+	if seq, prev, ok := lastRecord(s.path); ok {
+		s.seq, s.prevHash = seq, prev
+	}
 	rec := ChainRecord{
 		Seq:       s.seq + 1,
 		Time:      e.Time.UTC(),
@@ -145,6 +156,36 @@ func (s *ChainSink) Record(_ context.Context, e Entry) {
 	}
 	s.seq = rec.Seq
 	s.prevHash = rec.EntryHash
+}
+
+// lastRecord reads the last complete record in the file at path. ok is false
+// when the file is empty or its tail cannot be read; the caller then keeps
+// the sequence it already has.
+func lastRecord(path string) (seq uint64, prevHash string, ok bool) {
+	f, err := os.Open(path)
+	if err != nil {
+		return 0, "", false
+	}
+	defer f.Close()
+	st, err := f.Stat()
+	if err != nil || st.Size() == 0 {
+		return 0, "", false
+	}
+	const window = 256 * 1024
+	start := st.Size() - window
+	if start < 0 {
+		start = 0
+	}
+	buf := make([]byte, st.Size()-start)
+	if _, err := f.ReadAt(buf, start); err != nil && err != io.EOF {
+		return 0, "", false
+	}
+	lines := strings.Split(strings.TrimRight(string(buf), "\n"), "\n")
+	var rec ChainRecord
+	if err := json.Unmarshal([]byte(lines[len(lines)-1]), &rec); err != nil || rec.EntryHash == "" {
+		return 0, "", false
+	}
+	return rec.Seq, rec.EntryHash, true
 }
 
 func (s *ChainSink) logf(msg string, err error) {

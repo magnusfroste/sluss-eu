@@ -284,6 +284,7 @@ func evaluatePolicy(pol *policy.CompiledPolicy, job *router.JobDescriptor) polic
 		TaskType:             string(job.TaskType),
 		RiskLevel:            string(job.RiskLevel),
 		Sensitivity:          string(job.Sensitivity),
+		Sensitivities:        job.AllSensitivities(),
 		PromptTokensEstimate: job.PromptTokensEstimate,
 		Keywords:             append([]string(nil), job.Keywords...),
 		FilesTouched:         append([]string(nil), job.FilesTouched...),

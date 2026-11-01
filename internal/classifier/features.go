@@ -8,6 +8,7 @@ import (
 
 	"github.com/magnusfroste/sluss/internal/openai"
 	"github.com/magnusfroste/sluss/internal/pii"
+	"github.com/magnusfroste/sluss/internal/secrets"
 )
 
 const (
@@ -30,7 +31,7 @@ var (
 	// marking ("HEMLIG", "KONFIDENTIELL", "BEGRÄNSAT HEMLIG"). Lower-case
 	// "hemlig" or "konfidentiell" is ordinary prose and is not matched.
 	securityStampPattern = regexp.MustCompile(`(?:^|[^\p{L}\p{N}_])(?:KVALIFICERAT HEMLIG|BEGRÄNSAT HEMLIG|HEMLIG|KONFIDENTIELL)(?:[^\p{L}\p{N}_]|$)`)
-	stackLinePatterns = []*regexp.Regexp{
+	stackLinePatterns    = []*regexp.Regexp{
 		regexp.MustCompile(`(?i)\bpanic:`),
 		regexp.MustCompile(`(?i)\bfatal error:`),
 		regexp.MustCompile(`(?i)\btraceback \(most recent call last\):`),
@@ -158,13 +159,14 @@ var keywordRules = []keywordRule{
 		"security clearance", "säkerhetsprövning", "säkerhetsskyddsavtal",
 		"säkerhetsskyddsklassificerad", "säkerhetsklassad", "hemligstämplad", "hemligstämplat",
 		"kvalificerat hemlig", "rikets säkerhet", "försvarssekretess",
-		// The Swedish protection levels (säkerhetsskyddslagen 2018:585):
-		// "begränsat hemlig" and the law itself reached the cloud unflagged
-		// in a demo dry-run (2026-11-01). Bare "hemlig"/"konfidentiell" are
-		// everyday words; as stamps they are caught by securityStampPattern.
+		// The Swedish protection levels (säkerhetsskyddslagen 2018:585).
+		// Bare "hemlig"/"konfidentiell" are everyday words.
 		"begränsat hemlig", "säkerhetsskyddslagen", "säkerhetsskyddsklass", "säkerhetsskyddsanalys",
 		"nato restricted", "eu restricted", "eu classified", "top secret",
 		"classified document", "classified information",
+		// Swedish protective-security markings (ISSUE-157); a capitalised
+		// stamp without "enligt" is caught by securityStampPattern.
+		"konfidentiell enligt", "hemlig enligt",
 		"security classified", "security-classified",
 		"nato secret", "nato confidential", "cosmic top secret",
 		"eu secret", "eu confidential", "eu top secret", "restreint ue",
@@ -269,6 +271,13 @@ func ExtractFromMessages(messages []openai.Message, hints RequestHints) Features
 		// when the prompt TALKS ABOUT pii; the detector fires when the prompt
 		// CONTAINS it. Findings carry type+count only, never the matched values.
 		f.PIIFindings = pii.Merge(f.PIIFindings, pii.Detect(text))
+
+		// Content-level secret detection (ISSUE-157): a prompt that CONTAINS
+		// an API key, token or password is a secrets prompt, even when it
+		// never says "api key". Same detectors that mask secrets in logs.
+		if len(secrets.Detect(text)) > 0 {
+			addKeyword("secret")
+		}
 	}
 
 	f.HasCodeBlock = f.CodeBlockCount > 0
