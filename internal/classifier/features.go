@@ -27,7 +27,11 @@ var (
 		`(?:package|tsconfig|go\.mod|go\.sum|Dockerfile|Makefile|README)\.(?:json|lock|mod|sum|md)?|` +
 		`(?:package\.json|go\.mod|go\.sum|Dockerfile|Makefile|README\.md)` +
 		`)`)
-	stackLinePatterns = []*regexp.Regexp{
+	// A Swedish classification stamp: the level written in capitals as a
+	// marking ("HEMLIG", "KONFIDENTIELL", "BEGRÄNSAT HEMLIG"). Lower-case
+	// "hemlig" or "konfidentiell" is ordinary prose and is not matched.
+	securityStampPattern = regexp.MustCompile(`(?:^|[^\p{L}\p{N}_])(?:KVALIFICERAT HEMLIG|BEGRÄNSAT HEMLIG|HEMLIG|KONFIDENTIELL)(?:[^\p{L}\p{N}_]|$)`)
+	stackLinePatterns    = []*regexp.Regexp{
 		regexp.MustCompile(`(?i)\bpanic:`),
 		regexp.MustCompile(`(?i)\bfatal error:`),
 		regexp.MustCompile(`(?i)\btraceback \(most recent call last\):`),
@@ -155,11 +159,18 @@ var keywordRules = []keywordRule{
 		"security clearance", "säkerhetsprövning", "säkerhetsskyddsavtal",
 		"säkerhetsskyddsklassificerad", "säkerhetsklassad", "hemligstämplad", "hemligstämplat",
 		"kvalificerat hemlig", "rikets säkerhet", "försvarssekretess",
+		// The Swedish protection levels (säkerhetsskyddslagen 2018:585):
+		// "begränsat hemlig" and the law itself reached the cloud unflagged
+		// in a demo dry-run (2026-11-01). Bare "hemlig"/"konfidentiell" are
+		// everyday words; as stamps they are caught by securityStampPattern.
+		"begränsat hemlig", "säkerhetsskyddslagen", "säkerhetsskyddsklass", "säkerhetsskyddsanalys",
 		"nato restricted", "eu restricted", "eu classified", "top secret",
 		"classified document", "classified information",
-		// Swedish protective-security markings (ISSUE-157).
-		"säkerhetsskyddslagen", "säkerhetsskyddsklass", "begränsat hemlig", "konfidentiell enligt",
-		"hemlig enligt", "nato confidential", "nato secret", "eu confidential", "eu secret",
+		"security classified", "security-classified",
+		"nato secret", "nato confidential", "cosmic top secret",
+		"eu secret", "eu confidential", "eu top secret", "restreint ue",
+		// Phrases around the levels (ISSUE-157).
+		"konfidentiell enligt", "hemlig enligt",
 	}},
 }
 
@@ -252,6 +263,9 @@ func ExtractFromMessages(messages []openai.Message, hints RequestHints) Features
 			if containsAnyTerm(lower, rule.terms) {
 				addKeyword(rule.keyword)
 			}
+		}
+		if securityStampPattern.MatchString(text) {
+			addKeyword("security_classified")
 		}
 
 		// Content-level PII detection (ISSUE-077): the keyword rules above fire

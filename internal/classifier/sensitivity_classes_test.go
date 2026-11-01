@@ -67,6 +67,40 @@ func TestRicherSensitivityClasses(t *testing.T) {
 			wantSensitivity: router.SensitivitySecurityClassified,
 			wantAtLeastRisk: router.RiskHigh,
 		},
+		{
+			name:            "security classified SV — begränsat hemlig",
+			prompt:          "Begränsat hemlig — skriv en sammanfattning av rapporten.",
+			wantSensitivity: router.SensitivitySecurityClassified,
+			wantAtLeastRisk: router.RiskHigh,
+		},
+		{
+			name:            "security classified SV — HEMLIG stamp and säkerhetsskyddslagen",
+			prompt:          "HEMLIG enligt säkerhetsskyddslagen. Sammanfatta bifogad lägesbild om skyddsobjektet.",
+			wantSensitivity: router.SensitivitySecurityClassified,
+			wantAtLeastRisk: router.RiskHigh,
+		},
+		{
+			name:            "security classified SV — KONFIDENTIELL stamp",
+			prompt:          "KONFIDENTIELL\nAnalysera beredskapsplanen för kraftnätet.",
+			wantSensitivity: router.SensitivitySecurityClassified,
+			wantAtLeastRisk: router.RiskHigh,
+		},
+		{
+			name:            "security classified EN — security classified, NATO confidential",
+			prompt:          "Security classified: summarise the attached threat assessment, marked NATO confidential.",
+			wantSensitivity: router.SensitivitySecurityClassified,
+			wantAtLeastRisk: router.RiskHigh,
+		},
+		{
+			name:            "lower-case hemlighet is prose, not a stamp",
+			prompt:          "Det är ingen hemlighet att vi vill växa; skriv en hemlig önskelista till julfesten.",
+			wantSensitivity: router.SensitivityNone,
+		},
+		{
+			name:            "lower-case konfidentiell is prose, not a stamp",
+			prompt:          "Ge mig konfidentiell feedback på mitt CV.",
+			wantSensitivity: router.SensitivityNone,
+		},
 		// Ranking invariants: a new class must never displace what deployed
 		// policies already match on.
 		{
