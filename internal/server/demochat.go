@@ -878,6 +878,8 @@ function dataText(meta){
   else if(meta.sens&&meta.sens!=='none')t=esc(human(meta.sens));
   else t='No sensitive data found';
   if(meta.sensSrc==='conversation')t+='<div class="sub">found earlier in this chat — the whole chat is routed by it</div>';
+  const also=(meta.classes||[]).filter(c=>c!==meta.sens);
+  if(also.length)t+='<div class="sub">also found: '+also.map(c=>esc(human(c))).join(', ')+' — rules for these apply too</div>';
   return t;
 }
 function renderInspector(){
@@ -1071,7 +1073,7 @@ async function ask(text,opts){
       sens:H('x-router-sensitivity'),sensSrc:H('x-router-sensitivity-source'),reason:H('x-router-route-reason'),egress:H('x-router-egress'),
       tags:H('x-router-selected-tags'),provider:H('x-router-selected-provider'),policy:H('x-router-policy-version'),
       rules:H('x-router-policy-rules')?H('x-router-policy-rules').split(','):[],primary:H('x-router-primary-model'),fallback:!!H('x-router-fallback-index'),
-      conf:parseFloat(H('x-router-task-confidence'))||0,promptTok:parseInt(H('x-router-prompt-tokens'),10)||0,ctxSaved:parseInt(H('x-router-context-savings'),10)||0});};
+      classes:H('x-router-data-classes')?H('x-router-data-classes').split(','):[],conf:parseFloat(H('x-router-task-confidence'))||0,promptTok:parseInt(H('x-router-prompt-tokens'),10)||0,ctxSaved:parseInt(H('x-router-context-savings'),10)||0});};
   try{
     const res=await fetch('/chat/send',{method:'POST',credentials:'same-origin',signal:streaming.signal,
       headers:{'Content-Type':'application/json'},body:JSON.stringify({model:pick,stream:true,messages:apiMsgs,search:searchOn})});

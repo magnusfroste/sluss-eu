@@ -785,6 +785,7 @@ func contextPipelineAllowed(operatorEnabled bool, pol *policy.CompiledPolicy, jo
 		TaskType:             string(job.TaskType),
 		RiskLevel:            string(job.RiskLevel),
 		Sensitivity:          string(job.Sensitivity),
+		Sensitivities:        job.AllSensitivities(),
 		PromptTokensEstimate: job.PromptTokensEstimate,
 		Keywords:             append([]string(nil), job.Keywords...),
 		FilesTouched:         append([]string(nil), job.FilesTouched...),
@@ -1162,6 +1163,14 @@ func setInspectorHeaders(w http.ResponseWriter, job *router.JobDescriptor, dec e
 	}
 	// Context tab (ISSUE-147): how sure the classifier was, and roughly how
 	// big the prompt that was routed is. Numbers only.
+	// Every data class found, strongest first (ISSUE-158), so a client can
+	// show what else the prompt held besides the one that decided.
+	if all := job.AllSensitivities(); len(all) > 1 {
+		for i := range all {
+			all[i] = headerToken(all[i])
+		}
+		w.Header().Set("X-Router-Data-Classes", strings.Join(all, ","))
+	}
 	if job.TaskConfidence > 0 {
 		w.Header().Set("X-Router-Task-Confidence", strconv.FormatFloat(job.TaskConfidence, 'f', 2, 64))
 	}

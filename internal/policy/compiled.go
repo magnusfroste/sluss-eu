@@ -34,11 +34,15 @@ type Source struct {
 // EvaluationInput is the fast-path surface consumed by compiled matchers.
 // It intentionally contains only derived/trusted descriptor fields.
 type EvaluationInput struct {
-	TenantID             string
-	ProjectID            string
-	TaskType             string
-	RiskLevel            string
-	Sensitivity          string
+	TenantID    string
+	ProjectID   string
+	TaskType    string
+	RiskLevel   string
+	Sensitivity string
+	// Sensitivities is every data class in the prompt (ISSUE-158). A rule's
+	// data-class condition matches when any of them is listed; Sensitivity
+	// alone keeps working for callers that only know one.
+	Sensitivities        []string
 	PromptTokensEstimate int
 	ContainsText         string
 	Keywords             []string
@@ -399,7 +403,7 @@ func (m compiledMatcher) matches(input EvaluationInput) bool {
 		!m.riskLevels.matches(input.RiskLevel) ||
 		!m.tenants.matches(input.TenantID) ||
 		!m.projects.matches(input.ProjectID) ||
-		!m.sensitivities.matches(input.Sensitivity) ||
+		!m.sensitivities.matchesAnyOf(input.Sensitivity, input.Sensitivities) ||
 		!m.toolRisks.matches(input.ToolRisk) ||
 		!m.routerModes.matches(input.RouterMode) {
 		return false
@@ -437,6 +441,23 @@ func (s stringSet) matches(value string) bool {
 	}
 	_, ok := s[value]
 	return ok
+}
+
+// matchesAnyOf is matches over one primary value plus a list: true when the
+// set is empty (no condition) or holds any of them.
+func (s stringSet) matchesAnyOf(primary string, values []string) bool {
+	if len(s) == 0 {
+		return true
+	}
+	if _, ok := s[primary]; ok {
+		return true
+	}
+	for _, v := range values {
+		if _, ok := s[v]; ok {
+			return true
+		}
+	}
+	return false
 }
 
 func (s stringSet) matchesTextOrAny(text string, values []string) bool {
