@@ -31,7 +31,7 @@ var (
 	// marking ("HEMLIG", "KONFIDENTIELL", "BEGRÄNSAT HEMLIG"). Lower-case
 	// "hemlig" or "konfidentiell" is ordinary prose and is not matched.
 	securityStampPattern = regexp.MustCompile(`(?:^|[^\p{L}\p{N}_])(?:KVALIFICERAT HEMLIG|BEGRÄNSAT HEMLIG|HEMLIG|KONFIDENTIELL)(?:[^\p{L}\p{N}_]|$)`)
-	stackLinePatterns = []*regexp.Regexp{
+	stackLinePatterns    = []*regexp.Regexp{
 		regexp.MustCompile(`(?i)\bpanic:`),
 		regexp.MustCompile(`(?i)\bfatal error:`),
 		regexp.MustCompile(`(?i)\btraceback \(most recent call last\):`),
