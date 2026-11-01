@@ -38,3 +38,11 @@ en blockeringsregel gäller en av dess andra klasser — det är avsikten.
   security_classified fiar även när secrets rankas högst; en ren
   nyckel-fråga träffas inte.
 - Hela sviten, eval, policy golden och regression gröna.
+
+## Rättelse samma kväll
+
+Live visade ett kundklagomål med personnummer [pii, source_code]: ordet
+"invoice" ger signalen "payment" (avsedd för betalkod), som räknades som
+källkod. I listan kommer source_code nu bara från riktig kod; orden auth,
+payment och security påverkar bara den enskilda primära klassen som förut.
+Test: `TestDataClassesNoCodeFromTopicWords`.
