@@ -156,3 +156,31 @@ func TestVerifyEmptyChainIsValid(t *testing.T) {
 		t.Fatalf("empty chain: n=%d err=%v, want 0,nil", n, err)
 	}
 }
+
+// Two Sluss processes on one data volume — the old and the new container
+// during an overlapping deploy — must extend one chain, never fork it.
+func TestChainTwoWritersOnOneFileStayLinked(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "audit-chain.jsonl")
+	a, err := NewChainSink(path, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	record(a, "boot", "a")
+	b, err := NewChainSink(path, nil) // the new container starts
+	if err != nil {
+		t.Fatal(err)
+	}
+	record(b, "boot", "b")
+	record(a, "request.blocked", "old container, one last record")
+	record(b, "request.blocked", "new container")
+	record(a, "late", "a")
+	f, err := os.Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+	n, err := VerifyChain(f)
+	if err != nil || n != 5 {
+		t.Fatalf("chain forked: %d records, %v", n, err)
+	}
+}

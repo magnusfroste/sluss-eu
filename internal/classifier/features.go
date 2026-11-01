@@ -8,6 +8,7 @@ import (
 
 	"github.com/magnusfroste/sluss/internal/openai"
 	"github.com/magnusfroste/sluss/internal/pii"
+	"github.com/magnusfroste/sluss/internal/secrets"
 )
 
 const (
@@ -168,6 +169,8 @@ var keywordRules = []keywordRule{
 		"security classified", "security-classified",
 		"nato secret", "nato confidential", "cosmic top secret",
 		"eu secret", "eu confidential", "eu top secret", "restreint ue",
+		// Phrases around the levels (ISSUE-157).
+		"konfidentiell enligt", "hemlig enligt",
 	}},
 }
 
@@ -269,6 +272,13 @@ func ExtractFromMessages(messages []openai.Message, hints RequestHints) Features
 		// when the prompt TALKS ABOUT pii; the detector fires when the prompt
 		// CONTAINS it. Findings carry type+count only, never the matched values.
 		f.PIIFindings = pii.Merge(f.PIIFindings, pii.Detect(text))
+
+		// Content-level secret detection (ISSUE-157): a prompt that CONTAINS
+		// an API key, token or password is a secrets prompt, even when it
+		// never says "api key". Same detectors that mask secrets in logs.
+		if len(secrets.Detect(text)) > 0 {
+			addKeyword("secret")
+		}
 	}
 
 	f.HasCodeBlock = f.CodeBlockCount > 0

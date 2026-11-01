@@ -20,6 +20,8 @@ Step 1 is the floor Sluss protects. Step 2 is where it saves money. Nothing in s
 
 **Your rules.** A rule such as *personal data → only models tagged local* removes every model without the tag *local* for that question. A *block* rule stops the question. Rules are on [Policy]({{BASE}}/router/policy).
 
+A question can hold several kinds of data at once, for example a classified document with a password in it. Every rule that matches *any* of them applies, and the strictest outcome wins: a block beats *local only*, and *local only* beats no rule.
+
 **The level the question needs.** Every model has a level, and every kind of question needs at least a certain level:
 
 | Level | Meant for | Questions that need at least this level |

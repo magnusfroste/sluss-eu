@@ -5,6 +5,7 @@ package router
 import (
 	"encoding/json"
 	"net/http"
+	"sort"
 	"strings"
 
 	"github.com/magnusfroste/sluss/internal/classifier"
@@ -111,11 +112,16 @@ type JobDescriptor struct {
 	TaskConfidence float64
 	// Conservative marks this request for cautious routing (set by the engine
 	// when global conservative mode is on and the classification is uncertain).
-	Conservative            bool
-	RiskLevel               RiskLevel
-	RiskLevelHint           RiskLevel
-	Sensitivity             Sensitivity
-	SensitivityHint         Sensitivity
+	Conservative    bool
+	RiskLevel       RiskLevel
+	RiskLevelHint   RiskLevel
+	Sensitivity     Sensitivity
+	SensitivityHint Sensitivity
+	// Sensitivities is every data class found in the prompt, strongest
+	// first; Sensitivity is the first of them. Policy matches a rule's data
+	// classes against all of them (ISSUE-158), so a classified prompt that
+	// also contains a key still meets a rule about classified material.
+	Sensitivities           []Sensitivity
 	PromptTokensEstimate    int
 	MaxOutputTokensEstimate int
 	RequiresReasoning       bool
@@ -198,6 +204,7 @@ func NewJobDescriptor(input JobDescriptorInput) *JobDescriptor {
 	if sensitivity, ok := parseSensitivity(risk.Sensitivity); ok {
 		job.Sensitivity = sensitivity
 	}
+	job.Sensitivities = sensitivitiesFromFeatureHints(features.SensitivityHints, job.Sensitivity)
 
 	if job.TenantID == "" {
 		job.TenantIDHint = hints.firstString("tenant_id", "tenant", "x-router-tenant-id", "x-tenant-id")
@@ -383,6 +390,46 @@ func sensitivityHintRank(s Sensitivity) int {
 	default:
 		return 0
 	}
+}
+
+// sensitivitiesFromFeatureHints lists every data class the hints point to,
+// strongest first, always including primary (ISSUE-158).
+func sensitivitiesFromFeatureHints(hints []string, primary Sensitivity) []Sensitivity {
+	seen := map[Sensitivity]bool{}
+	var out []Sensitivity
+	add := func(s Sensitivity) {
+		if s == "" || s == SensitivityNone || seen[s] {
+			return
+		}
+		seen[s] = true
+		out = append(out, s)
+	}
+	add(primary)
+	for _, hint := range hints {
+		// "auth", "payment" and "security" are words about code topics
+		// ("invoice" is payment). They only nudge the single primary class;
+		// in the full list, source_code comes from actual code
+		// (the "source_code" hint), so a customer letter is not code.
+		if hint == "auth" || hint == "payment" || hint == "security" {
+			continue
+		}
+		add(sensitivityFromFeatureHints([]string{hint}))
+	}
+	sort.SliceStable(out, func(i, j int) bool { return sensitivityHintRank(out[i]) > sensitivityHintRank(out[j]) })
+	return out
+}
+
+// AllSensitivities returns every data class as strings, for policy input.
+func (j *JobDescriptor) AllSensitivities() []string {
+	out := make([]string, 0, len(j.Sensitivities)+1)
+	seen := map[string]bool{}
+	for _, s := range append([]Sensitivity{j.Sensitivity}, j.Sensitivities...) {
+		if s != "" && s != SensitivityNone && !seen[string(s)] {
+			seen[string(s)] = true
+			out = append(out, string(s))
+		}
+	}
+	return out
 }
 
 func sensitivityFromFeatureHints(hints []string) Sensitivity {
