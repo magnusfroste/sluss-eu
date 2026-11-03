@@ -6,7 +6,7 @@
 - `type: enhancement`
 - `sprint: v1.1`
 - `category: enhancement`
-- `state: ready-for-agent`
+- `state: done`
 
 ## Mål
 
@@ -48,3 +48,7 @@ Efter #72: `providercfg` läser/skriver `providers.json` (kopplingar) + `models.
 ## Härkomst
 
 Användarbeslut efter models-först (#72): "vi fixar så databasen styr vilken modell för vilken tier." Konsoliderar config till samma SQLite som historik. Se DECISION_LOG 2026-07-04 (lagringstrappa) och [[backlog-models-page]].
+
+## Avstämning 2026-11-03
+
+Avstämt 2026-11-03: `roster_providers`/`roster_models` i `history.db` (`internal/history/roster.go`); Models/Providers-CRUD skriver till SQLite.

@@ -6,7 +6,7 @@
 - `type: enhancement`
 - `sprint: v1.1`
 - `category: enhancement`
-- `state: ready-for-agent`
+- `state: done`
 
 ## Mål
 
@@ -42,3 +42,7 @@ Nuvarande design (ISSUE-071, #67) är provider-centrerad: modeller ligger *inne 
 ## Härkomst
 
 Användarens omvärdering + LiteLLM:s faktiska UI ("Models + Endpoints" primär, "LLM Credentials" separat). Slår ihop tre trådar: [[backlog-models-page]], provider-CRUD (#67) och "inget hårdkodat"/[[backlog-auto-pricing]] steg 2.
+
+## Avstämning 2026-11-03
+
+Avstämt 2026-11-03: Models är den primära sidan (tier per modell), Providers är kopplingslagret; de inbyggda modellerna seedas som data.

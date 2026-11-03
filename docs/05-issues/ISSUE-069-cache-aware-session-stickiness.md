@@ -6,7 +6,7 @@
 - `type: enhancement`
 - `sprint: post-beta`
 - `category: enhancement`
-- `state: ready-for-agent`
+- `state: needs-info`
 
 ## Mål
 
@@ -43,3 +43,7 @@ OpenRouters Auto Router löser exakt detta med *session stickiness* (modellvalet
 ## Härkomst
 
 Identifierad i strategisk research (produktionsanalys av cache-vs-routing-samspelet; OpenRouter Auto:s session stickiness). Del av EPIC-11:s "dirigent"-tes: orkestrera plattformarnas inbyggda spakar (caching) i stället för att motarbeta dem.
+
+## Avstämning 2026-11-03
+
+Avstämt 2026-11-03: **inte byggt.** Ingen sessionsstickiness i motorn. Lägre värde i dag än när issuet skrevs: en lokal modell utan kostnad per fråga vinner nästan alla val, så modellbyte mitt i en konversation är ovanligt. Användardriven: byggs när en kund med mest molntrafik mäter förlorade cache-träffar.

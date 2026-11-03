@@ -6,7 +6,7 @@
 - `type: enhancement`
 - `sprint: v1.0`
 - `category: enhancement`
-- `state: ready-for-agent`
+- `state: done`
 
 ## Mål
 
@@ -45,3 +45,7 @@ Arkitekturen passar SQLite perfekt (samma profil som systerprojektet agentanbud,
 ## Härkomst
 
 Beslut 2026-07-04 (DECISION_LOG): v1.0 = en container + SQLite; Postgres/Redis = Enterprise 2.0. Konceptlån från systerprojektet agentanbud ("en container, en SQLite-fil, en cron-rad").
+
+## Avstämning 2026-11-03
+
+Avstämt 2026-11-03: `internal/history` (modernc SQLite, `history.db` under `ROUTER_DATA_DIR`) bär request-loggen, spend och kv; historiken överlever omstart (verifierat på demo.sluss.eu).
