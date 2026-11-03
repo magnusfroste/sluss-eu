@@ -6,7 +6,7 @@
 - `type: test`
 - `sprint: 08`
 - `category: enhancement`
-- `state: ready-for-agent`
+- `state: done`
 
 ## Mål
 
@@ -34,3 +34,7 @@ Under lokal beta-validering mot OpenRouter mättes latensen end-to-end men endas
 - Acceptanskriterierna är uppfyllda.
 - Testet passerar mot mock i CI.
 - Beta-release-checklistan refererar mätvärdet.
+
+## Avstämning 2026-11-03
+
+Avstämt 2026-11-03: `scripts/load.sh` + `make load` (cmd/loadtest) kör samtidiga klienter mot mock-providern och skriver p50/p95/p99 och routerns overhead (`router_routing_overhead_ms`). Körd igen 2026-11-03: 500 förfrågningar, all overhead under 50 ms. Inte ett CI-steg (körs manuellt före release).

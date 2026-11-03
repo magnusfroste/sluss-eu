@@ -6,7 +6,7 @@
 - `type: enhancement`
 - `sprint: v1.1`
 - `category: enhancement`
-- `state: ready-for-agent`
+- `state: done`
 
 ## Mål
 
@@ -49,3 +49,7 @@ Inga skriv-/config-verktyg i denna iteration (ändra roster via MCP = senare; k�
 ## Härkomst
 
 Användarfråga: värde i en MCP-yta för analys-/dev-agenter? Ja. Read-only fast-follow som gör tokenizer agent-native infra. Se [[backlog-mcp-surface]].
+
+## Avstämning 2026-11-03
+
+Avstämt 2026-11-03: read-only MCP-yta — `internal/mcp`, `internal/server/mcp.go` (route_explain, savings_report, recent_requests, get_roster, provider_health m.fl.), HTTP på `/mcp` bakom auth när `ROUTER_MCP_ENABLED`, stdio via `cmd/mcp`; docs i `docs/mcp.md`.

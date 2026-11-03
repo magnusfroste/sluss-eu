@@ -4,7 +4,7 @@
 - `priority: P1`
 - `type: product`
 - `sprint: backlog`
-- `state: ready-for-agent`
+- `state: needs-info`
 
 ## Bakgrund
 
@@ -37,3 +37,7 @@ Juridiska compliance-påståenden. LLM i routing-beslutet.
 
 Fyra paketmallar (regelverk-delen) + Policy-sidans modul-lista + marknadsanalys +
 beslutslogg.
+
+## Avstämning 2026-11-03
+
+Avstämt 2026-11-03: **delvis klar.** Regelverk (builtin-mallar) och rapportprofil (`internal/regime`, `ROUTER_PROFILE`, profil i `report.go`/gap-rapporten/MCP) är levererade. Framing per marknad på landningssidan är inaktuell: marknadssidan ligger på www.sluss.eu sedan ISSUE-118. **Kvar:** välja paket i konsolen utan omstart (i dag env + omstart). Användardriven.

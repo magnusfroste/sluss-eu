@@ -6,7 +6,7 @@
 - `type: enhancement`
 - `sprint: post-beta`
 - `category: enhancement`
-- `state: ready-for-agent`
+- `state: needs-info`
 
 ## Mål
 
@@ -47,3 +47,7 @@ Det som saknas är **kvalitetssignalen från produktion**. Kostnad och latens ä
 ## Not
 
 Detta är seed till en post-beta-epic **EPIC-11 "Closed-loop routing improvement"**. Identifierat under lokal dogfooding (router som backend för en VS Code-kodassistent), där shadow-premium redan ger kontrafaktiska kostnadsdeltan per request.
+
+## Avstämning 2026-11-03
+
+Avstämt 2026-11-03: **delvis klar.** Policy-förslag med människa i loopen finns (`internal/evals/policyreco.go`, `make eval-recommend`, `make autopilot`), men de bygger på eval-data, inte på produktion. **Kvar:** kvalitetssignal från verklig trafik (omförsök av nästan samma fråga). Hör ihop med ISSUE-149 (uppmätt kvalitet) och ISSUE-152 (kontroll av svaren). Användardriven: byggs när en kund ber om att Sluss ska lära sig av egen trafik.

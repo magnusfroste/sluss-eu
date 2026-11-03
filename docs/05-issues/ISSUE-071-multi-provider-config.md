@@ -6,7 +6,7 @@
 - `type: enhancement`
 - `sprint: v1.0`
 - `category: enhancement`
-- `state: ready-for-agent`
+- `state: done`
 
 ## Mål
 
@@ -50,3 +50,7 @@ I dag byggs providern i `cmd/router/main.go`: en `OpenAIAdapter` mot OpenRouter,
 ## Härkomst
 
 Enterprise-inriktning: skala från en hårdkodad provider till många, med secrets kvar i env. Providers-sidan byggd som grund; detta issue gör den config-driven. Beslut om lagringstrappa: DECISION_LOG 2026-07-04.
+
+## Avstämning 2026-11-03
+
+Avstämt 2026-11-03: providers med `base_url` + `key_env` (nyckel endast i env) — först via `internal/providercfg`, numera i SQLite (ISSUE-073) och Providers-sidan.

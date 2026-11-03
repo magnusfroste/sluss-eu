@@ -4,7 +4,7 @@
 - `priority: P2`
 - `type: product`
 - `sprint: backlog`
-- `state: ready-for-agent`
+- `state: done`
 
 ## Idé (ägarens, 2026-07-08)
 
@@ -30,3 +30,7 @@
 
 Bygger på ISSUE-087 (demo-session/roll) och audit-kedjan (ISSUE-075).
 Lead-lagring i SQLite (KV eller egen tabell) + retention-sweep (ISSUE-045-mönstret).
+
+## Avstämning 2026-11-03
+
+Avstämt 2026-11-03: namngivna demo-länkar finns (`internal/history/demolinks.go`); indexet hade redan `done` (klar 2026-07-11) — bara etiketten i denna fil var gammal.

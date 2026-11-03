@@ -19,14 +19,19 @@ Nästa (i ordning):
 - ISSUE-152 — Kontroll av svaren: samma fasta regler på svaret, först bara flagga. `epic: EPIC-14`, `priority: P2`, `state: needs-info`.
 
 Backlogg — användardriven (byggs när en användare ber om det):
-- Senare idéer (ingen egen issue än): MCP-gateway (agenters verktygsanrop via Sluss med godkännandelista och audit), assistenter per avdelning, import av grindens loggar (CSV från Zscaler/Defender) till shadow-AI-rapporten, flagga prompt-injektion i webbresultat och bilagor.
+- Senare idéer (ingen egen issue än): förseglad rotation av auditkedjan (signerad överlämning från arkiverad kedja till ny; i dag manuell flytt av filen, se ISSUE-156), MCP-gateway (agenters verktygsanrop via Sluss med godkännandelista och audit), assistenter per avdelning, import av grindens loggar (CSV från Zscaler/Defender) till shadow-AI-rapporten, flagga prompt-injektion i webbresultat och bilagor.
+
+- ISSUE-065 — Lära av produktionstrafik: policy-förslag från evals finns (`make eval-recommend`, `make autopilot`); kvar är kvalitetssignal från verklig trafik (omförsök). `priority: P3`, `state: needs-info`. Avstämt 2026-11-03.
+
+- ISSUE-069 — Sessionsstickiness för prompt-cache: inte byggt; lågt värde när en lokal modell vinner de flesta val. `priority: P3`, `state: needs-info`. Avstämt 2026-11-03.
+
+- ISSUE-094 — Compliance-paket: välja paket i konsolen utan omstart (resten levererat). `priority: P1`, `state: needs-info`.
 
 - ISSUE-149 — Modellval: tre lägen (Save / Balanced / Best answer) som ett enda val som bara påverkar valet bland tillåtna modeller, plus uppmätt kvalitet per uppgift. Relaterat: styra frågetyp till modell, "datahemvist går före tier-golvet", jämförelse sida vid sida, konkurrentgenomgång. `epic: EPIC-14`, `priority: P3`, `state: needs-info`.
 
 Redo för agent:
 
-- Inga öppna issues. Hela backlogen (ISSUE-001 till ISSUE-063) är `done` per
-  2026-06-13 — se listan nedan.
+- Inga öppna issues. ISSUE-064, 066, 070–074 och 089 stämdes av mot koden 2026-11-03 och är `done`; ISSUE-065, 069 och 094 ligger i den användardrivna backlogen ovan.
 
 Klart i sprint 05–08 (kod- och test-evidens):
 
@@ -188,5 +193,5 @@ P2:
 - ISSUE-097 — Engelska-svep över befintlig svensk app-text (admin, demo, rapporter, regime-profiler, gap-/kontrollrapport). `epic: EPIC-15`, `priority: P2`, `state: done`, klar 2026-07-11.
 - ISSUE-096 — Audited demo-data reset (nollställningen loggas i audit-kedjan) + retention synlig i policy-konsolen. `epic: EPIC-12`, `priority: P1`, `state: done`, klar 2026-07-10.
 - ISSUE-095 — Shadow AI gap-rapport (monitor mode): skuggpaket räknar vad som SKULLE hänt med känsliga prompts → `/router/gap-report` med siffran som säljer. `epic: EPIC-12`, `priority: P0`, `state: done`, klar 2026-07-10.
-- ISSUE-094 — Compliance-paket (moduler per marknad): regelverk-mallar levererade (`builtin:nis2-baseline/dora-baseline/gdpr-sovereign/pii-local` + Policy-lista); kvar rapportprofil + framing per regim. `epic: EPIC-12`, `priority: P1`, `state: ready-for-agent`. Se `00-product/10`. 2026-07-09.
+- ISSUE-094 — Compliance-paket (moduler per marknad): regelverk-mallar och rapportprofil (`internal/regime`, `ROUTER_PROFILE`) levererade; framing per marknad inaktuell (marknaden på www.sluss.eu, ISSUE-118). Kvar: välja paket i konsolen utan omstart. `epic: EPIC-12`, `priority: P1`, `state: needs-info` (användardriven). Avstämt 2026-11-03.
 - ISSUE-093 — CISO policy-konsol ("brandväggsregler") + rikare klassning. Komplett: `builtin:nis2-baseline`-mall + analys (2026-07-09); policy-konsol med dry-run (2026-07-10); rikare klassning financial/health/legal/security_classified (2026-07-12); regelredigering utan YAML med hot-activate/rollback (2026-07-12); provider-riskregister med kurerade taggar + fail-closed-gapvarning (2026-07-12). `epic: EPIC-12`, `priority: P1`, `state: done`, klar 2026-07-12.

@@ -6,7 +6,7 @@
 - `type: enhancement`
 - `sprint: post-beta`
 - `category: enhancement`
-- `state: ready-for-agent`
+- `state: done`
 
 ## Mål
 
@@ -80,3 +80,7 @@ Ska INTE längre vara `security_review` (doc-/summarize-intent + topikalt ämne)
 ## Härkomst
 
 Identifierat live under dogfooding (router bakom Continue). Första konkreta posten i closed-loop-slingan (ISSUE-065 / EPIC-11): produktionssignal → reproducerbart fall → policy/klassificerar-justering gated av regression-suiten.
+
+## Avstämning 2026-11-03
+
+Avstämt 2026-11-03: `hasDocIntentSignal` i `internal/classifier/task.go` hindrar att dokumentation/förklaring om ett säkerhetsämne blir `security_review`; golden cases i `TestClassifyTask_Issue066_IntentAwareSecurity` (`internal/classifier/task_test.go`).
