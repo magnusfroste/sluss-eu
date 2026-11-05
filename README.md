@@ -28,15 +28,16 @@ evidence**; it makes no legal-compliance claims.
 
 ## Try it in 60 seconds
 
+No provider key needed: until a real model is connected, a built-in test answer says so.
+
 ```bash
 git clone https://github.com/magnusfroste/sluss-eu.git && cd sluss-eu
 make build
 
-# Terminal 1 — a mock provider (answers like an OpenAI-compatible model)
-MOCK_PROVIDER_ADDR=:18080 ./bin/mock-provider
-
-# Terminal 2 — the gateway with the NIS2 pack live
-LOCAL_API_KEY=local_router_key ROUTER_POLICY_PATH=builtin:nis2-baseline ./bin/router
+# The gateway with the NIS2 pack live. The tags mark the test providers as
+# "local" and "cloud" so the demo below has somewhere local to route to.
+LOCAL_API_KEY=local_router_key ROUTER_POLICY_PATH=builtin:nis2-baseline \
+  ROUTER_PROVIDER_TAGS="anthropic=local,eu-resident;openai=cloud" ./bin/router
 ```
 
 Now watch the signature moment — the same client, two prompts, two destinations:
@@ -55,19 +56,25 @@ Now watch the signature moment — the same client, two prompts, two destination
 local or cloud, and why — without calling any provider. The same dry-run is in
 the admin console and as the MCP tool `route_explain`.
 
-Employees sign in with the company account (OpenID Connect against Entra ID,
-Okta, Google or Keycloak — Sluss keeps no accounts of its own); every chat
-request is then logged under the person and their department. See the
-self-host guide.
+**To open the console**, give Sluss a data directory and a first admin account
+(both are needed for named sign-in), then sign in at `/router/login`:
+
+```bash
+LOCAL_API_KEY=local_router_key ROUTER_POLICY_PATH=builtin:nis2-baseline \
+  ROUTER_DATA_DIR=./data ROUTER_ADMIN_USER=admin ROUTER_ADMIN_PASSWORD=change-me-now ./bin/router
+```
 
 Then open **http://localhost:8080** — a short home page with **Sign in** and
-getting-started steps, `/connect` (per-client recipes), and the admin console
-(log in with `ROUTER_DASHBOARD_PASSWORD` if set). Product information lives on
+getting-started steps, `/connect` (per-client recipes), and the admin console,
+where **Quick start** adds your first real models. Employees sign in with the
+company account (OpenID Connect against Entra ID, Okta, Google or Keycloak);
+administrators can also have local console accounts. Every chat request is
+logged under the person and their department. Product information lives on
 [www.sluss.eu](https://www.sluss.eu); a running instance tells search engines
 not to index it.
 
-Prefer a container? Releases are published as `ghcr.io/magnusfroste/sluss-eu:v1.0.0`
-(pin this in production — see [CHANGELOG](CHANGELOG.md)); every push to `main` publishes
+Prefer a container? Releases are published as `ghcr.io/magnusfroste/sluss-eu:v1.2.1`
+(pin a release in production — see [CHANGELOG](CHANGELOG.md)); every push to `main` publishes
 `ghcr.io/magnusfroste/sluss-eu:latest` (public); `deploy/docker-compose.yml` is a
 one-service compose with a data volume. Step by step — `docker run`, TLS,
 upgrades, backup, air-gapped installs:

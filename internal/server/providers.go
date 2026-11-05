@@ -471,7 +471,7 @@ const providersHTML = `<!doctype html>
       {{if .KeyEnv}}
         {{if .KeySet}}<span class="tag ok">key set · {{.KeyEnv}}</span>
         {{else}}<span class="tag bad">key missing · {{.KeyEnv}}</span>{{end}}
-      {{else}}<span class="tag neutral">no key</span>{{end}}
+      {{else}}<span class="tag neutral">no key needed</span>{{end}}
       {{if .HasHealth}}<span class="tag {{if ge .Health 0.9}}ok{{else if ge .Health 0.5}}warn{{else}}bad{{end}}" title="Share of successful calls in recent live traffic — passive. Press Test for a live check now.">traffic health {{healthPct .Health}}</span>{{end}}
       {{if .Synced}}<span class="tag neutral">prices synced</span>{{else}}<span class="tag neutral">manual prices</span>{{end}}
       {{range .Tags}}<span class="tag neutral">{{.}}</span>{{end}}
@@ -504,7 +504,7 @@ const providersHTML = `<!doctype html>
       <div><label>ID (short name, a–z0–9)</label><input name="id" id="prov_id" placeholder="zai" required></div>
       <div><label>Display name</label><input name="name" id="prov_name" placeholder="Z.ai"></div>
       <div class="full"><label>Base URL (OpenAI-compatible)</label><input name="base_url" id="prov_url" placeholder="https://api.z.ai/api/coding/paas/v4" required></div>
-      <div class="full"><label>Key env var (the value is set in the environment, not here)</label><input name="key_env" id="prov_key" placeholder="ZAI_API_KEY" required></div>
+      <div class="full"><label>Key env var (the value is set in the environment, not here). Leave empty for a local server that takes no key.</label><input name="key_env" id="prov_key" placeholder="ZAI_API_KEY"></div>
       <div class="full"><label>Compliance tags (comma-separated — policy can require/deny them). Residency: eu-resident, dpa-signed. Private/on-prem model: <b>local</b> (stays in the house)</label><input name="compliance_tags" id="prov_tags" placeholder="local, on-prem, eu-resident"></div>
     </div>
     <div style="margin-top:14px"><button class="btn" type="submit" id="provsave">Save connection</button> <button class="btn" type="button" id="provcancel" style="display:none" onclick="resetProvider()">Cancel</button></div>

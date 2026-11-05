@@ -188,9 +188,7 @@ func (p *Provider) Validate() error {
 	if !strings.HasPrefix(p.BaseURL, "http") {
 		return fmt.Errorf("base_url must be an http(s) URL")
 	}
-	if p.KeyEnv == "" {
-		return fmt.Errorf("key_env (env var name holding the API key) is required")
-	}
+	// key_env is optional: a local server that takes no key has none.
 	return nil
 }
 
@@ -216,8 +214,9 @@ func (m *Model) Validate() error {
 
 // RegistryEntries converts the config providers + models into registry Provider
 // and Model entries to build a Definition. Only models whose provider's KeyEnv
-// is set in the environment are Enabled (routable); a missing key leaves the
-// provider listed but its models unroutable.
+// is set in the environment (or that name no key variable at all, a keyless
+// local server) are Enabled (routable); a missing key leaves the provider
+// listed but its models unroutable.
 //
 // Built-in models (matched by ID against the OpenRouter seed) inherit that
 // seed's rich capability / quality / context / latency metadata so routing
@@ -227,7 +226,7 @@ func RegistryEntries(providers []Provider, models []Model) ([]registry.Provider,
 	keySet := map[string]bool{}
 	var provs []registry.Provider
 	for _, p := range providers {
-		keySet[p.ID] = os.Getenv(p.KeyEnv) != ""
+		keySet[p.ID] = p.KeyEnv == "" || os.Getenv(p.KeyEnv) != "" // no key variable = a keyless local server
 		provs = append(provs, registry.Provider{
 			ID: p.ID, Name: p.Name, Status: registry.ProviderStatusActive,
 			BaseURL: p.BaseURL, AuthSecretRef: p.KeyEnv,

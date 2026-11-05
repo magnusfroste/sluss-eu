@@ -14,15 +14,16 @@ If your task is to install, configure or run Sluss for an organisation — not t
 
 1. `README.md` — what Sluss is and the 60-second try-out.
 2. `docs/07-operations/self-host-docker.md` — run it, sign-in, TLS, upgrade, back up, air-gapped.
-3. `deploy/example.env` — every setting, explained. `deploy/docker-compose.yml` for Compose.
+3. `deploy/example.env` — the settings an operator needs, explained (`.env.example` at the root has the tuning and experimental ones). `deploy/docker-compose.yml` for Compose.
 4. `manual/index.md` and the pages it links — what to set up in the console, in the order an administrator does it. `manual/choosing-models.md` explains how a question finds its model.
 5. `CHANGELOG.md` — which release to pin, and what changed.
 
 Rules for an operating agent:
 
 - **Secrets go in the environment, never in files you commit or paste.** Provider keys are referenced by the *name* of an environment variable; the console never asks for a key's value.
-- **Mount a volume at `/data`** (`ROUTER_DATA_DIR`). Without it, history, keys and the audit chain live in memory and are lost on restart; the boot banner says so.
-- **Pin a release** (`:v1.1.0` or `:1.1`) in production, not `:latest`.
+- **Mount a volume at `/data`** (`ROUTER_DATA_DIR`, which the image sets by default). Without the mount, history, accounts and the audit chain sit in the container's own filesystem and are lost when it is recreated; without the variable at all they live in memory. The boot banner says which.
+- **Pin a release** (`:v1.2.1` or `:1.2`) in production, not `:latest`.
+- **A provider key is optional.** Local models are added in the console, with or without a key variable. Until a real model is connected, every answer is a built-in test answer that says so.
 - **Keep the fail-closed rule** that keeps personal data on local models unless the organisation decides otherwise. A block is the product working, not an error to route around.
 - **Verify, do not assume:** the boot banner, the Version page, `GET /metrics` (`sluss_build_info`) and the dry-run on Policy show what actually runs and where a question would go.
 - A running instance serves its own manual as Markdown: start at `/manual/index.md`, and add `.md` to any page link. The instance itself is not indexed (no `/llms.txt`, robots disallow all); the repository's `llms.txt` is the public index.

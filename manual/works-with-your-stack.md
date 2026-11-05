@@ -46,8 +46,8 @@ Chat front ends and AI platforms that let you set an OpenAI-compatible address c
 
 ## Around Sluss: sign-in and monitoring
 
-- **Sign-in.** Microsoft Entra ID, Okta, Google or Keycloak, over OpenID Connect. Sluss keeps no employee accounts. See [Start here](/manual).
-- **Monitoring.** Sluss publishes its numbers on `{{BASE}}/metrics` for Prometheus or Grafana. The audit log is a file in the data volume that your log tools can collect, and that an auditor can check offline.
+- **Sign-in.** Microsoft Entra ID, Okta, Google or Keycloak, over OpenID Connect. Employees need no Sluss password; administrators can also have local console accounts. See [Start here](/manual).
+- **Monitoring.** Sluss publishes its numbers on `{{BASE}}/metrics` for Prometheus or Grafana. That address needs no sign-in, so let only your monitoring reach it (a rule in the reverse proxy). The audit log is a file in the data volume that your log tools can collect, and that an auditor can check offline.
 
 ## What Sluss does not replace
 
