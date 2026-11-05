@@ -24,7 +24,14 @@ If Sluss is new, do these in order. Each one works on its own, so you can stop a
 ## This instance
 
 - Address: `{{BASE}}`
-- Admin console: [{{BASE}}/router/dashboard]({{BASE}}/router/dashboard)
+- Admin console: [{{BASE}}/router/dashboard]({{BASE}}/router/dashboard) (the menu calls it *Overview*)
 - Company AI chat: [{{BASE}}/chat]({{BASE}}/chat)
+
+## Who can sign in
+
+- **Employees** sign in with the company account (step 2 above) and get the chat. Each person has their own chat history.
+- **Administrators** get the console: members of the admin groups at the identity provider, or local accounts managed under [Console users]({{BASE}}/router/users). The first local account is created from the server's environment when Sluss starts for the first time.
+- **You** can see who you are signed in as, change the password of a local account, and download or delete your own chat history on [Your profile]({{BASE}}/me), reached from your name at the bottom of the menu.
+- **Locked out?** Whoever runs the server has a break-glass password; see [When something does not work](/manual/troubleshooting).
 
 > Agents and scripts can read every page as plain Markdown: add `.md` to the address, for example `{{BASE}}/manual/quick-start.md`.

@@ -6,8 +6,8 @@ The image is public. Releases are listed in [CHANGELOG.md](../../CHANGELOG.md):
 
 | Tag | Use |
 |---|---|
-| `ghcr.io/magnusfroste/sluss-eu:v1.1.0` | Production: pin a release |
-| `ghcr.io/magnusfroste/sluss-eu:1.1` | Production: the newest 1.1.x, patch fixes included |
+| `ghcr.io/magnusfroste/sluss-eu:v1.2.1` | Production: pin a release |
+| `ghcr.io/magnusfroste/sluss-eu:1.2` | Production: the newest 1.2.x, patch fixes included |
 | `ghcr.io/magnusfroste/sluss-eu:latest` | Trying it out: rebuilt on every merge to `main` |
 | `ghcr.io/magnusfroste/sluss-eu:sha-<short>` | Pin the exact build you reviewed |
 
@@ -26,16 +26,16 @@ docker run -d --name sluss --restart unless-stopped \
   -e ROUTER_ADMIN_PASSWORD='choose-a-long-passphrase' \
   -e ROUTER_POLICY_PATH=builtin:nis2-baseline \
   -e OPENROUTER_API_KEY='…' \
-  ghcr.io/magnusfroste/sluss-eu:latest
+  ghcr.io/magnusfroste/sluss-eu:v1.2.1
 ```
 
 - **`-v sluss-data:/data` is the part you must not skip.** The volume holds the audit chain. Without it, everything is lost when the container is recreated.
 - **`LOCAL_API_KEY`** is the bootstrap Bearer key. Once you have created per-department keys in the console, clients should use those instead.
-- **`ROUTER_ADMIN_USER` / `ROUTER_ADMIN_PASSWORD`** seed the first named console user, but only when no user exists yet.
+- **`ROUTER_ADMIN_USER` / `ROUTER_ADMIN_PASSWORD`** seed the first named console user, but only while no user exists. After that, the account lives in `/data`: change the password on **Your profile** (`/me`), not by editing these variables. See *Console accounts* below.
 - **`ROUTER_POLICY_PATH`** selects a built-in compliance pack: `builtin:nis2-baseline`, `builtin:dora-baseline`, `builtin:gdpr-sovereign` or `builtin:pii-local`.
-- **Without a provider key,** Sluss answers through a built-in mock. That is useful for a first look, but no real model is called.
+- **`OPENROUTER_API_KEY` is optional.** Leave it out when every model runs on your own hardware: add those models in the console instead (step 2). Until a real model is connected, every question gets a built-in test answer that says so, so a first look works without any key.
 
-The full list of settings is in [`deploy/example.env`](../../deploy/example.env).
+The settings an operator needs are in [`deploy/example.env`](../../deploy/example.env); the development and experimental ones are in [`.env.example`](../../.env.example).
 
 Prefer compose? [`deploy/docker-compose.yml`](../../deploy/docker-compose.yml) sets up the same service. Swap `build:` for the `image:` line and put your values in a `.env` next to it.
 
@@ -44,15 +44,25 @@ Prefer compose? [`deploy/docker-compose.yml`](../../deploy/docker-compose.yml) s
 Open `http://localhost:8080/router/setup` and sign in. **Quick start** walks you through four steps:
 
 1. A cloud model.
-2. A local model, for example vLLM or Ollama on your own GPU, tagged `local`.
+2. A local model, for example vLLM or Ollama on your own GPU, tagged `local`. A server that takes no API key needs no key variable: leave that field empty.
 3. One rule that keeps personal data local.
 4. A dry run that shows where a prompt would go.
 
 Point clients at `https://<your-host>/v1` with model `auto`. Any OpenAI- or Anthropic-compatible client works. `/connect` has per-client recipes.
 
+### Console accounts
+
+Three ways into the console, in the order you should use them:
+
+- **Named local accounts.** The first one is seeded from `ROUTER_ADMIN_USER` / `ROUTER_ADMIN_PASSWORD` while the user table is empty. After that, manage them under **Access → Console users**, and change your own password on **Your profile** (`/me`). Every console action is audited under the person's name.
+- **The company account** (next section). Members of the admin groups get the console; everyone else gets the chat.
+- **Break-glass.** `ROUTER_DASHBOARD_PASSWORD` opens the login page with any username, so an operator is never locked out. The audit log marks such a session as *break-glass*. Set it to a long passphrase and keep it for emergencies.
+
+`GET /router/whoami` tells a script who it is signed in as.
+
 ### Let employees sign in with the company account
 
-Sluss keeps no employee accounts. Connect it to your identity provider over OpenID Connect, and the login page gets a **Sign in with …** button. Employees land in the chat, identified by email and department. Members of your admin groups get the console. Leaving the company means leaving Sluss, because the IdP decides.
+Sluss keeps no accounts for employees: they sign in with the company account. Connect it to your identity provider over OpenID Connect, and the login page gets a **Sign in with …** button. Employees land in the chat, identified by email and department. Members of your admin groups get the console. Leaving the company means leaving Sluss, because the IdP decides.
 
 1. Register a web application at the IdP (Entra ID: *App registrations*; Okta: *Applications*; Keycloak: *Clients*) with the redirect URI `https://<your-host>/router/oidc/callback`. Enable the ID token, and make sure groups are included in it (Entra: *Token configuration → Add groups claim*; Okta: add the `groups` scope; Keycloak: a group membership mapper).
 2. Set `ROUTER_OIDC_ISSUER`, `ROUTER_OIDC_CLIENT_ID` and, unless you use a public client, `ROUTER_OIDC_CLIENT_SECRET`. Set `ROUTER_PUBLIC_URL` to the same host as the redirect URI.
@@ -121,11 +131,10 @@ The audit chain can also be exported from the console. An auditor verifies the e
 
 ## 6. Air-gapped installs
 
-Sluss itself makes no outbound calls except to the providers you configure.
-
 1. On a connected machine, export the image: `docker save ghcr.io/magnusfroste/sluss-eu:<tag> | gzip > sluss.tar.gz`.
 2. Move the file across, then run `docker load < sluss.tar.gz` on the target.
-3. Register only local models, meaning providers tagged `local`, `on-prem` or `air-gapped`.
+3. Set `ROUTER_UPDATE_CHECK=off` (no version check against GitHub) and `ROUTER_PRICING_SYNC=false` (no price list from OpenRouter). With those two off, Sluss makes no outbound calls except to the providers you configure.
+4. Leave `OPENROUTER_API_KEY` unset and register only local models, meaning providers tagged `local`, `on-prem` or `air-gapped`. A local server that takes no API key needs no key variable.
 
 With fail-closed policy, a request that would need a cloud provider gets a 403 and an audit entry. It never falls back to a cloud model silently.
 
@@ -135,4 +144,5 @@ With fail-closed policy, a request that would need a cloud provider gets a 403 a
 - [ ] `LOCAL_API_KEY` is strong and is replaced by per-department keys.
 - [ ] TLS is terminated in front, and port 8080 is bound to `127.0.0.1` or a private network only.
 - [ ] The image is pinned to a `sha-` or `v` tag, not `latest`.
+- [ ] `ROUTER_ADMIN_PASSWORD` has been changed on `/me` after the first sign-in, and `ROUTER_DASHBOARD_PASSWORD` is a long passphrase kept for emergencies.
 - [ ] A backup is scheduled and has been restored once.

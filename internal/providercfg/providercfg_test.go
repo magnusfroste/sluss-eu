@@ -83,10 +83,10 @@ func TestProviderValidate(t *testing.T) {
 	if err := bad.Validate(); err == nil {
 		t.Error("non-http base_url should be rejected")
 	}
-	bad2 := sampleProvider()
-	bad2.KeyEnv = ""
-	if err := bad2.Validate(); err == nil {
-		t.Error("missing key_env should be rejected")
+	keyless := sampleProvider()
+	keyless.KeyEnv = ""
+	if err := keyless.Validate(); err != nil {
+		t.Errorf("a provider with no key variable (a keyless local server) must be accepted: %v", err)
 	}
 	p2 := sampleProvider()
 	p2.ID = "Z.AI Coding!"
@@ -134,6 +134,20 @@ func TestRegistryEntriesKeyGating(t *testing.T) {
 	_, models = RegistryEntries([]Provider{sampleProvider()}, []Model{sampleModel()})
 	if !models[0].Enabled {
 		t.Error("model should be enabled once key is present")
+	}
+}
+
+// A provider connection that names no key variable is a keyless local server
+// (vLLM, Ollama on the LAN): its models are routable without any env var.
+func TestRegistryEntriesKeylessProviderIsRoutable(t *testing.T) {
+	p := sampleProvider()
+	p.KeyEnv = ""
+	provs, models := RegistryEntries([]Provider{p}, []Model{sampleModel()})
+	if len(provs) != 1 || provs[0].AuthSecretRef != "" {
+		t.Fatalf("provider entry wrong: %+v", provs)
+	}
+	if len(models) != 1 || !models[0].Enabled {
+		t.Fatalf("model behind a keyless provider must be enabled: %+v", models)
 	}
 }
 

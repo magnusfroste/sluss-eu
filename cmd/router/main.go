@@ -83,11 +83,15 @@ func main() {
 		logger.Info("seeded local api key", "tenant", "tn_local")
 	}
 
-	mockURL := os.Getenv("MOCK_PROVIDER_URL")
-	if mockURL == "" {
-		mockURL = "http://localhost:18080"
-	}
+	// MOCK_PROVIDER_URL points at the mock-provider binary (tests, scripts).
+	// Unset, the mock answers in-process, so a fresh container with no
+	// provider key still answers instead of failing to reach localhost:18080.
+	mockURL := strings.TrimSpace(os.Getenv("MOCK_PROVIDER_URL"))
 	var providerMode string // for the boot banner
+	mockMode := "built-in mock"
+	if mockURL != "" {
+		mockMode = "mock at " + mockURL
+	}
 
 	mock := &provider.MockAdapter{
 		BaseURL: mockURL,
@@ -159,7 +163,15 @@ func main() {
 		}
 	}
 
-	if orKey := strings.TrimSpace(os.Getenv("OPENROUTER_API_KEY")); orKey != "" {
+	// The registry is roster-driven whenever there is a provider key or a data
+	// dir. Without an OpenRouter key the roster still routes to the models an
+	// admin adds (a local vLLM/Ollama box, an air-gapped install). The static
+	// dev definition (mock "openai"/"anthropic" providers) is only for dev and
+	// the scripted demos, which say so by pointing at the mock-provider binary
+	// or tagging those providers (ROUTER_PROVIDER_TAGS).
+	orKey := strings.TrimSpace(os.Getenv("OPENROUTER_API_KEY"))
+	devMock := mockURL != "" || strings.TrimSpace(os.Getenv("ROUTER_PROVIDER_TAGS")) != ""
+	if orKey != "" || (historyStore != nil && !devMock) {
 		// Per-tier model roster: swap which OpenRouter model fills each tier via
 		// env (e.g. ROUTER_MODEL_PREMIUM=z-ai/glm-4.6), no code change needed.
 		overrides := map[registry.Tier]string{
@@ -193,7 +205,7 @@ func main() {
 		// prices instead of calling out on the admin path. Disable with
 		// ROUTER_PRICING_SYNC=false.
 		var syncedPrices map[string]pricing.Price
-		if strings.ToLower(strings.TrimSpace(os.Getenv("ROUTER_PRICING_SYNC"))) != "false" {
+		if orKey != "" && strings.ToLower(strings.TrimSpace(os.Getenv("ROUTER_PRICING_SYNC"))) != "false" {
 			pctx, pcancel := context.WithTimeout(context.Background(), 10*time.Second)
 			if prices, perr := pricing.FetchOpenRouter(pctx, "https://openrouter.ai/api/v1", orKey, &http.Client{Timeout: 10 * time.Second}); perr != nil {
 				logger.Warn("pricing sync failed; using existing prices", "err", perr)
@@ -249,24 +261,47 @@ func main() {
 				}
 			}
 			built := server.RosterBuild{Definition: def, Adapters: map[string]provider.Adapter{}}
-			built.Adapters["openrouter"] = &provider.OpenAIAdapter{
-				BaseURL: orBaseURL,
-				APIKey:  orKey,
-				// OpenRouter attribution (optional but recommended for app ranking).
-				Referer:    envDefault("OPENROUTER_REFERER", "https://github.com/magnusfroste/sluss"),
-				Title:      envDefault("OPENROUTER_TITLE", "tokenizer"),
-				Client:     &http.Client{Timeout: 60 * time.Second},
-				Timeout:    60 * time.Second,
-				ProviderID: "openrouter",
-				Logger:     logger,
+			if orKey == "" {
+				// No OpenRouter key: the built-in cloud models stay unroutable.
+				// Until any other model is routable, they answer through the
+				// mock so a first look works; the first real model turns it off.
+				if !anyEnabled(built.Definition.Models) {
+					enabled := map[string]bool{}
+					for _, m := range models {
+						enabled[m.ID] = m.Enabled
+					}
+					for i := range built.Definition.Models {
+						if m := &built.Definition.Models[i]; m.ProviderID == "openrouter" && enabled[m.ID] {
+							m.Enabled = true
+						}
+					}
+					built.Adapters["openrouter"] = mock
+					if startup {
+						logger.Warn("no provider key and no model added yet: the built-in models answer through the mock")
+					}
+				}
+			} else {
+				built.Adapters["openrouter"] = &provider.OpenAIAdapter{
+					BaseURL: orBaseURL,
+					APIKey:  orKey,
+					// OpenRouter attribution (optional but recommended for app ranking).
+					Referer:    envDefault("OPENROUTER_REFERER", "https://github.com/magnusfroste/sluss"),
+					Title:      envDefault("OPENROUTER_TITLE", "tokenizer"),
+					Client:     &http.Client{Timeout: 60 * time.Second},
+					Timeout:    60 * time.Second,
+					ProviderID: "openrouter",
+					Logger:     logger,
+				}
 			}
 			// One OpenAI-compatible adapter per provider connection whose key is
-			// present in this process's environment (read at start).
+			// present in this process's environment (read at start). A
+			// connection with no key variable (a local server that takes no
+			// key) is enabled without one.
 			for _, cp := range provs {
 				if cp.ID == "openrouter" {
 					continue
 				}
-				if key := strings.TrimSpace(os.Getenv(cp.KeyEnv)); key != "" {
+				if key := strings.TrimSpace(os.Getenv(cp.KeyEnv)); key != "" || cp.KeyEnv == "" {
 					built.Adapters[cp.ID] = &provider.OpenAIAdapter{
 						BaseURL: cp.BaseURL, APIKey: key,
 						Client:     &http.Client{Timeout: 60 * time.Second},
@@ -296,8 +331,18 @@ func main() {
 		}
 		adapters = startBuild.Adapters
 		primaryProvider = adapters["openrouter"]
-		providerMode = "openrouter"
-		logger.Info("using OpenRouter provider", "base_url", "https://openrouter.ai/api/v1")
+		if primaryProvider == nil {
+			primaryProvider = mock
+		}
+		switch {
+		case orKey != "":
+			providerMode = "openrouter"
+			logger.Info("using OpenRouter provider", "base_url", "https://openrouter.ai/api/v1")
+		case adapters["openrouter"] == mock:
+			providerMode = mockMode + " (no provider key, no model added yet)"
+		default:
+			providerMode = "models from the console (no OpenRouter key)"
+		}
 	} else {
 		// Build from the default definition so dev/mock can also carry provider
 		// compliance tags (ROUTER_PROVIDER_TAGS="anthropic=local,eu-resident;
@@ -312,8 +357,8 @@ func main() {
 			"openai":    mock,
 			"anthropic": mock,
 		}
-		providerMode = "mock at " + mockURL
-		logger.Info("using mock provider", "mock_provider", mockURL)
+		providerMode = mockMode
+		logger.Info("using mock provider", "mock_provider", mockMode)
 	}
 	if snapErr != nil {
 		logger.Error("failed to build registry", "err", snapErr)
@@ -886,4 +931,14 @@ func oidcFromEnv() *server.OIDCConfig {
 		return nil
 	}
 	return c
+}
+
+// anyEnabled reports whether at least one model in the roster is routable.
+func anyEnabled(models []registry.Model) bool {
+	for _, m := range models {
+		if m.Enabled {
+			return true
+		}
+	}
+	return false
 }

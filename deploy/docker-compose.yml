@@ -11,7 +11,7 @@
 #   - build from this repo (default below), or
 #   - pull the published image (uncomment `image:` + comment out `build:`):
 #     ghcr.io/magnusfroste/sluss-eu, public, pushed on every merge to main.
-#     Pin a tag (sha-<short> or v<semver>) in production instead of latest.
+#     Pin a tag in production instead of latest, e.g. IMAGE_TAG=v1.2.1.
 #
 services:
   router:
@@ -41,6 +41,12 @@ services:
       - ROUTER_ADMIN_PASSWORD=${ROUTER_ADMIN_PASSWORD:-}
       # --- Compliance pack, e.g. builtin:nis2-baseline (empty = default policy). ---
       - ROUTER_POLICY_PATH=${ROUTER_POLICY_PATH:-}
+      # --- Monitor mode: a pack as the shadow policy, nothing blocks. ---
+      - ROUTER_SHADOW_POLICY_PATH=${ROUTER_SHADOW_POLICY_PATH:-}
+      # --- Report wording per regime: nis2 | dora | gdpr | eu (empty = from the pack). ---
+      - ROUTER_PROFILE=${ROUTER_PROFILE:-}
+      # --- Read-only MCP surface on /mcp for agents (off by default). ---
+      - ROUTER_MCP_ENABLED=${ROUTER_MCP_ENABLED:-false}
       # --- Public base URL (https://sluss.example.eu) for shareable links. ---
       - ROUTER_PUBLIC_URL=${ROUTER_PUBLIC_URL:-}
       # --- Sign in with the company account (OIDC). See deploy/example.env. ---
@@ -59,10 +65,15 @@ services:
       # --- Version check and the upgrade step shown on the Version page. ---
       - ROUTER_UPDATE_CHECK=${ROUTER_UPDATE_CHECK:-on}
       - ROUTER_DEPLOYMENT=${ROUTER_DEPLOYMENT:-compose}
-      # --- Provider: set OPENROUTER_API_KEY for a real provider; omit → mock. ---
+      - ROUTER_LOG_BANNER=${ROUTER_LOG_BANNER:-on}
+      # --- Provider: OPENROUTER_API_KEY for cloud models through OpenRouter.
+      #     Optional: local models are added in the console. Until a real model
+      #     is connected, a built-in test answer says so. ---
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
       - OPENROUTER_REFERER=${OPENROUTER_REFERER:-}
       - OPENROUTER_TITLE=${OPENROUTER_TITLE:-}
+      # --- Price list from OpenRouter at start (false for air-gapped installs). ---
+      - ROUTER_PRICING_SYNC=${ROUTER_PRICING_SYNC:-true}
       # --- Model roster: which OpenRouter model fills each tier (optional).
       #     Use OpenRouter slugs, e.g. z-ai/glm-4.6. Empty keeps the default. ---
       - ROUTER_MODEL_CHEAP=${ROUTER_MODEL_CHEAP:-}
@@ -78,8 +89,8 @@ services:
       # --- Persistence: spend/savings survive restart when this points at the
       #     mounted volume above. ---
       - ROUTER_DATA_DIR=${ROUTER_DATA_DIR:-/data}
-      # --- Dashboard: set a password to open /router/dashboard in a browser
-      #     (HTTP Basic Auth). Leave blank to keep the Bearer + admin gate. ---
+      # --- Break-glass: this password opens /router/login with any username,
+      #     so an operator is never locked out. Audited as "break-glass". ---
       - ROUTER_DASHBOARD_PASSWORD=${ROUTER_DASHBOARD_PASSWORD:-}
       # --- Green receipt: grid CO2e intensity for the energy-savings estimate. ---
       - ROUTER_GRID_CO2E_G_PER_KWH=${ROUTER_GRID_CO2E_G_PER_KWH:-400}
@@ -98,7 +109,8 @@ services:
     profiles: ["search"]
     restart: unless-stopped
     environment:
-      - SEARXNG_SECRET=${SEARXNG_SECRET:?set SEARXNG_SECRET (openssl rand -hex 32)}
+      # Required when the search profile is on: openssl rand -hex 32
+      - SEARXNG_SECRET=${SEARXNG_SECRET:-}
     volumes:
       - ./searxng/settings.yml:/etc/searxng/settings.yml:ro
     # No published port: only the router reaches it on the compose network.

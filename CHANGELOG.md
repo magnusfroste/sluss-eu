@@ -5,10 +5,25 @@ All notable changes to Sluss. Versions follow [semantic versioning](https://semv
 Releases are published from this file by the `release` workflow (Actions → release → Run workflow). Every release is a container image you can pin:
 
 ```
-ghcr.io/magnusfroste/sluss-eu:v1.2.0   # this release
+ghcr.io/magnusfroste/sluss-eu:v1.2.1   # this release
 ghcr.io/magnusfroste/sluss-eu:1.2      # the newest 1.2.x
 ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 ```
+
+## v1.2.1 — 2026-11-05
+
+A fresh install works as the documentation says.
+
+### Fixed
+- **Your own models work without an OpenRouter key.** Before, the models added in the console were only used when `OPENROUTER_API_KEY` was set, so an install with only local hardware (or no internet) never routed to them. A provider connection may now leave the key variable empty, for a local server that takes no key.
+- **A container with no provider answers.** The documented built-in test answer did not exist in the image: the first question failed with a connection error. Until a real model is connected, every answer now says plainly that no model is connected yet.
+- **`docker compose up` works without the search profile.** `SEARXNG_SECRET` was required even when SearXNG was not started.
+
+### Documentation
+- The README try-out needs no second terminal, routes the personal-data example locally, and shows how to open the console.
+- The self-host guide pins v1.2.1, explains the three ways into the console (named accounts, the company account, break-glass), and tells air-gapped installs which two outbound checks to turn off.
+- `deploy/example.env` and the Compose file carry the settings they lacked (shadow policy, profile, MCP, pricing sync, banner) and describe the break-glass login correctly.
+- The manual says who can sign in, what to do when locked out, that the client secret is optional for single sign-on, and that `/metrics` needs no sign-in.
 
 ## v1.2.0 — 2026-11-01
 

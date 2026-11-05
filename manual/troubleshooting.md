@@ -2,7 +2,17 @@
 
 ## Quick start says "missing" for the cloud model
 
-The cloud key is not in the server's environment. Whoever runs the server adds `OPENROUTER_API_KEY` and restarts. In EasyPanel, it goes under the service's *Environment*.
+The cloud key is not in the server's environment. Whoever runs the server adds `OPENROUTER_API_KEY` and restarts. In EasyPanel, it goes under the service's *Environment*. If every model is to run on your own hardware, skip this step: add the local model in step 2 instead.
+
+## Every answer says "no real model is connected yet"
+
+That is Sluss's built-in test answer. No model is connected: there is no cloud key, and no model has been added on [Models]({{BASE}}/router/models). Do either, and the test answer stops. If a local model *is* added, open it and press *Test now* to see why it does not answer.
+
+## I am locked out, or forgot my password
+
+- Another administrator can set a new password for you under [Console users]({{BASE}}/router/users).
+- Whoever runs the server can sign in with the break-glass password (`ROUTER_DASHBOARD_PASSWORD` in the server's environment, any username) and do the same. The audit log marks that session as *break-glass*.
+- `ROUTER_ADMIN_USER` and `ROUTER_ADMIN_PASSWORD` only create the first account while none exists. Changing them later does nothing: change the password on [Your profile]({{BASE}}/me) instead.
 
 ## A question was refused with "no provider satisfies the required data-residency/compliance tags"
 
@@ -14,7 +24,7 @@ Often the provider renamed or swapped the model, which happens a lot on your own
 
 ## The "Sign in with …" button does not show
 
-The sign-in settings are not in the server's environment, or the server has not been restarted since they were added. All three values must be set: the issuer, the client ID and the client secret.
+The sign-in settings are not in the server's environment, or the server has not been restarted since they were added. Two values are needed: the issuer and the client ID (the client secret only if your identity provider requires one). Sign-in also needs a data directory (`ROUTER_DATA_DIR`), which every container install has.
 
 ## Signing in fails with a redirect error
 

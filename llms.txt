@@ -8,7 +8,7 @@ Agents installing or operating Sluss: read "Operate" first. Agents changing the 
 
 - [AGENTS.md — Deploying or operating Sluss](https://github.com/magnusfroste/sluss-eu/blob/main/AGENTS.md#deploying-or-operating-sluss): reading order and rules for an operating agent
 - [Self-host with Docker](https://github.com/magnusfroste/sluss-eu/blob/main/docs/07-operations/self-host-docker.md): run, sign-in, TLS, upgrade, back up, air-gapped
-- [Every setting](https://github.com/magnusfroste/sluss-eu/blob/main/deploy/example.env): the environment variables, explained
+- [Settings](https://github.com/magnusfroste/sluss-eu/blob/main/deploy/example.env): the environment variables an operator needs, explained
 - [CHANGELOG](https://github.com/magnusfroste/sluss-eu/blob/main/CHANGELOG.md): releases and which image to pin
 
 ## Manual
