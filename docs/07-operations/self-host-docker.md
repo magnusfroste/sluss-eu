@@ -112,7 +112,27 @@ You can check which build is running in three places:
 
 - The start of the log prints a banner with the version, commit, console address and data directory.
 - The console footer shows the version, linked to the Version page. A yellow dot there means a newer release is out, and the Version page lists what changed and the upgrade step.
-- `curl -s http://localhost:8080/metrics | grep sluss_build_info` prints it too.
+- `curl -s http://localhost:8080/version` prints it too, with no key.
+
+### Monitoring
+
+`GET /metrics` serves Prometheus metrics and needs a key: a signed-in admin, an admin API key or the break-glass password opens it. For the scraper, set `ROUTER_METRICS_TOKEN` to a long random value and give Prometheus that token, so it never holds an admin key:
+
+```yaml
+scrape_configs:
+  - job_name: sluss
+    scheme: https
+    static_configs: [{ targets: ["sluss.example.eu"] }]
+    authorization:
+      type: Bearer
+      credentials: "<ROUTER_METRICS_TOKEN>"
+```
+
+### Browser hardening and the login brake
+
+Every response carries the standard security headers (`Content-Security-Policy` allowing this origin only, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Permissions-Policy`). `Strict-Transport-Security` is sent when the request arrived over TLS, which your reverse proxy signals with `X-Forwarded-Proto: https`; Caddy, nginx and Traefik set it by default.
+
+The login form brakes password guessing: after five wrong passwords for an account within fifteen minutes, further attempts are refused for a wait that doubles each time, up to fifteen minutes; a client address gets twenty. Every wrong password and every brake is in the audit log (`console.login_failed`, `console.login_throttled`). The brake is per instance and in memory, so a restart clears it.
 
 Schema migrations run on start, and nothing in `/data` needs manual steps.
 
@@ -147,4 +167,5 @@ With fail-closed policy, a request that would need a cloud provider gets a 403 a
 - [ ] TLS is terminated in front, and port 8080 is bound to `127.0.0.1` or a private network only.
 - [ ] The image is pinned to a `sha-` or `v` tag, not `latest`.
 - [ ] `ROUTER_ADMIN_PASSWORD` has been changed on `/me` after the first sign-in, and `ROUTER_DASHBOARD_PASSWORD` is a long passphrase kept for emergencies.
+- [ ] Prometheus scrapes `/metrics` with `ROUTER_METRICS_TOKEN`, not with an admin key.
 - [ ] A backup is scheduled and has been restored once.

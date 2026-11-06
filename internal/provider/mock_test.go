@@ -53,3 +53,25 @@ func TestMockAdapterAnswersInProcessWithoutBaseURL(t *testing.T) {
 		t.Errorf("usage should be filled: %+v", resp.Usage)
 	}
 }
+
+// The mock streams too, so the chat renders its answer like any provider's.
+func TestMockAdapterStreamsItsAnswer(t *testing.T) {
+	m := &MockAdapter{}
+	ch, err := m.Stream(context.Background(), &NormalizedModelRequest{Model: "auto", Messages: []openai.Message{{Role: "user", Content: "hi"}}})
+	if err != nil {
+		t.Fatalf("stream: %v", err)
+	}
+	var chunks []StreamChunk
+	for c := range ch {
+		chunks = append(chunks, c)
+	}
+	if len(chunks) != 3 || !chunks[2].Done {
+		t.Fatalf("want content, final and done chunks, got %+v", chunks)
+	}
+	if !strings.Contains(string(chunks[0].Data), `"delta":{"role":"assistant","content":"Test answer`) {
+		t.Errorf("first chunk should carry the answer as a delta: %s", chunks[0].Data)
+	}
+	if !strings.Contains(string(chunks[1].Data), `"finish_reason":"stop"`) || chunks[1].InputTokens == 0 {
+		t.Errorf("final chunk should carry finish_reason and usage: %s (in=%d)", chunks[1].Data, chunks[1].InputTokens)
+	}
+}

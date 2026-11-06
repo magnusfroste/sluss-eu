@@ -104,3 +104,46 @@ func inProcessMock(req *NormalizedModelRequest) *openai.ChatResponse {
 		Usage: openai.Usage{PromptTokens: in, CompletionTokens: 24, TotalTokens: in + 24},
 	}
 }
+
+// Stream answers as a short SSE stream built from Complete: one content chunk,
+// one final chunk with finish_reason and usage, then done. The chat, and any
+// client that asks for stream:true, then renders the mock's answer exactly as
+// it renders a real provider's.
+func (m *MockAdapter) Stream(ctx context.Context, req *NormalizedModelRequest) (<-chan StreamChunk, error) {
+	resp, err := m.Complete(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	content, model := "", resp.Model
+	if len(resp.Choices) > 0 {
+		content = resp.Choices[0].Message.Content
+	}
+	type delta struct {
+		Role    string `json:"role,omitempty"`
+		Content string `json:"content,omitempty"`
+	}
+	type choice struct {
+		Index        int     `json:"index"`
+		Delta        delta   `json:"delta"`
+		FinishReason *string `json:"finish_reason"`
+	}
+	type chunkObj struct {
+		ID      string        `json:"id"`
+		Object  string        `json:"object"`
+		Created int64         `json:"created"`
+		Model   string        `json:"model"`
+		Choices []choice      `json:"choices"`
+		Usage   *openai.Usage `json:"usage,omitempty"`
+	}
+	stop := "stop"
+	first, _ := json.Marshal(chunkObj{ID: resp.ID, Object: "chat.completion.chunk", Created: resp.Created, Model: model,
+		Choices: []choice{{Delta: delta{Role: "assistant", Content: content}}}})
+	last, _ := json.Marshal(chunkObj{ID: resp.ID, Object: "chat.completion.chunk", Created: resp.Created, Model: model,
+		Choices: []choice{{Delta: delta{}, FinishReason: &stop}}, Usage: &resp.Usage})
+	out := make(chan StreamChunk, 3)
+	out <- StreamChunk{Data: first}
+	out <- StreamChunk{Data: last, InputTokens: resp.Usage.PromptTokens, OutputTokens: resp.Usage.CompletionTokens}
+	out <- StreamChunk{Done: true}
+	close(out)
+	return out, nil
+}
