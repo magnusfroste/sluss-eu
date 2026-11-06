@@ -22,7 +22,7 @@ Rules for an operating agent:
 
 - **Secrets go in the environment, never in files you commit or paste.** Provider keys are referenced by the *name* of an environment variable; the console never asks for a key's value.
 - **Mount a volume at `/data`** (`ROUTER_DATA_DIR`, which the image sets by default). Without the mount, history, accounts and the audit chain sit in the container's own filesystem and are lost when it is recreated; without the variable at all they live in memory. The boot banner says which.
-- **Pin a release** (`:v1.2.1` or `:1.2`) in production, not `:latest`.
+- **Pin a release** (`:v1.2.2` or `:1.2`) in production, not `:latest`.
 - **A provider key is optional.** Local models are added in the console, with or without a key variable. Until a real model is connected, every answer is a built-in test answer that says so.
 - **Keep the fail-closed rule** that keeps personal data on local models unless the organisation decides otherwise. A block is the product working, not an error to route around.
 - **Verify, do not assume:** the boot banner, the Version page, `GET /metrics` (`sluss_build_info`) and the dry-run on Policy show what actually runs and where a question would go.

@@ -6,7 +6,7 @@ The image is public. Releases are listed in [CHANGELOG.md](../../CHANGELOG.md):
 
 | Tag | Use |
 |---|---|
-| `ghcr.io/magnusfroste/sluss-eu:v1.2.1` | Production: pin a release |
+| `ghcr.io/magnusfroste/sluss-eu:v1.2.2` | Production: pin a release |
 | `ghcr.io/magnusfroste/sluss-eu:1.2` | Production: the newest 1.2.x, patch fixes included |
 | `ghcr.io/magnusfroste/sluss-eu:latest` | Trying it out: rebuilt on every merge to `main` |
 | `ghcr.io/magnusfroste/sluss-eu:sha-<short>` | Pin the exact build you reviewed |
@@ -27,7 +27,7 @@ docker run -d --name sluss --restart unless-stopped \
   -e ROUTER_ADMIN_PASSWORD='choose-a-long-passphrase' \
   -e ROUTER_POLICY_PATH=builtin:nis2-baseline \
   -e OPENROUTER_API_KEY='…' \
-  ghcr.io/magnusfroste/sluss-eu:v1.2.1
+  ghcr.io/magnusfroste/sluss-eu:v1.2.2
 ```
 
 - **`-v sluss-data:/data` is the part you must not skip.** The volume holds the audit chain. Without it, everything is lost when the container is recreated.
