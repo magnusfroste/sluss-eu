@@ -5,12 +5,12 @@ All notable changes to Sluss. Versions follow [semantic versioning](https://semv
 Releases are published from this file by the `release` workflow (Actions → release → Run workflow). Every release is a container image you can pin:
 
 ```
-ghcr.io/magnusfroste/sluss-eu:v1.2.1   # this release
+ghcr.io/magnusfroste/sluss-eu:v1.2.2   # this release
 ghcr.io/magnusfroste/sluss-eu:1.2      # the newest 1.2.x
 ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 ```
 
-## Unreleased
+## v1.2.2 — 2026-11-06
 
 ### Documentation
 - **A model server on the same machine as the container.** Inside the container, `localhost` is the container itself, so Ollama or vLLM on the host was unreachable when given `http://localhost:11434`. The self-host guide's run command and the Compose file now add `host.docker.internal`, and Quick start and troubleshooting say which address to use and that the server must listen on all interfaces.
