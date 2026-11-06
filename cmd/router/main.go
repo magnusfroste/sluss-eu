@@ -64,6 +64,18 @@ func main() {
 			logger.Info("tamper-evident audit chain enabled", "file", chain.Path())
 		}
 	}
+	// Anchor the chain in the log (ISSUE-160): its head every hour, so a log
+	// kept elsewhere proves the file was not rewritten. "off" disables.
+	anchorEvery := time.Hour
+	if v := strings.TrimSpace(os.Getenv("ROUTER_AUDIT_ANCHOR_INTERVAL")); v != "" {
+		if strings.EqualFold(v, "off") {
+			anchorEvery = 0
+		} else if d, err := time.ParseDuration(v); err == nil && d > 0 {
+			anchorEvery = d
+		} else {
+			logger.Warn("ROUTER_AUDIT_ANCHOR_INTERVAL not understood; using 1h", "value", v)
+		}
+	}
 	auditMemory := audit.NewMemorySink(0)
 	auditSinks := []audit.Sink{&audit.LogSink{Logger: logger}, auditMemory}
 	if auditChain != nil {
@@ -518,6 +530,9 @@ func main() {
 	// Start the queue worker in the background.
 	workerCtx, workerCancel := context.WithCancel(context.Background())
 	go eventQueue.Run(workerCtx, combinedHandler, logger)
+	if auditChain != nil && anchorEvery > 0 {
+		go auditChain.RunAnchoring(workerCtx, anchorEvery, logger)
+	}
 
 	// Periodically flush spend aggregates so savings survive a crash/redeploy.
 	if spendFile != "" {

@@ -15,6 +15,9 @@ ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 ### Fixed
 - **The chat shows the built-in test answer.** The mock could not stream, so the chat rendered nothing until a real model was connected, although the API answered. The mock now streams like a provider.
 
+### Evidence
+- **The audit chain is anchored outside the machine.** A hash chain cannot by itself show that someone with disk access did not rewrite the file from a chosen point and recompute every later hash. Every hour Sluss now logs an `audit anchor` line with the last record's sequence number and hash; shipped with the log to a SIEM, that line is the proof. `audit-verify -anchor <seq>:<hash>` checks an export against it, and `GET /router/audit/anchor` returns the current anchor. `ROUTER_AUDIT_ANCHOR_INTERVAL` sets the interval.
+
 ### Security
 - **The login form brakes password guessing.** After five wrong passwords for an account (twenty for a client address) within fifteen minutes, further attempts are refused for a wait that doubles each time, up to fifteen minutes. Every wrong password and every brake is in the audit log (`console.login_failed`, `console.login_throttled`), with the address it came from.
 - **Browser hardening headers on every response:** a Content-Security-Policy that allows this origin only, no framing, no content sniffing, a referrer policy and a permissions policy. `Strict-Transport-Security` is sent behind a TLS-terminating proxy.
