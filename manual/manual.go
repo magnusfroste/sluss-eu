@@ -24,6 +24,7 @@ var Pages = []Page{
 	{"developer-tools", "Developer tools through Sluss"},
 	{"prove-it", "Show that it works"},
 	{"works-with-your-stack", "Works with your stack"},
+	{"where-settings-live", "Where each setting lives"},
 	{"glossary", "Words used"},
 	{"troubleshooting", "When something does not work"},
 }

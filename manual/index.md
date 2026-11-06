@@ -18,6 +18,7 @@ If Sluss is new, do these in order. Each one works on its own, so you can stop a
 
 - [Works with your stack](/manual/works-with-your-stack): where Sluss sits next to your web filter (Zscaler, Defender and the rest), an AI proxy you already run, and chat apps.
 - [How Sluss picks a model](/manual/choosing-models): the three steps, what a model's level means, and why a question went where it went.
+- [Where each setting lives](/manual/where-settings-live): what is changed in the console and what is changed by whoever runs the server, and why a new key needs a restart while a new model does not.
 - [Words used in this manual](/manual/glossary): short explanations of IdP, MDM, OIDC, DNS filter and the rest.
 - [When something does not work](/manual/troubleshooting): the errors people actually hit, and what to do.
 

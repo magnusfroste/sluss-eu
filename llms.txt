@@ -22,6 +22,7 @@ The administrator's manual. A running instance serves the same pages at /manual,
 - [Developer tools through Sluss](https://github.com/magnusfroste/sluss-eu/blob/main/manual/developer-tools.md)
 - [Show that it works](https://github.com/magnusfroste/sluss-eu/blob/main/manual/prove-it.md)
 - [Works with your stack](https://github.com/magnusfroste/sluss-eu/blob/main/manual/works-with-your-stack.md)
+- [Where each setting lives](https://github.com/magnusfroste/sluss-eu/blob/main/manual/where-settings-live.md)
 - [Words used](https://github.com/magnusfroste/sluss-eu/blob/main/manual/glossary.md)
 - [When something does not work](https://github.com/magnusfroste/sluss-eu/blob/main/manual/troubleshooting.md)
 
