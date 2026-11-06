@@ -80,7 +80,7 @@ echo "$dec" | grep -q '"selected_model"' || fail "/router/decision missing selec
 pass "/router/decision dry-run"
 
 # 6. metrics
-curl -fsS "$BASE/metrics" | grep -q '^router_' || fail "/metrics missing router_ series"
+curl -fsS -H "Authorization: Bearer $KEY" "$BASE/metrics" | grep -q '^router_' || fail "/metrics missing router_ series"
 pass "/metrics exposes router series"
 
 # 7. dashboard data (behind auth; the seeded local key is allowed)

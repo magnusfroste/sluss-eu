@@ -283,6 +283,14 @@ type AdminAuth struct {
 	// SSO, when set, puts a "Sign in with <Label>" button on the login page that
 	// starts the OIDC flow at StartPath (ISSUE-130).
 	SSO *SSOButton
+
+	limitOnce sync.Once
+	limiter   *loginLimiter // brake on password guessing; see loginlimit.go
+}
+
+func (a *AdminAuth) limits() *loginLimiter {
+	a.limitOnce.Do(func() { a.limiter = newLoginLimiter() })
+	return a.limiter
 }
 
 // SSOButton describes the identity-provider login offered on the login page.
@@ -295,6 +303,15 @@ type SSOButton struct {
 // who, how (password, break-glass, oidc) and, for SSO, which department they
 // were mapped to. Evidence that the identified-user trail starts somewhere.
 const ActionConsoleLogin = audit.Action("console.login")
+
+// ActionConsoleLoginFailed records a wrong password for a named account or the
+// break-glass login: which account, from which address. A guessing attempt
+// is evidence too.
+const ActionConsoleLoginFailed = audit.Action("console.login_failed")
+
+// ActionConsoleLoginThrottled records that the brake engaged: further attempts
+// for that account or address are refused for the wait given in the detail.
+const ActionConsoleLoginThrottled = audit.Action("console.login_throttled")
 
 // Require wraps a handler so only an authenticated admin reaches it. Order:
 // valid session cookie → serve (user in context); valid Bearer admin key →
@@ -444,11 +461,30 @@ func (a *AdminAuth) LoginHandler() http.HandlerFunc {
 			_ = r.ParseForm()
 			user := strings.TrimSpace(r.FormValue("username"))
 			pass := r.FormValue("password")
+			addr := clientAddr(r)
+			if wait := a.limits().wait(user, addr); wait > 0 {
+				w.WriteHeader(http.StatusTooManyRequests)
+				a.renderLogin(w, next, "Too many attempts. Try again in "+humanWait(wait)+".")
+				return
+			}
 			role, ok := a.authenticate(user, pass)
 			if !ok {
+				audit.Record(r.Context(), a.Auditor, audit.Entry{
+					Action: ActionConsoleLoginFailed, Actor: user, Outcome: "failure", Detail: map[string]string{"addr": addr},
+				})
+				if wait := a.limits().failed(user, addr); wait > 0 {
+					audit.Record(r.Context(), a.Auditor, audit.Entry{
+						Action: ActionConsoleLoginThrottled, Actor: user, Outcome: "failure",
+						Detail: map[string]string{"addr": addr, "wait": wait.String()},
+					})
+					w.WriteHeader(http.StatusTooManyRequests)
+					a.renderLogin(w, next, "Too many attempts. Try again in "+humanWait(wait)+".")
+					return
+				}
 				a.renderLogin(w, next, "Wrong username or password.")
 				return
 			}
+			a.limits().succeeded(user)
 			actor, method := user, "password"
 			if a.Store == nil || func() bool { _, found, _ := a.Store.GetAdminUser(user); return !found }() {
 				actor = user + " (" + breakGlassActor + ")"

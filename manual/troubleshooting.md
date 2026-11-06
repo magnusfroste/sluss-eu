@@ -8,6 +8,10 @@ The cloud key is not in the server's environment. Whoever runs the server adds `
 
 That is Sluss's built-in test answer. No model is connected: there is no cloud key, and no model has been added on [Models]({{BASE}}/router/models). Do either, and the test answer stops. If a local model *is* added, open it and press *Test now* to see why it does not answer.
 
+## The login page says "Too many attempts"
+
+Five wrong passwords for an account within fifteen minutes engage a brake: further attempts are refused for a wait that doubles each time, up to fifteen minutes. Wait it out, or ask another administrator to check [Console users]({{BASE}}/router/users). Every wrong password is in the audit log with the address it came from, so a brake that nobody in the company caused is worth a look.
+
 ## I am locked out, or forgot my password
 
 - Another administrator can set a new password for you under [Console users]({{BASE}}/router/users).

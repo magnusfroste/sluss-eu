@@ -54,6 +54,6 @@ echo "running load: ${CONC} concurrent x ${REQS} requests (p95 budget ${BUDGET}m
 rc=$?
 
 echo "--- router internal routing overhead (from /metrics) ---"
-curl -fsS "$BASE/metrics" | grep -E '^router_routing_overhead_ms_(bucket|count|sum)' | tail -16 || true
+curl -fsS -H "Authorization: Bearer $KEY" "$BASE/metrics" | grep -E '^router_routing_overhead_ms_(bucket|count|sum)' | tail -16 || true
 
 exit $rc

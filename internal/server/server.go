@@ -161,6 +161,10 @@ type Config struct {
 	// keys per department (ISSUE-079). Mounts the admin-gated /router/keys API.
 	KeyManager *apikeys.Manager
 
+	// MetricsToken (ROUTER_METRICS_TOKEN), when set, is a bearer token that
+	// opens GET /metrics for a scraper. Admin keys and the break-glass
+	// password open it too.
+	MetricsToken string
 	// PublicURL (ROUTER_PUBLIC_URL), when set, is the site's public base URL used
 	// for the landing page's canonical/OpenGraph tags and the sitemap. Empty is
 	// fine — links degrade to relative and canonical is omitted.
@@ -213,8 +217,9 @@ func New(cfg Config) http.Handler {
 	mux.HandleFunc("GET /manual/{page}", manualH)
 	mux.HandleFunc("GET /readyz", ReadyzHandler(cfg.Readiness...))
 
-	// Prometheus metrics.
-	mux.Handle("GET /metrics", promhttp.Handler())
+	// Which build runs, with no secret in it: what a deploy check or an
+	// operator's curl needs, without a key.
+	mux.HandleFunc("GET /version", VersionJSONHandler)
 
 	chat := ChatCompletionsHandler(cfg.Provider, ChatOptions{
 		ContextPipeline:        cfg.ContextPipeline,
@@ -337,6 +342,13 @@ func New(cfg Config) http.Handler {
 	}
 	mux.Handle("GET /router/dashboard", dashGuard(htmlH))
 	mux.Handle("GET /router/dashboard/data", dashGuard(dataH))
+	// Prometheus metrics: model names, volumes and error rates are for the
+	// operator, not the internet. The same gate as the console opens them (a
+	// signed-in admin, an admin key, the break-glass password);
+	// ROUTER_METRICS_TOKEN is a separate bearer token for the scraper, so
+	// Prometheus never holds an admin key.
+	prom := promhttp.Handler()
+	mux.Handle("GET /metrics", metricsToken(cfg.MetricsToken, prom, dashGuard(prom.ServeHTTP)))
 
 	// Policy console (ISSUE-093): view the active policy + dry-run a prompt
 	// (which rule fires, model/tier/egress or a fail-closed block). No provider
@@ -592,7 +604,7 @@ func New(cfg Config) http.Handler {
 		mux.Handle("/mcp", mcpAuth(cfg.KeyStore, cfg.DashboardPassword)(mcpSrv.HTTPHandler()))
 	}
 
-	return middleware.RequestID(middleware.Logger(cfg.Logger)(mux))
+	return middleware.SecurityHeaders(middleware.RequestID(middleware.Logger(cfg.Logger)(mux)))
 }
 
 // adapterSource returns the live adapter accessor when roster hot-reload is

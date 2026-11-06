@@ -66,7 +66,7 @@ jobs:
 
   # Auto-deploy (ISSUE-125): after a push to main, trigger the EasyPanel deploy
   # webhook and then wait until the instance reports the new commit on
-  # /metrics (sluss_build_info). EasyPanel has silently kept the old container
+  # /version. EasyPanel has silently kept the old container
   # on some deploys, so one retry is made before the job fails.
   #
   # Configure in GitHub → Settings → Secrets and variables → Actions:
@@ -102,8 +102,10 @@ jobs:
           }
 
           running() {
-            curl -sS --max-time 10 "${DEPLOY_URL%/}/metrics" 2>/dev/null \
-              | sed -n 's/^sluss_build_info{.*commit="\([0-9a-f]*\)".*/\1/p'
+            # /version is public and carries only release, commit and build
+            # time; /metrics needs a key since v1.3.
+            curl -sS --max-time 10 "${DEPLOY_URL%/}/version" 2>/dev/null \
+              | sed -n 's/.*"commit":"\([0-9a-f]*\)".*/\1/p'
           }
 
           wait_for_build() {

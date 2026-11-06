@@ -642,6 +642,7 @@ func main() {
 		Roster:                     rosterStore,
 		ErrorRing:                  errorRing,
 		MCPEnabled:                 parseBoolEnv(os.Getenv("ROUTER_MCP_ENABLED")),
+		MetricsToken:               strings.TrimSpace(os.Getenv("ROUTER_METRICS_TOKEN")),
 		MCPWriteEnabled:            parseBoolEnv(os.Getenv("ROUTER_MCP_WRITE_ENABLED")),
 		CouncilTasks:               councilTasks,
 		CouncilSize:                parseIntEnv(os.Getenv("ROUTER_COUNCIL_SIZE"), 3),
