@@ -10,7 +10,7 @@
 
 1. Open [Quick start]({{BASE}}/router/setup) in the console. It shows four steps, each with a live status.
 2. **A cloud model.** If the step says *missing*, the cloud key is not set. Whoever runs the server adds `OPENROUTER_API_KEY` to the environment and restarts. The step then turns green by itself.
-3. **A local model.** Fill in the form: a name, the address of your own model server, and the model name it serves. Press save. Sluss tags it as *local*, which is what the rules look for.
+3. **A local model.** Fill in the form: a name, the address of your own model server, and the model name it serves. A server that takes no key needs no key variable. Press save. Sluss tags it as *local*, which is what the rules look for. If Sluss runs in a container and the model server runs on the same machine, the address is `http://host.docker.internal:11434` (Ollama's port), not `localhost`: inside the container, `localhost` is the container itself.
 4. **Keep personal data local.** Press the button. It adds one rule: personal data and secrets may only go to local models. If no local model is reachable, the request is refused rather than sent to the cloud.
 5. **See it work.** Press *Run the dry-run*. The first example, with a Swedish personal identity number, should say *local*. The second, a git commit message, should say *cloud*.
 

@@ -21,6 +21,7 @@ docker volume create sluss-data
 docker run -d --name sluss --restart unless-stopped \
   -p 127.0.0.1:8080:8080 \
   -v sluss-data:/data \
+  --add-host=host.docker.internal:host-gateway \
   -e LOCAL_API_KEY="$(openssl rand -hex 24)" \
   -e ROUTER_ADMIN_USER=admin \
   -e ROUTER_ADMIN_PASSWORD='choose-a-long-passphrase' \
@@ -30,6 +31,7 @@ docker run -d --name sluss --restart unless-stopped \
 ```
 
 - **`-v sluss-data:/data` is the part you must not skip.** The volume holds the audit chain. Without it, everything is lost when the container is recreated.
+- **`--add-host=host.docker.internal:host-gateway`** lets the container reach a model server on the same machine, for example Ollama or vLLM on the host. Inside the container, `localhost` is the container itself, so give such a server the address `http://host.docker.internal:11434` in the console, and make sure it listens on all interfaces (Ollama: `OLLAMA_HOST=0.0.0.0`; it listens on `127.0.0.1` only by default). A server on another machine is reached by its ordinary address.
 - **`LOCAL_API_KEY`** is the bootstrap Bearer key. Once you have created per-department keys in the console, clients should use those instead.
 - **`ROUTER_ADMIN_USER` / `ROUTER_ADMIN_PASSWORD`** seed the first named console user, but only while no user exists. After that, the account lives in `/data`: change the password on **Your profile** (`/me`), not by editing these variables. See *Console accounts* below.
 - **`ROUTER_POLICY_PATH`** selects a built-in compliance pack: `builtin:nis2-baseline`, `builtin:dora-baseline`, `builtin:gdpr-sovereign` or `builtin:pii-local`.
@@ -44,7 +46,7 @@ Prefer compose? [`deploy/docker-compose.yml`](../../deploy/docker-compose.yml) s
 Open `http://localhost:8080/router/setup` and sign in. **Quick start** walks you through four steps:
 
 1. A cloud model.
-2. A local model, for example vLLM or Ollama on your own GPU, tagged `local`. A server that takes no API key needs no key variable: leave that field empty.
+2. A local model, for example vLLM or Ollama on your own GPU, tagged `local`. A server that takes no API key needs no key variable: leave that field empty. If the server runs on the same machine as the container, its address is `http://host.docker.internal:<port>`, not `localhost` (see the run command above).
 3. One rule that keeps personal data local.
 4. A dry run that shows where a prompt would go.
 

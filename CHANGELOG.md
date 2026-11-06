@@ -10,6 +10,11 @@ ghcr.io/magnusfroste/sluss-eu:1.2      # the newest 1.2.x
 ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 ```
 
+## Unreleased
+
+### Documentation
+- **A model server on the same machine as the container.** Inside the container, `localhost` is the container itself, so Ollama or vLLM on the host was unreachable when given `http://localhost:11434`. The self-host guide's run command and the Compose file now add `host.docker.internal`, and Quick start and troubleshooting say which address to use and that the server must listen on all interfaces.
+
 ## v1.2.1 — 2026-11-05
 
 A fresh install works as the documentation says.
