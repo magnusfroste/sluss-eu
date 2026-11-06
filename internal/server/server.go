@@ -3,6 +3,7 @@
 package server
 
 import (
+	"encoding/json"
 	"log/slog"
 	"net/http"
 
@@ -449,6 +450,20 @@ func New(cfg Config) http.Handler {
 	// JSONL so an auditor can verify it offline (cmd/audit-verify). Admin-gated
 	// like the rest of the control plane; entries carry no prompt text.
 	if cfg.AuditChain != nil {
+		// The chain's head right now (ISSUE-160): seq and entry_hash of the
+		// last record. Kept somewhere else, it later proves the export was
+		// not rewritten; audit-verify -anchor checks it.
+		mux.Handle("GET /router/audit/anchor", dashGuard(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			w.Header().Set("Cache-Control", "no-store")
+			a, ok := cfg.AuditChain.Head()
+			if !ok {
+				w.WriteHeader(http.StatusNotFound)
+				_ = json.NewEncoder(w).Encode(map[string]string{"error": "the audit chain is empty"})
+				return
+			}
+			_ = json.NewEncoder(w).Encode(a)
+		}))
 		mux.Handle("GET /router/audit/export", dashGuard(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/x-ndjson")
 			w.Header().Set("Content-Disposition", `attachment; filename="audit-chain.jsonl"`)

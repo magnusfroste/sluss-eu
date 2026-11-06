@@ -151,6 +151,8 @@ To restore, extract the archive into an empty volume and start the container wit
 
 The audit chain can also be exported from the console. An auditor verifies the export offline with `audit-verify audit-chain.jsonl`, which is built from `cmd/audit-verify`.
 
+**Anchor the chain outside the machine.** Every hour Sluss logs an `audit anchor` line with the sequence number and hash of the last record (`ROUTER_AUDIT_ANCHOR_INTERVAL` changes the interval; `off` disables). Ship the container's log to your log service or SIEM, as you do for other services, and that copy is the proof: an auditor runs `audit-verify -anchor <seq>:<hash> audit-chain.jsonl` with any anchor from before, and an export that was rewritten after that anchor fails, even if every hash in it was recomputed. `GET /router/audit/anchor` returns the current anchor for a script that files it elsewhere.
+
 ## 6. Air-gapped installs
 
 1. On a connected machine, export the image: `docker save ghcr.io/magnusfroste/sluss-eu:<tag> | gzip > sluss.tar.gz`.
@@ -168,4 +170,5 @@ With fail-closed policy, a request that would need a cloud provider gets a 403 a
 - [ ] The image is pinned to a `sha-` or `v` tag, not `latest`.
 - [ ] `ROUTER_ADMIN_PASSWORD` has been changed on `/me` after the first sign-in, and `ROUTER_DASHBOARD_PASSWORD` is a long passphrase kept for emergencies.
 - [ ] Prometheus scrapes `/metrics` with `ROUTER_METRICS_TOKEN`, not with an admin key.
+- [ ] The container's log is shipped off the machine, so the hourly `audit anchor` lines are kept where the disk's owner cannot reach them.
 - [ ] A backup is scheduled and has been restored once.

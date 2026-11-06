@@ -25,6 +25,7 @@ Rules for an operating agent:
 - **Pin a release** (`:v1.2.2` or `:1.2`) in production, not `:latest`.
 - **A provider key is optional.** Local models are added in the console, with or without a key variable. Until a real model is connected, every answer is a built-in test answer that says so.
 - **Keep the fail-closed rule** that keeps personal data on local models unless the organisation decides otherwise. A block is the product working, not an error to route around.
+- **Ship the log off the machine.** The hourly `audit anchor` line in it is what proves an audit export was not rewritten (`audit-verify -anchor`).
 - **Verify, do not assume:** the boot banner, the Version page, `GET /metrics` (`sluss_build_info`) and the dry-run on Policy show what actually runs and where a question would go.
 - A running instance serves its own manual as Markdown: start at `/manual/index.md`, and add `.md` to any page link. The instance itself is not indexed (no `/llms.txt`, robots disallow all); the repository's `llms.txt` is the public index.
 
