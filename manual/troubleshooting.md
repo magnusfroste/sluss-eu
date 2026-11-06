@@ -18,6 +18,10 @@ That is Sluss's built-in test answer. No model is connected: there is no cloud k
 
 That is a rule working as intended. The question contained data that may only go to a local model, and no local model was available. Check on [Models]({{BASE}}/router/models) that your local model is enabled and tagged *local*. Then try the [dry-run]({{BASE}}/router/policy) to see which rule matched.
 
+## The local model answers "connection refused", or Test now fails although the server is running
+
+Sluss runs in a container, and the model server runs on the same machine. Inside the container, `localhost` is the container itself, so `http://localhost:11434` reaches nothing. Open [Providers]({{BASE}}/router/providers), click the connection and change the address to `http://host.docker.internal:11434`. Two things on the server side: the container must have been started with `--add-host=host.docker.internal:host-gateway` (the self-host guide's run command has it; the Compose file has it too), and the model server must listen on all interfaces, not only on `127.0.0.1` (Ollama: start it with `OLLAMA_HOST=0.0.0.0`).
+
 ## A model stopped answering, or the chat says "model unavailable"
 
 Often the provider renamed or swapped the model, which happens a lot on your own lab hardware. Open [Models]({{BASE}}/router/models) and click the model. In the panel, press *Test now*. If the provider no longer knows the name, the panel lists the models it serves now. Press *Use this* on the right one. The change applies at once, and the panel also shows the model's failures from the last 24 hours.
