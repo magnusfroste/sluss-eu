@@ -25,6 +25,11 @@ const (
 	TypePhone        Type = "phone"
 	TypeIBAN         Type = "iban"
 	TypeCard         Type = "card" // payment card number (Luhn-valid)
+	// TypeAddress is a Swedish postal address: a street with a house number
+	// and a five-digit postcode in the same text. Street names are a closed
+	// set of Swedish street words, so an invoice total next to a year does
+	// not count.
+	TypeAddress Type = "address"
 )
 
 // Finding is one detected PII category with its occurrence count. It never
@@ -43,9 +48,17 @@ var (
 	// (checksums, date rules, digit boundaries) before it counts.
 	rePersonnummer = regexp.MustCompile(`\d{6,8}[-+]?\d{4}`)
 	reEmail        = regexp.MustCompile(`[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}`)
-	rePhone        = regexp.MustCompile(`\+\d{8,15}|0\d{1,3}[-\s]?\d{5,8}`)
-	reIBAN         = regexp.MustCompile(`[A-Z]{2}\d{2}[A-Za-z0-9]{10,30}`)
-	reCard         = regexp.MustCompile(`\d(?:[\d -]{11,24})\d`)
+	// Phone numbers as people write them: +46 70 123 45 67, 070-123 45 67,
+	// 08-123 456 78, 0701234567. Groups of digits separated by one space or
+	// hyphen; the digit count is checked afterwards.
+	rePhone = regexp.MustCompile(`\+\d{1,3}(?:[-\s]?\d{1,4}){2,5}|0\d{1,3}(?:[-\s]?\d{2,4}){1,4}`)
+	// A Swedish street with a house number: Storgatan 12, Industrivägen 4B,
+	// Kungsgränd 3. The street word is what makes it an address.
+	reStreet = regexp.MustCompile(`(?i)\b\p{L}+(?:gatan|gata|vägen|väg|gränd|gränden|torget|torg|allén|allé|stigen|plan|backen|leden|promenaden|kajen|esplanaden)\s+\d{1,4}\s?[A-Za-z]?\b`)
+	// A Swedish postcode followed by a town: 111 22 Stockholm.
+	rePostcode = regexp.MustCompile(`\b\d{3}\s?\d{2}\s+\p{Lu}\p{L}+`)
+	reIBAN     = regexp.MustCompile(`[A-Z]{2}\d{2}[A-Za-z0-9]{10,30}`)
+	reCard     = regexp.MustCompile(`\d(?:[\d -]{11,24})\d`)
 )
 
 // Detect scans text and returns the detected PII categories with counts,
@@ -86,6 +99,9 @@ func Detect(text string) []Finding {
 		if validIBAN(text[loc[0]:loc[1]]) {
 			counts[TypeIBAN]++
 		}
+	}
+	if reStreet.MatchString(text) && rePostcode.MatchString(text) {
+		counts[TypeAddress]++
 	}
 	for _, loc := range reCard.FindAllStringIndex(text, -1) {
 		if !digitBounded(text, loc[0], loc[1]) {
@@ -209,6 +225,8 @@ func validPhone(candidate string) bool {
 	if strings.HasPrefix(candidate, "+") {
 		return len(digits) >= 8 && len(digits) <= 15
 	}
+	// A Swedish number is 9 or 10 digits with the leading 0; 8 allows short
+	// city numbers written without the area code's full length.
 	return len(digits) >= 8 && len(digits) <= 11
 }
 

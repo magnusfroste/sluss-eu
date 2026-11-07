@@ -2,6 +2,8 @@
 
 Sluss is your organisation's AI gateway. Every question an employee or a tool sends to an AI model passes Sluss first. Sluss reads it with fixed rules, never with another AI. It then decides where it may go: harmless questions to a cheap cloud model, personal or confidential data to a model on your own hardware, and nothing at all when no allowed model exists. Every decision is written to a tamper-evident log you can hand to an auditor.
 
+Sluss decides with rules you can read, not with another AI. That is the point: the same question gives the same decision every time, which is what evidence needs, and nothing leaves your machine to be classified. It is also a limit: rules find identifiers, keys, markings, terms and code, not meaning. [What Sluss catches](/manual/what-sluss-catches) measures it honestly and says how to close the gap.
+
 This manual is written for the person who sets Sluss up: an IT administrator, a security officer, or whoever drew the short straw. You do not need to know how identity providers, device management or DNS filters work. Each page says what it gives you, what you need, and then the steps, with this instance's own addresses filled in.
 
 ## Start here
@@ -18,6 +20,7 @@ If Sluss is new, do these in order. Each one works on its own, so you can stop a
 
 - [Works with your stack](/manual/works-with-your-stack): where Sluss sits next to your web filter (Zscaler, Defender and the rest), an AI proxy you already run, and chat apps.
 - [How Sluss picks a model](/manual/choosing-models): the three steps, what a model's level means, and why a question went where it went.
+- [What Sluss catches, and what it does not](/manual/what-sluss-catches): the rules, measured on a fixed set of examples, and how to close the gap.
 - [Where each setting lives](/manual/where-settings-live): what is changed in the console and what is changed by whoever runs the server, and why a new key needs a restart while a new model does not.
 - [Words used in this manual](/manual/glossary): short explanations of IdP, MDM, OIDC, DNS filter and the rest.
 - [When something does not work](/manual/troubleshooting): the errors people actually hit, and what to do.

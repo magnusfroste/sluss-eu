@@ -26,6 +26,21 @@ Built for organisations under **NIS2, DORA and GDPR** — but useful to anyone
 who wants to say *yes* to AI on their own rules. It sells **control and
 evidence**; it makes no legal-compliance claims.
 
+## Why rules, not another AI
+
+**Sluss is the AI gateway whose decisions you can read.** It decides with
+rules an auditor can read, not with another model: the same question gives
+the same decision, every time, which is what evidence needs; the decision
+takes under a millisecond; nothing leaves your machine to be classified; and
+there is no second AI to govern, prompt-inject or explain.
+
+The price is stated, not hidden: rules find identifiers, keys, markings,
+terms and code, not meaning. A text that is sensitive only because of what it
+says passes as harmless. [What Sluss catches](manual/what-sluss-catches.md)
+measures it on a fixed set of examples that runs with every change. You close
+the gap with your own terms, with *default to local*, and, on the roadmap,
+with a local model that may only make a decision stricter, never looser.
+
 ## Try it in 60 seconds
 
 No provider key needed: until a real model is connected, a built-in test answer says so.

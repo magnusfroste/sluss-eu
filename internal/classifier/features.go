@@ -141,7 +141,9 @@ var keywordRules = []keywordRule{
 		"patient", "patients", "patienten", "patientens",
 		"patientjournal", "patientjournalen", "journalanteckning", "journalanteckningen",
 		"medical record", "medical history", "diagnos", "diagnosen", "diagnosis",
-		"sjukskrivning", "sjukskrivningen", "sick leave", "prescription",
+		"sjukskrivning", "sjukskrivningen", "sjukskriven", "sjukintyg", "sjukintyget",
+		"sick leave", "sick note", "prescription",
+		"burnout", "utbränd", "utbrändhet", "chemo", "chemotherapy", "cellgift", "cellgiftsbehandling",
 		"medication list", "läkemedelslista", "treatment plan", "behandlingsplan",
 		"icd-10", "hälsotillstånd", "health condition", "mental health",
 		"psykisk ohälsa", "vaccination record",
@@ -236,6 +238,12 @@ func ExtractFromMessages(messages []openai.Message, hints RequestHints) Features
 
 		codeBlocks := codeBlockPattern.FindAllStringIndex(text, -1)
 		f.CodeBlockCount += len(codeBlocks)
+		// Code pasted without fences (ISSUE-162): two or more lines that
+		// only code has — a line ending in { or ;, a def/func/class/import
+		// line, an indented return. One such line is prose with a brace.
+		if len(codeBlocks) == 0 && countCodeLines(text) >= 2 {
+			f.CodeBlockCount++
+		}
 
 		inlineText := codeBlockPattern.ReplaceAllString(text, " ")
 		f.InlineCodeCount += len(inlineCodePattern.FindAllStringSubmatch(inlineText, -1))
@@ -326,6 +334,29 @@ func ExtractFromMessages(messages []openai.Message, hints RequestHints) Features
 	}
 
 	return f
+}
+
+// codeLinePattern matches a line that reads as code rather than prose.
+var codeLinePattern = regexp.MustCompile(`(?m)^\s*(?:(?:func|def|class|import|package|return|var|const|let|if|for|while|switch)\b.*|.*[{};]\s*$|#include\b.*|\}\s*(?:else.*)?)$`)
+
+// countCodeLines counts lines that look like code. Capped at a few thousand
+// lines so a huge paste stays inside the fast-path budget.
+func countCodeLines(text string) int {
+	const maxLines = 4000
+	n := 0
+	for i, m := range codeLinePattern.FindAllStringIndex(text, -1) {
+		if i >= maxLines {
+			break
+		}
+		line := strings.TrimSpace(text[m[0]:m[1]])
+		// A prose sentence ending in a semicolon is still prose; code lines
+		// are short-ish and hold no sentence-like run of words.
+		if len(line) > 200 || strings.Count(line, " ") > 12 {
+			continue
+		}
+		n++
+	}
+	return n
 }
 
 func countStackTraceLines(text string) int {
