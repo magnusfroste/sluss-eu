@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/magnusfroste/sluss-eu/actions/workflows/ci.yml/badge.svg)](https://github.com/magnusfroste/sluss-eu/actions/workflows/ci.yml)
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
-[![Go](https://img.shields.io/badge/go-1.25-00ADD8.svg)](go.mod)
+[![Go](https://img.shields.io/badge/go-1.26-00ADD8.svg)](go.mod)
 [![Container](https://img.shields.io/badge/ghcr.io-sluss--eu-24292e.svg)](https://github.com/magnusfroste/sluss-eu/pkgs/container/sluss-eu)
 
 **Your teams already use AI. Decide where the data goes — and prove it.**

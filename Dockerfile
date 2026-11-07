@@ -14,7 +14,7 @@
 # --- build stage ---
 # Must satisfy the go directive in go.mod (bumped to 1.25 by modernc.org/sqlite,
 # the pure-Go SQLite driver behind durable history — ISSUE-070).
-FROM golang:1.25-alpine AS build
+FROM golang:1.26.10-alpine AS build
 WORKDIR /src
 
 # Cache module downloads separately from source for faster rebuilds.
