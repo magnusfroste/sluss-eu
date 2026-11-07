@@ -5,12 +5,14 @@ All notable changes to Sluss. Versions follow [semantic versioning](https://semv
 Releases are published from this file by the `release` workflow (Actions → release → Run workflow). Every release is a container image you can pin:
 
 ```
-ghcr.io/magnusfroste/sluss-eu:v1.2.2   # this release
-ghcr.io/magnusfroste/sluss-eu:1.2      # the newest 1.2.x
+ghcr.io/magnusfroste/sluss-eu:v1.3.0   # this release
+ghcr.io/magnusfroste/sluss-eu:1.3      # the newest 1.3.x
 ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 ```
 
-## Unreleased
+## v1.3.0 — 2026-11-07
+
+Built to be audited: a brake on the login, hardening headers, an anchored audit chain, signed images, and an honest measure of what the rules catch.
 
 ### Protection
 - **More identifiers are caught.** Phone numbers as people write them (`070-123 45 67`, `+46 70 …`), Swedish postal addresses (a street with a house number and a postcode), sick leave, burnout and chemotherapy as health words, and code pasted without fences.
