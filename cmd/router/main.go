@@ -35,6 +35,7 @@ import (
 	"github.com/magnusfroste/sluss/internal/providercfg"
 	"github.com/magnusfroste/sluss/internal/registry"
 	"github.com/magnusfroste/sluss/internal/retention"
+	"github.com/magnusfroste/sluss/internal/secondopinion"
 	"github.com/magnusfroste/sluss/internal/server"
 	"github.com/magnusfroste/sluss/internal/spend"
 	"github.com/magnusfroste/sluss/internal/tenant"
@@ -613,6 +614,29 @@ func main() {
 		logger.Info("live roster reload enabled")
 	}
 
+	// A local second opinion (ISSUE-163): a roster model tagged local that may
+	// only make a decision stricter. Off unless ROUTER_SECOND_OPINION_MODEL
+	// names a model.
+	soTimeout := secondopinion.DefaultTimeout
+	if v := strings.TrimSpace(os.Getenv("ROUTER_SECOND_OPINION_TIMEOUT")); v != "" {
+		if d, err := time.ParseDuration(v); err == nil && d > 0 {
+			soTimeout = d
+		} else {
+			logger.Warn("ROUTER_SECOND_OPINION_TIMEOUT not understood; using the default", "value", v, "default", soTimeout.String())
+		}
+	}
+	adapterSource := func() map[string]provider.Adapter { return adapters }
+	if rosterReloader != nil {
+		adapterSource = rosterReloader.Adapters
+	}
+	secondOpinion := secondopinion.New(secondopinion.Config{
+		ModelID: strings.TrimSpace(os.Getenv("ROUTER_SECOND_OPINION_MODEL")),
+		Timeout: soTimeout,
+	}, store, adapterSource, logger)
+	if secondOpinion != nil {
+		logger.Info("second opinion enabled: a local model may only make a decision stricter", "model", secondOpinion.ModelID(), "timeout", soTimeout.String())
+	}
+
 	buildinfo.Register()
 
 	// Version check (ISSUE-138): one request to the public GitHub API every
@@ -658,6 +682,7 @@ func main() {
 		ErrorRing:                  errorRing,
 		MCPEnabled:                 parseBoolEnv(os.Getenv("ROUTER_MCP_ENABLED")),
 		MetricsToken:               strings.TrimSpace(os.Getenv("ROUTER_METRICS_TOKEN")),
+		SecondOpinion:              secondOpinion,
 		MCPWriteEnabled:            parseBoolEnv(os.Getenv("ROUTER_MCP_WRITE_ENABLED")),
 		CouncilTasks:               councilTasks,
 		CouncilSize:                parseIntEnv(os.Getenv("ROUTER_COUNCIL_SIZE"), 3),

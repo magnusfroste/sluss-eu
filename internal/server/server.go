@@ -28,6 +28,7 @@ import (
 	"github.com/magnusfroste/sluss/internal/providercfg"
 	"github.com/magnusfroste/sluss/internal/regime"
 	"github.com/magnusfroste/sluss/internal/retention"
+	"github.com/magnusfroste/sluss/internal/secondopinion"
 	"github.com/magnusfroste/sluss/internal/spend"
 )
 
@@ -162,6 +163,9 @@ type Config struct {
 	// keys per department (ISSUE-079). Mounts the admin-gated /router/keys API.
 	KeyManager *apikeys.Manager
 
+	// SecondOpinion, when set, is the local model that may only make a
+	// decision stricter (ISSUE-163). nil = off.
+	SecondOpinion *secondopinion.Classifier
 	// MetricsToken (ROUTER_METRICS_TOKEN), when set, is a bearer token that
 	// opens GET /metrics for a scraper. Admin keys and the break-glass
 	// password open it too.
@@ -232,6 +236,7 @@ func New(cfg Config) http.Handler {
 		AdapterSource:          cfg.adapterSource(),
 		PolicyCache:            cfg.PolicyCache,
 		ShadowPolicyCache:      cfg.ShadowPolicyCache,
+		SecondOpinion:          cfg.SecondOpinion,
 		HealthTracker:          cfg.HealthTracker,
 		EventQueue:             cfg.EventQueue,
 		Auditor:                cfg.Auditor,
@@ -263,9 +268,10 @@ func New(cfg Config) http.Handler {
 
 	if cfg.Engine != nil {
 		decision := DecisionHandler(DecisionOptions{
-			Engine:      cfg.Engine,
-			PolicyCache: cfg.PolicyCache,
-			Logger:      cfg.Logger,
+			Engine:        cfg.Engine,
+			PolicyCache:   cfg.PolicyCache,
+			Logger:        cfg.Logger,
+			SecondOpinion: cfg.SecondOpinion,
 		})
 		mux.Handle("POST /router/decision",
 			auth.Middleware(cfg.KeyStore)(auth.RequireScope(auth.ScopeRouterDecision)(decision)))
@@ -359,7 +365,7 @@ func New(cfg Config) http.Handler {
 			Engine: cfg.Engine, Cache: cfg.PolicyCache, Version: cfg.RegistryVersion,
 			Retention: cfg.Retention, History: cfg.History, ResetAvailable: cfg.History != nil,
 		})))
-		mux.Handle("POST /router/policy/dryrun", dashGuard(PolicyDryRunHandler(cfg.Engine, cfg.PolicyCache)))
+		mux.Handle("POST /router/policy/dryrun", dashGuard(PolicyDryRunHandler(cfg.Engine, cfg.PolicyCache, cfg.SecondOpinion)))
 		// No-YAML rule editing (ISSUE-093 pt 1): firewall-style rules authored in
 		// the console, hot-activated (audited), with rollback to the baseline.
 		if cfg.History != nil && cfg.PolicyCache != nil {
@@ -586,8 +592,9 @@ func New(cfg Config) http.Handler {
 	// the API; off unless explicitly enabled. Never touches the fast path.
 	if cfg.MCPEnabled && cfg.Engine != nil {
 		mcpSrv := NewMCPServer(MCPOptions{
-			Engine:      cfg.Engine,
-			PolicyCache: cfg.PolicyCache,
+			Engine:        cfg.Engine,
+			PolicyCache:   cfg.PolicyCache,
+			SecondOpinion: cfg.SecondOpinion,
 			Dashboard: DashboardOptions{
 				Spend:                      cfg.SpendTracker,
 				Health:                     cfg.HealthTracker,

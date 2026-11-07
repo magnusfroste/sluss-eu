@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/magnusfroste/sluss/internal/buildinfo"
+	"github.com/magnusfroste/sluss/internal/secondopinion"
 	"io"
 	"net/http"
 	"os"
@@ -39,8 +40,9 @@ const (
 // wrap. Everything is optional except Engine, which route_explain needs; a tool
 // whose dependency is nil returns an explanatory error rather than panicking.
 type MCPOptions struct {
-	Engine      *engine.Engine
-	PolicyCache *policy.Cache
+	Engine        *engine.Engine
+	PolicyCache   *policy.Cache
+	SecondOpinion *secondopinion.Classifier // optional (ISSUE-163)
 	// Dashboard is reused verbatim by savings_report via buildDashboardData, so
 	// the MCP savings figures match the dashboard exactly (no duplicated math).
 	Dashboard  DashboardOptions
@@ -852,7 +854,7 @@ func (o MCPOptions) routeExplain(_ context.Context, raw json.RawMessage) (any, e
 	}
 	req := &openai.ChatRequest{Messages: msgs}
 
-	dec, job, err := explainRoute(o.Engine, o.PolicyCache, explainInput{
+	dec, job, err := explainRoute(o.Engine, o.PolicyCache, o.SecondOpinion, explainInput{
 		RequestID: "mcp-route-explain",
 		Request:   req,
 	})

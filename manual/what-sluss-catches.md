@@ -54,7 +54,7 @@ These are the misses in the set, by design of a rule-based reader:
 1. **Your own terms.** On [Policy]({{BASE}}/router/policy) a rule can match words of your own: project code names, the names of your products before launch, the word your company uses for its customer files. Sluss has no way to know those; you do.
 2. **Default to local.** The simplest rule is also the safest: everything goes to your own models, and only the kinds of questions you name may go to the cloud. Then a miss costs nothing.
 3. **Tell people what the rules see.** A person who knows that a name alone is not caught writes the customer's number instead, or sends the question to the local model on purpose. The chat's inspector shows what was found in every question.
-4. **A local second opinion** is on the roadmap: a small model on your own hardware that may only make a decision stricter, never looser, with the rule still the primary reason. The rules stay the floor.
+4. **A local second opinion.** A small model on your own hardware reads the question after the rules and may only make the decision stricter: it can add a class the rules did not see (a name with context, an illness in plain words, a deal described without a financial term), never remove one, and the rule stays the primary reason. Whoever runs the server turns it on by naming one of your local models in `ROUTER_SECOND_OPINION_MODEL` (the model must be tagged *local*; a cloud model is refused). The inspector and the dry-run then show *second opinion from the local model …* under the data found. If the model is slow or down, the rules' decision stands alone; nothing waits for it beyond half a second.
 
 ## How to check for yourself
 

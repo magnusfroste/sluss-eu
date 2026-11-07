@@ -8,7 +8,8 @@
 **Your teams already use AI. Decide where the data goes — and prove it.**
 
 Sluss sits between your AI clients and the LLM providers. Every prompt is
-classified with deterministic rules (**no LLM in the decision**), routed under a
+classified with deterministic rules (**no LLM in the decision**; an optional
+model on your own hardware may only make it stricter), routed under a
 **fail-closed** policy — sensitive data to your own or an EU model, harmless
 traffic to the cheapest capable cloud model — and recorded in a
 **hash-chained audit log** an auditor can verify offline.
@@ -38,8 +39,8 @@ The price is stated, not hidden: rules find identifiers, keys, markings,
 terms and code, not meaning. A text that is sensitive only because of what it
 says passes as harmless. [What Sluss catches](manual/what-sluss-catches.md)
 measures it on a fixed set of examples that runs with every change. You close
-the gap with your own terms, with *default to local*, and, on the roadmap,
-with a local model that may only make a decision stricter, never looser.
+the gap with your own terms, with *default to local*, and, if you turn it on, with a
+local model that may only make a decision stricter, never looser.
 
 ## Try it in 60 seconds
 

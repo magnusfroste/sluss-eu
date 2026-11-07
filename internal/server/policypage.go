@@ -19,6 +19,7 @@ import (
 	"github.com/magnusfroste/sluss/internal/policy"
 	"github.com/magnusfroste/sluss/internal/policy/builtin"
 	"github.com/magnusfroste/sluss/internal/retention"
+	"github.com/magnusfroste/sluss/internal/secondopinion"
 )
 
 // packDesc is a one-line description per built-in compliance pack (module). A
@@ -91,7 +92,7 @@ func modelTier(eng *engine.Engine, modelID string) string {
 // PolicyDryRunHandler runs a prompt through the routing engine (no provider call)
 // and returns the decision: classification signals, selected model/tier/egress,
 // or a fail-closed block with its reason.
-func PolicyDryRunHandler(eng *engine.Engine, cache *policy.Cache) http.HandlerFunc {
+func PolicyDryRunHandler(eng *engine.Engine, cache *policy.Cache, so *secondopinion.Classifier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if eng == nil {
 			http.Error(w, "routing engine not configured", http.StatusServiceUnavailable)
@@ -104,7 +105,7 @@ func PolicyDryRunHandler(eng *engine.Engine, cache *policy.Cache) http.HandlerFu
 			http.Error(w, "provide a prompt", http.StatusBadRequest)
 			return
 		}
-		dec, job, err := explainRoute(eng, cache, explainInput{
+		dec, job, err := explainRoute(eng, cache, so, explainInput{
 			RequestID: "policy-dry-run",
 			Request:   &openai.ChatRequest{Messages: []openai.Message{{Role: "user", Content: body.Prompt}}},
 		})

@@ -50,6 +50,10 @@ services:
       - ROUTER_SHADOW_POLICY_PATH=${ROUTER_SHADOW_POLICY_PATH:-}
       # --- Report wording per regime: nis2 | dora | gdpr | eu (empty = from the pack). ---
       - ROUTER_PROFILE=${ROUTER_PROFILE:-}
+      # --- Second opinion: a local roster model that may only make a decision
+      #     stricter (empty = off). ---
+      - ROUTER_SECOND_OPINION_MODEL=${ROUTER_SECOND_OPINION_MODEL:-}
+      - ROUTER_SECOND_OPINION_TIMEOUT=${ROUTER_SECOND_OPINION_TIMEOUT:-500ms}
       # --- Audit anchor line in the log, every interval (off disables). ---
       - ROUTER_AUDIT_ANCHOR_INTERVAL=${ROUTER_AUDIT_ANCHOR_INTERVAL:-1h}
       # --- Scraper token for /metrics (otherwise the console gate applies). ---

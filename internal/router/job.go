@@ -121,7 +121,13 @@ type JobDescriptor struct {
 	// first; Sensitivity is the first of them. Policy matches a rule's data
 	// classes against all of them (ISSUE-158), so a classified prompt that
 	// also contains a key still meets a rule about classified material.
-	Sensitivities           []Sensitivity
+	Sensitivities []Sensitivity
+	// SecondOpinion is what a local second-opinion model found (ISSUE-163),
+	// in the router's vocabulary; nil when off, skipped or silent. It can only
+	// have raised the job, never lowered it. SecondOpinionModel names the
+	// roster model that answered.
+	SecondOpinion           []string
+	SecondOpinionModel      string
 	PromptTokensEstimate    int
 	MaxOutputTokensEstimate int
 	RequiresReasoning       bool
@@ -417,6 +423,59 @@ func sensitivitiesFromFeatureHints(hints []string, primary Sensitivity) []Sensit
 	}
 	sort.SliceStable(out, func(i, j int) bool { return sensitivityHintRank(out[i]) > sensitivityHintRank(out[j]) })
 	return out
+}
+
+// RaiseSensitivity adds a data class to the job and reports whether anything
+// changed. It only ever makes the job stricter: a class already present is a
+// no-op, a stronger class becomes the primary one, and the risk level is
+// raised to the floor that class carries (high for secrets and classified
+// material, medium for the rest) when it is lower. Nothing is ever removed.
+func (j *JobDescriptor) RaiseSensitivity(s Sensitivity) bool {
+	if j == nil || s == "" || s == SensitivityNone || sensitivityHintRank(s) == 0 {
+		return false
+	}
+	changed := false
+	present := false
+	for _, have := range j.Sensitivities {
+		if have == s {
+			present = true
+			break
+		}
+	}
+	if !present {
+		j.Sensitivities = append(j.Sensitivities, s)
+		sort.SliceStable(j.Sensitivities, func(a, b int) bool {
+			return sensitivityHintRank(j.Sensitivities[a]) > sensitivityHintRank(j.Sensitivities[b])
+		})
+		changed = true
+	}
+	if sensitivityHintRank(s) > sensitivityHintRank(j.Sensitivity) {
+		j.Sensitivity = s
+		changed = true
+	}
+	floor := RiskMedium
+	if s == SensitivitySecretsPossible || s == SensitivitySecurityClassified {
+		floor = RiskHigh
+	}
+	if riskRank(j.RiskLevel) < riskRank(floor) {
+		j.RiskLevel = floor
+		changed = true
+	}
+	return changed
+}
+
+func riskRank(r RiskLevel) int {
+	switch r {
+	case RiskCritical:
+		return 4
+	case RiskHigh:
+		return 3
+	case RiskMedium:
+		return 2
+	case RiskLow:
+		return 1
+	}
+	return 0
 }
 
 // AllSensitivities returns every data class as strings, for policy input.

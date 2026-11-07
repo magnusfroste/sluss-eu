@@ -105,7 +105,7 @@ func TestMCPRouteExplainMatchesEngine(t *testing.T) {
 
 	// The tool must select exactly what a direct engine dry-run selects — same path.
 	req := &openai.ChatRequest{Messages: []openai.Message{{Role: "user", Content: prompt}}}
-	dec, _, err := explainRoute(o.Engine, o.PolicyCache, explainInput{RequestID: "t", Request: req})
+	dec, _, err := explainRoute(o.Engine, o.PolicyCache, nil, explainInput{RequestID: "t", Request: req})
 	if err != nil {
 		t.Fatalf("engine decide: %v", err)
 	}
