@@ -27,8 +27,6 @@ Backlogg — användardriven (byggs när en användare ber om det):
 
 - ISSUE-094 — Compliance-paket: välja paket i konsolen utan omstart (resten levererat). `priority: P1`, `state: needs-info`.
 
-- ISSUE-163 — Lokal andra åsikt som bara får skärpa: liten lokal klassificeringsmodell höjer en klass, sänker aldrig; regeln förblir primär. `priority: P2`, `state: needs-info`. Byggs när en kund ber om täckning på betydelse.
-
 - ISSUE-149 — Modellval: tre lägen (Save / Balanced / Best answer) som ett enda val som bara påverkar valet bland tillåtna modeller, plus uppmätt kvalitet per uppgift. Relaterat: styra frågetyp till modell, "datahemvist går före tier-golvet", jämförelse sida vid sida, konkurrentgenomgång. `epic: EPIC-14`, `priority: P3`, `state: needs-info`.
 
 Redo för agent:
@@ -135,6 +133,7 @@ P2:
 4. Uppdatera dokumentation om kontrakt ändras.
 5. Kontrollera latency om issue påverkar fast path.
 6. Merge efter review.
+- ISSUE-163 — Lokal andra åsikt som bara får skärpa: `ROUTER_SECOND_OPINION_MODEL` (rostermodell taggad local) får lägga till en dataklass reglerna missade, aldrig ta bort; regeln förblir primär; timeout 500 ms. `epic: EPIC-14`, `priority: P2`, `state: done`, klar 2026-11-07.
 - ISSUE-162 — Positionering: "the AI gateway whose decisions you can read" + manualsidan What Sluss catches med mätt korpus (46 fall) som körs i CI; luckor täppta (telefon, adress, hälsoord, kod utan staket). `epic: EPIC-15`, `priority: P1`, `state: done`, klar 2026-11-07.
 - ISSUE-161 — Leveranskedja: Go 1.26.10, govulncheck i CI, cosign-signerade bilder med SPDX-SBOM (#71). `epic: EPIC-12`, `priority: P1`, `state: done`, klar 2026-11-07.
 - ISSUE-160 — Auditkedjan förankrad utanför maskinen: `audit anchor`-loggrad varje timme, `audit-verify -anchor`, `GET /router/audit/anchor` (#70). `epic: EPIC-12`, `priority: P1`, `state: done`, klar 2026-11-07.

@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"log/slog"
@@ -11,14 +12,16 @@ import (
 	"github.com/magnusfroste/sluss/internal/openai"
 	"github.com/magnusfroste/sluss/internal/policy"
 	"github.com/magnusfroste/sluss/internal/router"
+	"github.com/magnusfroste/sluss/internal/secondopinion"
 	"github.com/magnusfroste/sluss/internal/tenant"
 )
 
 // DecisionOptions configures the /router/decision handler.
 type DecisionOptions struct {
-	Engine      *engine.Engine
-	PolicyCache *policy.Cache
-	Logger      *slog.Logger
+	Engine        *engine.Engine
+	PolicyCache   *policy.Cache
+	Logger        *slog.Logger
+	SecondOpinion *secondopinion.Classifier // optional (ISSUE-163)
 }
 
 // decisionResponse extends RouteDecision with the computed JobDescriptor so
@@ -53,7 +56,7 @@ func DecisionHandler(opts DecisionOptions) http.HandlerFunc {
 			return
 		}
 
-		dec, job, err := explainRoute(opts.Engine, opts.PolicyCache, explainInput{
+		dec, job, err := explainRoute(opts.Engine, opts.PolicyCache, opts.SecondOpinion, explainInput{
 			RequestID: middleware.RequestIDFromContext(r.Context()),
 			Auth:      auth,
 			Headers:   r.Header,
@@ -118,15 +121,19 @@ type explainInput struct {
 // the MCP route_explain tool: build the JobDescriptor, look up policy, and score
 // with the engine assuming full provider health. It never calls a provider. The
 // caller must ensure eng != nil.
-func explainRoute(eng *engine.Engine, cache *policy.Cache, in explainInput) (engine.RouteDecision, *router.JobDescriptor, error) {
+func explainRoute(eng *engine.Engine, cache *policy.Cache, so *secondopinion.Classifier, in explainInput) (engine.RouteDecision, *router.JobDescriptor, error) {
 	job := router.NewJobDescriptor(router.JobDescriptorInput{
 		RequestID: in.RequestID,
 		Auth:      in.Auth,
 		Headers:   in.Headers,
 		Request:   in.Request,
 	})
+	// The dry-run asks the local second opinion too (ISSUE-163), so what the
+	// console shows is what a real request would get.
+	so.Apply(context.Background(), job, in.Request.Messages)
 	pol := lookupPolicy(cache, job)
 	dec, err := eng.Decide(job, pol, engine.FullyHealthy, in.Request.Stream)
+	addSecondOpinionReason(&dec, job)
 	return dec, job, err
 }
 

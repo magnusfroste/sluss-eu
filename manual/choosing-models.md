@@ -36,6 +36,8 @@ A question may always go to a model *above* the level it needs. A premium model 
 
 **Models whose server is down** are skipped until they answer again.
 
+**A local second opinion, if it is turned on.** After the rules have read the question, a small model on your own hardware may add a kind of data the rules did not see. It can only make the decision stricter, never looser, and the rule is still the reason shown first. See [What Sluss catches](/manual/what-sluss-catches).
+
 ## Step 2: the best of what is left
 
 Among the allowed models, Sluss weighs mostly two things:

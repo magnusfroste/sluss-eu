@@ -40,7 +40,7 @@ func policyEngine(t *testing.T) *engine.Engine {
 // The dry-run endpoint classifies a prompt and returns a routing decision with
 // egress — no provider call. A trivial prompt routes to the cloud.
 func TestPolicyDryRunClassifiesAndRoutes(t *testing.T) {
-	h := PolicyDryRunHandler(policyEngine(t), nil)
+	h := PolicyDryRunHandler(policyEngine(t), nil, nil)
 	rec := httptest.NewRecorder()
 	h(rec, httptest.NewRequest(http.MethodPost, "/router/policy/dryrun",
 		strings.NewReader(`{"prompt":"write a concise git commit message for a bugfix"}`)))
@@ -56,7 +56,7 @@ func TestPolicyDryRunClassifiesAndRoutes(t *testing.T) {
 }
 
 func TestPolicyDryRunRejectsEmpty(t *testing.T) {
-	h := PolicyDryRunHandler(policyEngine(t), nil)
+	h := PolicyDryRunHandler(policyEngine(t), nil, nil)
 	rec := httptest.NewRecorder()
 	h(rec, httptest.NewRequest(http.MethodPost, "/router/policy/dryrun", strings.NewReader(`{"prompt":"  "}`)))
 	if rec.Code != http.StatusBadRequest {

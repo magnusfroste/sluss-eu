@@ -1,6 +1,6 @@
 # ISSUE-163 — Lokal andra åsikt som bara får skärpa
 
-`epic: EPIC-14` · `priority: P2` · `state: needs-info` · **användardriven**
+`epic: EPIC-14` · `priority: P2` · `state: done` · klar 2026-11-07
 
 ## Idé
 
@@ -28,3 +28,18 @@ fail-closed, samma förklarbarhet, inget data lämnar maskinen.
 ## Byggs när
 
 En kund ber om täckning på betydelse och kan köra en liten modell lokalt.
+
+## Levererat (2026-11-07)
+
+- `internal/secondopinion`: frågar en rostermodell taggad *local* (annars vägrat)
+  vilka dataklasser texten håller, med fast vokabulär och JSON-svar; parsningen
+  räknar bara vokabulärens ord. `job.RaiseSensitivity` höjer klass och
+  riskgolv, sänker aldrig. Timeout 500 ms (`ROUTER_SECOND_OPINION_TIMEOUT`);
+  därefter gäller reglernas beslut ensamt.
+- Körs efter reglerna, före policy och beslutscache, i chat-vägen, `/router/decision`,
+  policyns dry-run och MCP `route_explain`. Skäl i `decision_reasons`, headers
+  `X-Router-Second-Opinion`/`-Model`, rad i inspektorn. Mätvärde
+  `router_second_opinion_total{outcome}`.
+- Av som standard; en inställning: `ROUTER_SECOND_OPINION_MODEL`.
+- Kvar (backlogg): korpusen med två kolumner (med/utan andra åsikt) kräver en
+  körande lokal modell i CI; mäts tills vidare för hand.

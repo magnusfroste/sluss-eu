@@ -28,6 +28,7 @@ import (
 	"github.com/magnusfroste/sluss/internal/provider"
 	"github.com/magnusfroste/sluss/internal/retention"
 	"github.com/magnusfroste/sluss/internal/router"
+	"github.com/magnusfroste/sluss/internal/secondopinion"
 	"github.com/magnusfroste/sluss/internal/secrets"
 	"github.com/magnusfroste/sluss/internal/tenant"
 )
@@ -61,6 +62,9 @@ type ChatOptions struct {
 	AdapterSource     func() map[string]provider.Adapter
 	PolicyCache       *policy.Cache
 	ShadowPolicyCache *policy.Cache
+	// SecondOpinion, when set, asks a local model which data classes the
+	// prompt holds and may only make the job stricter (ISSUE-163). nil = off.
+	SecondOpinion *secondopinion.Classifier
 
 	// Observability (Sprint 06). All optional.
 	EventQueue    *eventlog.Queue
@@ -148,6 +152,10 @@ func ChatCompletionsHandler(p provider.Adapter, opts ...ChatOptions) http.Handle
 		// Optional prompt logging — off by default, gated per tenant (ISSUE-045).
 		cfg.logPrompt(r.Context(), job, &req)
 
+		// A local second opinion (ISSUE-163): runs after the rules, before
+		// policy and the decision cache, and may only add a class.
+		cfg.SecondOpinion.Apply(r.Context(), job, req.Messages)
+
 		// Routing engine path. One adapter-set read per request (ISSUE-115).
 		adapters := cfg.currentAdapters()
 		if cfg.Engine != nil && len(adapters) > 0 {
@@ -194,6 +202,7 @@ func ChatCompletionsHandler(p provider.Adapter, opts ...ChatOptions) http.Handle
 			routeStart := time.Now()
 			if !cacheHit {
 				dec, decErr = cfg.Engine.Decide(job, pol, health, req.Stream)
+				addSecondOpinionReason(&dec, job)
 			}
 			routingDur := time.Since(routeStart)
 			shadowComparison := cfg.compareShadowDecision(r.Context(), job, dec, decErr, shadowPol, health, req.Stream)
@@ -1158,6 +1167,12 @@ func setInspectorHeaders(w http.ResponseWriter, job *router.JobDescriptor, dec e
 	if job.RiskLevel != "" {
 		w.Header().Set("X-Router-Risk", headerToken(string(job.RiskLevel)))
 	}
+	// What the local second opinion found (ISSUE-163): classes only, and the
+	// roster model that answered. Absent when off, skipped or silent.
+	if len(job.SecondOpinion) > 0 {
+		w.Header().Set("X-Router-Second-Opinion", strings.Join(job.SecondOpinion, ","))
+		w.Header().Set("X-Router-Second-Opinion-Model", headerToken(job.SecondOpinionModel))
+	}
 	if dec.SelectedProvider != "" {
 		w.Header().Set("X-Router-Selected-Provider", headerToken(dec.SelectedProvider))
 	}
@@ -1500,4 +1515,15 @@ func writeError(w http.ResponseWriter, status int, code, msg string) {
 	_ = json.NewEncoder(w).Encode(openai.ErrorEnvelope{
 		Error: openai.ErrorBody{Message: msg, Type: code, Code: code},
 	})
+}
+
+// addSecondOpinionReason writes the local model's verdict next to the rule's
+// in the decision reasons, so the request log, the dry-run and the inspector
+// all show it. The rule's line stays first: it is the primary reason.
+func addSecondOpinionReason(dec *engine.RouteDecision, job *router.JobDescriptor) {
+	if job == nil || len(job.SecondOpinion) == 0 {
+		return
+	}
+	dec.DecisionReasons = append(dec.DecisionReasons,
+		"second opinion (local model "+job.SecondOpinionModel+"): "+strings.Join(job.SecondOpinion, ", ")+" — may only make the decision stricter")
 }
