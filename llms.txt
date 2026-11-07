@@ -18,6 +18,7 @@ The administrator's manual. A running instance serves the same pages at /manual,
 - [Start here](https://github.com/magnusfroste/sluss-eu/blob/main/manual/index.md)
 - [Models and the first rule](https://github.com/magnusfroste/sluss-eu/blob/main/manual/quick-start.md)
 - [How Sluss picks a model](https://github.com/magnusfroste/sluss-eu/blob/main/manual/choosing-models.md)
+- [What Sluss catches, and what it does not](https://github.com/magnusfroste/sluss-eu/blob/main/manual/what-sluss-catches.md)
 - [Stop ChatGPT, offer the company chat](https://github.com/magnusfroste/sluss-eu/blob/main/manual/stop-chatgpt.md)
 - [Developer tools through Sluss](https://github.com/magnusfroste/sluss-eu/blob/main/manual/developer-tools.md)
 - [Show that it works](https://github.com/magnusfroste/sluss-eu/blob/main/manual/prove-it.md)

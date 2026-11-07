@@ -15,7 +15,7 @@ If your task is to install, configure or run Sluss for an organisation — not t
 1. `README.md` — what Sluss is and the 60-second try-out.
 2. `docs/07-operations/self-host-docker.md` — run it, sign-in, TLS, upgrade, back up, air-gapped.
 3. `deploy/example.env` — the settings an operator needs, explained (`.env.example` at the root has the tuning and experimental ones). `deploy/docker-compose.yml` for Compose.
-4. `manual/index.md` and the pages it links — what to set up in the console, in the order an administrator does it. `manual/choosing-models.md` explains how a question finds its model; `manual/where-settings-live.md` which settings are in the environment and which in the database.
+4. `manual/index.md` and the pages it links — what to set up in the console, in the order an administrator does it. `manual/choosing-models.md` explains how a question finds its model; `manual/what-sluss-catches.md` what the rules find and miss, measured; `manual/where-settings-live.md` which settings are in the environment and which in the database.
 5. `CHANGELOG.md` — which release to pin, and what changed.
 
 Rules for an operating agent:

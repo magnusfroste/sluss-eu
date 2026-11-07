@@ -162,3 +162,43 @@ func BenchmarkDetect10KB(b *testing.B) {
 		Detect(text)
 	}
 }
+
+// Phone numbers as people write them, and Swedish postal addresses.
+func TestDetectPhoneGroupsAndAddress(t *testing.T) {
+	for _, text := range []string{
+		"Ring Anna på 070-123 45 67 och boka ett möte.",
+		"Call +46 70 123 45 67 tomorrow.",
+		"Växeln är 08-123 456 78.",
+		"Mobil: 0701234567",
+	} {
+		if !hasType(Detect(text), TypePhone) {
+			t.Errorf("phone not detected in %q: %+v", text, Detect(text))
+		}
+	}
+	for _, text := range []string{
+		"Order 4711 of 2024 totals 12 345 kr.",
+		"Meeting at 10 30 tomorrow, room 12.",
+	} {
+		if hasType(Detect(text), TypePhone) {
+			t.Errorf("phone wrongly detected in %q", text)
+		}
+	}
+	if f := Detect("Anna Svensson, Storgatan 12, 111 22 Stockholm, har klagat på leveransen."); !hasType(f, TypeAddress) {
+		t.Errorf("address not detected: %+v", f)
+	}
+	if f := Detect("Vi möts på Storgatan 12 klockan tre."); hasType(f, TypeAddress) {
+		t.Errorf("a street alone is not an address: %+v", f)
+	}
+	if f := Detect("Fakturan på 123 45 kr skickades till Stockholm."); hasType(f, TypeAddress) {
+		t.Errorf("a sum and a town is not an address: %+v", f)
+	}
+}
+
+func hasType(findings []Finding, want Type) bool {
+	for _, f := range findings {
+		if f.Type == want {
+			return true
+		}
+	}
+	return false
+}

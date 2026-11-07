@@ -27,6 +27,8 @@ Backlogg — användardriven (byggs när en användare ber om det):
 
 - ISSUE-094 — Compliance-paket: välja paket i konsolen utan omstart (resten levererat). `priority: P1`, `state: needs-info`.
 
+- ISSUE-163 — Lokal andra åsikt som bara får skärpa: liten lokal klassificeringsmodell höjer en klass, sänker aldrig; regeln förblir primär. `priority: P2`, `state: needs-info`. Byggs när en kund ber om täckning på betydelse.
+
 - ISSUE-149 — Modellval: tre lägen (Save / Balanced / Best answer) som ett enda val som bara påverkar valet bland tillåtna modeller, plus uppmätt kvalitet per uppgift. Relaterat: styra frågetyp till modell, "datahemvist går före tier-golvet", jämförelse sida vid sida, konkurrentgenomgång. `epic: EPIC-14`, `priority: P3`, `state: needs-info`.
 
 Redo för agent:
@@ -133,6 +135,10 @@ P2:
 4. Uppdatera dokumentation om kontrakt ändras.
 5. Kontrollera latency om issue påverkar fast path.
 6. Merge efter review.
+- ISSUE-162 — Positionering: "the AI gateway whose decisions you can read" + manualsidan What Sluss catches med mätt korpus (46 fall) som körs i CI; luckor täppta (telefon, adress, hälsoord, kod utan staket). `epic: EPIC-15`, `priority: P1`, `state: done`, klar 2026-11-07.
+- ISSUE-161 — Leveranskedja: Go 1.26.10, govulncheck i CI, cosign-signerade bilder med SPDX-SBOM (#71). `epic: EPIC-12`, `priority: P1`, `state: done`, klar 2026-11-07.
+- ISSUE-160 — Auditkedjan förankrad utanför maskinen: `audit anchor`-loggrad varje timme, `audit-verify -anchor`, `GET /router/audit/anchor` (#70). `epic: EPIC-12`, `priority: P1`, `state: done`, klar 2026-11-07.
+- ISSUE-159 — Konsolhärdning: inloggningsbroms, säkerhetsheaders, `/metrics` bakom nyckel, `GET /version` (#69). `epic: EPIC-14`, `priority: P1`, `state: done`, klar 2026-11-07.
 - ISSUE-158 — Regler matchar alla dataklasser i en fråga (inte bara den högst rankade): en blockeringsregel på säkerhetsklassat fiar även när frågan också innehåller en nyckel. Strängare, aldrig svagare. Synligt i dry-run och Inspector. `epic: EPIC-14`, `priority: P1`, `state: done`, klar 2026-11-01.
 - ISSUE-157 — Klassificeraren ser nyckelvärden (AWS, sk-, ghp_, PEM, Slack, aws_secret) och svenska säkerhetsskyddsmarkeringar (säkerhetsskyddslagen, begränsat hemlig). Tidigare gick en inklistrad AWS-nyckel till molnet. Förkontroll håller det snabbt. `epic: EPIC-14`, `priority: P0`, `state: done`, klar 2026-11-01.
 - ISSUE-156 — Auditkedjan förgrenades vid överlappande deploy (två processer, samma fil): skrivaren låser filen och fortsätter från diskens sista rad; audit-verify förklarar ändrad/borttagen/förgrening. Inga rader var ändrade eller saknades. `epic: EPIC-14`, `priority: P0`, `state: done`, klar 2026-11-01.

@@ -12,6 +12,13 @@ ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 
 ## Unreleased
 
+### Protection
+- **More identifiers are caught.** Phone numbers as people write them (`070-123 45 67`, `+46 70 …`), Swedish postal addresses (a street with a house number and a postcode), sick leave, burnout and chemotherapy as health words, and code pasted without fences.
+- **What the rules catch is measured and published.** A fixed set of 46 examples runs with every change (`internal/classifier/catch_corpus_test.go`); the manual page *What Sluss catches, and what it does not* carries its numbers and the documented misses, and the test fails if the page falls out of date.
+
+### Positioning
+- **The AI gateway whose decisions you can read.** README and the manual now say why the rules are not another AI, what that costs, and how to close the gap.
+
 ### Fixed
 - **The chat shows the built-in test answer.** The mock could not stream, so the chat rendered nothing until a real model was connected, although the API answered. The mock now streams like a provider.
 
