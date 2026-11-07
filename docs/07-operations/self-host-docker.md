@@ -13,6 +13,23 @@ The image is public. Releases are listed in [CHANGELOG.md](../../CHANGELOG.md):
 
 Set `ROUTER_DEPLOYMENT=docker` (or `compose`, `easypanel`, `agenthotel`) so the Version page shows your upgrade step first.
 
+### Check the image before you run it
+
+Every image is signed with Sigstore, keyless: the signature is bound to the build workflow's identity at GitHub, so there is no key that could leak. Each image also carries a software bill of materials (SPDX) as an attestation, and each release has it attached as a file. Both are checked with [cosign](https://github.com/sigstore/cosign):
+
+```bash
+cosign verify ghcr.io/magnusfroste/sluss-eu:v1.3.0 \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+  --certificate-identity-regexp '^https://github.com/magnusfroste/sluss-eu/\.github/workflows/publish-image\.yml@refs/tags/v'
+
+cosign verify-attestation --type spdxjson ghcr.io/magnusfroste/sluss-eu:v1.3.0 \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+  --certificate-identity-regexp '^https://github.com/magnusfroste/sluss-eu/' \
+  | jq -r .payload | base64 -d | jq .predicate > sbom.spdx.json
+```
+
+The first command fails unless the image was built by this repository's release workflow from a version tag. The second gives you the bill of materials to feed your own vulnerability scanner. CI runs `govulncheck` on every change, so a known vulnerability that the code actually calls stops a merge, and the Go patch level is kept current.
+
 ## 1. Run it
 
 ```bash

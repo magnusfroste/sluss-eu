@@ -11,8 +11,9 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write   # attach the SBOM to the release of a tag
   packages: write
+  id-token: write   # keyless signing with Sigstore (cosign)
 
 jobs:
   build-push:
@@ -49,6 +50,7 @@ jobs:
         run: echo "ts=$(git log -1 --format=%cI)" >> "$GITHUB_OUTPUT"
 
       - name: Build and push
+        id: build
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -63,6 +65,44 @@ jobs:
             BUILD_TIME=${{ steps.when.outputs.ts }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      # Supply chain (ISSUE-161): a signature anyone can check and a bill of
+      # materials for every image. Keyless: the signature is bound to this
+      # workflow's identity at GitHub, no key to keep.
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+
+      - name: Sign the image
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+          TAGS: ${{ steps.meta.outputs.tags }}
+        run: |
+          for tag in $TAGS; do
+            cosign sign --yes "${tag}@${DIGEST}"
+          done
+
+      - name: SBOM (SPDX)
+        uses: anchore/sbom-action@v0
+        with:
+          image: ghcr.io/${{ github.repository }}@${{ steps.build.outputs.digest }}
+          format: spdx-json
+          output-file: sbom.spdx.json
+          artifact-name: sbom-${{ github.ref_name }}.spdx.json
+          upload-artifact: true
+          upload-release-assets: false
+
+      - name: Attest the SBOM to the image
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: cosign attest --yes --type spdxjson --predicate sbom.spdx.json "ghcr.io/${{ github.repository }}@${DIGEST}"
+
+      - name: Attach the SBOM to the release
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cp sbom.spdx.json "sluss-${{ github.ref_name }}.sbom.spdx.json"
+          gh release upload "${{ github.ref_name }}" "sluss-${{ github.ref_name }}.sbom.spdx.json" --clobber
 
   # Auto-deploy (ISSUE-125): after a push to main, trigger the EasyPanel deploy
   # webhook and then wait until the instance reports the new commit on

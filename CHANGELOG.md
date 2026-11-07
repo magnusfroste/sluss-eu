@@ -15,6 +15,10 @@ ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 ### Fixed
 - **The chat shows the built-in test answer.** The mock could not stream, so the chat rendered nothing until a real model was connected, although the API answered. The mock now streams like a provider.
 
+### Supply chain
+- **Signed images and a bill of materials.** Every image is signed with Sigstore (keyless, bound to the build workflow's identity) and carries an SPDX SBOM as an attestation; releases have the SBOM attached as a file. `cosign verify` checks both; the self-host guide shows how.
+- **Known vulnerabilities stop a merge.** CI runs `govulncheck` on every change. Sluss is built with Go 1.26.10; the 1.25 line is no longer maintained and carried twelve standard-library vulnerabilities the code calls.
+
 ### Evidence
 - **The audit chain is anchored outside the machine.** A hash chain cannot by itself show that someone with disk access did not rewrite the file from a chosen point and recompute every later hash. Every hour Sluss now logs an `audit anchor` line with the last record's sequence number and hash; shipped with the log to a SIEM, that line is the proof. `audit-verify -anchor <seq>:<hash>` checks an export against it, and `GET /router/audit/anchor` returns the current anchor. `ROUTER_AUDIT_ANCHOR_INTERVAL` sets the interval.
 
