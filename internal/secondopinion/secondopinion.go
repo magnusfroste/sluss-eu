@@ -16,6 +16,7 @@ package secondopinion
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"strings"
 	"sync/atomic"
@@ -49,6 +50,12 @@ const DefaultTimeout = 500 * time.Millisecond
 // almost always visible in its first pages.
 const maxPromptChars = 6000
 
+// maxAnswerTokens caps the model's answer. The answer itself is a few tokens;
+// the rest is room for a model that thinks despite being asked not to.
+const maxAnswerTokens = 512
+
+var errEmpty = errors.New("second opinion: the model gave no answer")
+
 // localTags are the compliance tags that mean "runs on hardware the
 // organisation controls". The model must carry one of them.
 var localTags = map[string]bool{"local": true, "on-prem": true, "air-gapped": true}
@@ -73,11 +80,12 @@ const systemPrompt = `You classify text for a data-protection gateway. Answer wi
 "secrets" (passwords, API keys, tokens, private keys),
 "security_classified" (classified or security-protected material),
 "source_code" (program code).
-If none apply, answer []. Do not explain.`
+If none apply, answer []. Do not explain.
+/no_think`
 
 var outcomes = promauto.NewCounterVec(prometheus.CounterOpts{
 	Name: "router_second_opinion_total",
-	Help: "Second-opinion calls by outcome: raised (a class was added), silent (nothing to add), timeout, error, skipped (model not usable).",
+	Help: "Second-opinion calls by outcome: raised (a class was added), silent (answered, nothing to add), empty (no answer: a reasoning model ran out of tokens), timeout, error, skipped (model not usable).",
 }, []string{"outcome"})
 
 // Classifier asks the configured local model. A nil *Classifier is off and
@@ -146,15 +154,22 @@ func (c *Classifier) Apply(ctx context.Context, job *router.JobDescriptor, messa
 	}
 	cctx, cancel := context.WithTimeout(ctx, c.cfg.Timeout)
 	defer cancel()
-	temp, max := 0.0, 40
+	// Ask the model not to think: a classification needs no chain of
+	// thought, and a reasoning model that thinks first spends hundreds of
+	// tokens and seconds before it answers. vLLM reads enable_thinking from
+	// the chat template; Qwen-style models also honour /no_think in the
+	// prompt. The token cap still leaves room for a model that thinks
+	// anyway, so it can finish its answer instead of being cut off.
+	temp, max, think := 0.0, maxAnswerTokens, false
 	resp, err := adapter.Complete(cctx, &provider.NormalizedModelRequest{
 		Model: providerModelID,
 		Messages: []openai.Message{
 			{Role: "system", Content: systemPrompt},
 			{Role: "user", Content: text},
 		},
-		Temperature: &temp,
-		MaxTokens:   &max,
+		Temperature:    &temp,
+		MaxTokens:      &max,
+		EnableThinking: &think,
 	})
 	if err != nil {
 		res.Err = err
@@ -167,9 +182,19 @@ func (c *Classifier) Apply(ctx context.Context, job *router.JobDescriptor, messa
 		}
 		return res
 	}
-	answer := ""
+	answer, finish := "", ""
 	if len(resp.Choices) > 0 {
 		answer = resp.Choices[0].Message.Content
+		finish = resp.Choices[0].FinishReason
+	}
+	if strings.TrimSpace(answer) == "" {
+		// No answer at all is not "nothing to add": the model never got to
+		// answer, usually a reasoning model that spent its tokens thinking.
+		res.Err = errEmpty
+		outcomes.WithLabelValues("empty").Inc()
+		c.warn("second opinion gave no answer; rules decided alone — use a model that answers without thinking, or a longer ROUTER_SECOND_OPINION_TIMEOUT",
+			"model", c.cfg.ModelID, "finish_reason", finish)
+		return res
 	}
 	res.Found = parseLabels(answer)
 	for _, class := range res.Found {
