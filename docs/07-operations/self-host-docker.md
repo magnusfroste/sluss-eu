@@ -6,8 +6,8 @@ The image is public. Releases are listed in [CHANGELOG.md](../../CHANGELOG.md):
 
 | Tag | Use |
 |---|---|
-| `ghcr.io/magnusfroste/sluss-eu:v1.4.0` | Production: pin a release |
-| `ghcr.io/magnusfroste/sluss-eu:1.4` | Production: the newest 1.4.x, patch fixes included |
+| `ghcr.io/magnusfroste/sluss-eu:v1.5.0` | Production: pin a release |
+| `ghcr.io/magnusfroste/sluss-eu:1.5` | Production: the newest 1.5.x, patch fixes included |
 | `ghcr.io/magnusfroste/sluss-eu:latest` | Trying it out: rebuilt on every merge to `main` |
 | `ghcr.io/magnusfroste/sluss-eu:sha-<short>` | Pin the exact build you reviewed |
 
@@ -18,11 +18,11 @@ Set `ROUTER_DEPLOYMENT=docker` (or `compose`, `easypanel`, `agenthotel`) so the 
 Every image is signed with Sigstore, keyless: the signature is bound to the build workflow's identity at GitHub, so there is no key that could leak. Each image also carries a software bill of materials (SPDX) as an attestation, and each release has it attached as a file. Both are checked with [cosign](https://github.com/sigstore/cosign):
 
 ```bash
-cosign verify ghcr.io/magnusfroste/sluss-eu:v1.4.0 \
+cosign verify ghcr.io/magnusfroste/sluss-eu:v1.5.0 \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com \
   --certificate-identity-regexp '^https://github.com/magnusfroste/sluss-eu/\.github/workflows/publish-image\.yml@refs/tags/v'
 
-cosign verify-attestation --type spdxjson ghcr.io/magnusfroste/sluss-eu:v1.4.0 \
+cosign verify-attestation --type spdxjson ghcr.io/magnusfroste/sluss-eu:v1.5.0 \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com \
   --certificate-identity-regexp '^https://github.com/magnusfroste/sluss-eu/' \
   | jq -r .payload | base64 -d | jq .predicate > sbom.spdx.json
@@ -44,7 +44,7 @@ docker run -d --name sluss --restart unless-stopped \
   -e ROUTER_ADMIN_PASSWORD='choose-a-long-passphrase' \
   -e ROUTER_POLICY_PATH=builtin:nis2-baseline \
   -e OPENROUTER_API_KEY='…' \
-  ghcr.io/magnusfroste/sluss-eu:v1.4.0
+  ghcr.io/magnusfroste/sluss-eu:v1.5.0
 ```
 
 - **`-v sluss-data:/data` is the part you must not skip.** The volume holds the audit chain. Without it, everything is lost when the container is recreated.
