@@ -16,7 +16,7 @@ Nästa (i ordning):
 
 - ISSUE-150 — Konsolen 70/30: väsentligt först, Advanced hopfällt, klartext i stället för koder; Policy blir regler + dry-run + enkel dialog, Providers och Models städas. `epic: EPIC-14`, `priority: P1`, `state: ready-for-human` (väntar på ägarens genomgång av demon).
 - ISSUE-151 — "Mask and send": tredje utfall för en regel — maskera personuppgifter, skicka till molnet, fyll i igen i svaret. Konservativ start, synligt i Inspector och audit. `epic: EPIC-14`, `priority: P1`, `state: needs-info`.
-- ISSUE-152 — Kontroll av svaren: samma fasta regler på svaret, först bara flagga. `epic: EPIC-14`, `priority: P2`, `state: needs-info`.
+- ISSUE-152 — Kontroll av svaren: svaret läses med frågans värdedetektorer; det nya flaggas i request-loggen, auditkedjan, /metrics och inspektorn. Blockerar aldrig. `epic: EPIC-14`, `priority: P2`, `state: done`, klar 2026-11-08.
 
 Backlogg — användardriven (byggs när en användare ber om det):
 - Senare idéer (ingen egen issue än): förseglad rotation av auditkedjan (signerad överlämning från arkiverad kedja till ny; i dag manuell flytt av filen, se ISSUE-156), MCP-gateway (agenters verktygsanrop via Sluss med godkännandelista och audit), assistenter per avdelning, import av grindens loggar (CSV från Zscaler/Defender) till shadow-AI-rapporten, flagga prompt-injektion i webbresultat och bilagor.

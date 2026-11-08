@@ -964,7 +964,13 @@ function outputTab(meta,m){
     '<div class="igrp"><div class="ig">Size and cost</div>'+kv('Answer',words?words+' words':'empty')+
     (FULL?kv('Tokens',meta.inTok!=null?(meta.inTok+' in · '+meta.outTok+' out'):(meta.reqId&&!meta.noUsage?'<span class="sub">counting…</span>':'')):'')+
     (FULL?kv('Cost',meta.cost!=null?fmtUSD(meta.cost)+(meta.cost===0&&meta.egress==='local'?'<div class="sub">own hardware</div>':''):''):'')+'</div>'+
-    auditGrp(meta);
+    answerCheckGrp(meta)+auditGrp(meta);
+}
+const FLAG_NAMES={personnummer:'a personal identity number',email:'an e-mail address',phone:'a phone number',address:'a postal address',card:'a card number',iban:'an IBAN'};
+function answerCheckGrp(meta){
+  const f=meta.answerFlags||[];if(!f.length)return '';
+  const words=f.map(x=>{const p=x.split(':');return p[0]==='secret'?'a key or token ('+esc(p[1]||'')+')':(FLAG_NAMES[p[1]]||esc(p[1]||''));});
+  return '<div class="igrp"><div class="ig">Answer check</div><div class="ibadge bad">The answer holds '+words.join(', ')+' that the question did not</div><p class="ihint">Flagged in the request log and the audit log. The answer itself was not changed.</p></div>';
 }
 function auditGrp(meta){
   if(!FULL||!meta.reqId)return '';
@@ -1009,7 +1015,7 @@ async function fetchUsage(s,msg){
     await new Promise(r=>setTimeout(r,wait));
     try{const r=await fetch('/chat/request?id='+encodeURIComponent(meta.reqId),{credentials:'same-origin'});
       if(!r.ok)continue;const j=await r.json();
-      if(j.found&&(j.input_tokens||j.output_tokens||j.cost_usd)){meta.inTok=j.input_tokens;meta.outTok=j.output_tokens;meta.cost=j.cost_usd;
+      if(j.found&&(j.input_tokens||j.output_tokens||j.cost_usd)){meta.inTok=j.input_tokens;meta.outTok=j.output_tokens;meta.cost=j.cost_usd;if(j.answer_flags)meta.answerFlags=j.answer_flags.split(',');
         persist();if(cur()===s)renderInspector();return;}}catch(e){}
   }
   // Not available (e.g. signed in with the break-glass password): stop saying "counting".

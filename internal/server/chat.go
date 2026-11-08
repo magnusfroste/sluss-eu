@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/magnusfroste/sluss/internal/answercheck"
 	"github.com/magnusfroste/sluss/internal/audit"
 	"github.com/magnusfroste/sluss/internal/bandit"
 	"github.com/magnusfroste/sluss/internal/budget"
@@ -31,6 +32,8 @@ import (
 	"github.com/magnusfroste/sluss/internal/secondopinion"
 	"github.com/magnusfroste/sluss/internal/secrets"
 	"github.com/magnusfroste/sluss/internal/tenant"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
 // firstTokenTimeoutMS is how long to wait for the first streaming chunk before
@@ -276,6 +279,9 @@ func ChatCompletionsHandler(p provider.Adapter, opts ...ChatOptions) http.Handle
 						estimatedCostUSD: dec.EstimatedCostUSD,
 						costFn:           cfg.actualCostUSD,
 						egressFn:         cfg.egressForModel,
+						checkAnswer: func(answer string) []string {
+							return cfg.checkAnswer(r, job, req.Messages, dec.SelectedModel, answer)
+						},
 					})
 					return
 				}
@@ -316,7 +322,15 @@ func ChatCompletionsHandler(p provider.Adapter, opts ...ChatOptions) http.Handle
 					start := time.Now()
 					resp, err := c.adapter.Complete(r.Context(), attemptReq)
 					durationMs := time.Since(start).Milliseconds()
-					cfg.recordAttempt(job.RequestID, c.providerID, c.modelID, i, resp, err, durationMs, 0, meta)
+					// Check the answer (ISSUE-152) before it is recorded, so
+					// the flags land on the same request-log row. Flag only.
+					var answerFlags []string
+					if err == nil {
+						answerFlags = cfg.checkAnswer(r, job, req.Messages, c.modelID, answerText(resp))
+					}
+					attemptMetaWithFlags := meta
+					attemptMetaWithFlags.answerFlags = answerFlags
+					cfg.recordAttempt(job.RequestID, c.providerID, c.modelID, i, resp, err, durationMs, 0, attemptMetaWithFlags)
 					if err == nil {
 						if i > 0 {
 							// The decision headers named the primary; the answer came
@@ -332,6 +346,9 @@ func ChatCompletionsHandler(p provider.Adapter, opts ...ChatOptions) http.Handle
 							}
 						}
 						cfg.setUsageHeaders(w, c.modelID, c.providerID, resp)
+						if len(answerFlags) > 0 {
+							w.Header().Set("X-Router-Answer-Flags", strings.Join(answerFlags, ","))
+						}
 						w.Header().Set("Content-Type", "application/json")
 						_ = json.NewEncoder(w).Encode(resp)
 						return
@@ -452,7 +469,7 @@ func streamWithFallback(
 		return
 	}
 
-	recordStream := func(c streamCandidate, i int, firstTokenMs, durationMs int64, inputTokens, outputTokens int, err error) {
+	recordStream := func(c streamCandidate, i int, firstTokenMs, durationMs int64, inputTokens, outputTokens int, err error, answerFlags ...string) {
 		if healthTracker != nil {
 			if err == nil {
 				healthTracker.RecordSuccess(c.providerID)
@@ -491,6 +508,7 @@ func streamWithFallback(
 					EstimatedCostUSD: meta.estimatedCostUSD,
 					AttemptedAt:      time.Now(),
 					Egress:           streamEgress(meta, c.modelID, err == nil),
+					AnswerFlags:      answerFlags,
 				},
 			})
 		}
@@ -504,6 +522,13 @@ func streamWithFallback(
 		attemptStart := time.Now()
 		var usageIn, usageOut int // captured from the provider's final usage chunk
 		attemptCtx, cancelAttempt := context.WithCancel(r.Context())
+		var answer answercheck.Collector // the streamed text, checked once the stream ends (ISSUE-152)
+		finished := func() []string {
+			if meta.checkAnswer == nil {
+				return nil
+			}
+			return meta.checkAnswer(answer.Text())
+		}
 
 		chunks, err := c.adapter.Stream(attemptCtx, req)
 		if err != nil {
@@ -587,6 +612,7 @@ func streamWithFallback(
 		if len(firstChunk.Data) > 0 {
 			writeSSEData(w, firstChunk.Data)
 			flusher.Flush()
+			answer.Add(firstChunk.Data)
 		}
 
 		// Drain the rest.
@@ -606,17 +632,18 @@ func streamWithFallback(
 				writeSSEData(w, []byte("[DONE]"))
 				flusher.Flush()
 				logStreamResult(r, logger, c.providerID, c.modelID, true, time.Since(started).Milliseconds(), nil)
-				recordStream(c, i, firstTokenMs, time.Since(attemptStart).Milliseconds(), usageIn, usageOut, nil)
+				recordStream(c, i, firstTokenMs, time.Since(attemptStart).Milliseconds(), usageIn, usageOut, nil, finished()...)
 				cancelAttempt()
 				return
 			}
 			if len(chunk.Data) > 0 {
 				writeSSEData(w, chunk.Data)
 				flusher.Flush()
+				answer.Add(chunk.Data)
 			}
 		}
 		logStreamResult(r, logger, c.providerID, c.modelID, true, time.Since(started).Milliseconds(), nil)
-		recordStream(c, i, firstTokenMs, time.Since(attemptStart).Milliseconds(), usageIn, usageOut, nil)
+		recordStream(c, i, firstTokenMs, time.Since(attemptStart).Milliseconds(), usageIn, usageOut, nil, finished()...)
 		cancelAttempt()
 		return
 	}
@@ -1052,6 +1079,13 @@ func (o *ChatOptions) auditBlocked(ctx context.Context, job *router.JobDescripto
 // accounting: who the request belongs to and the decision-time cost estimate
 // (used as a fallback when provider usage is unavailable).
 type attemptMeta struct {
+	// checkAnswer, when set, reads the finished answer and returns what it
+	// holds that the question did not (ISSUE-152). It also records the audit
+	// entry. Called after the answer has been sent, never before.
+	checkAnswer func(answer string) []string
+	// answerFlags carries the non-streaming path's flags into the attempt
+	// event.
+	answerFlags      []string
 	tenantID         string
 	projectID        string
 	taskType         string // for per-(task,model) bandit reward attribution
@@ -1103,6 +1137,7 @@ func (o *ChatOptions) recordAttempt(requestID, providerID, modelID string, attem
 	}
 	if success {
 		a.Egress = o.egressForModel(modelID)
+		a.AnswerFlags = meta.answerFlags
 	}
 	if err != nil {
 		a.ErrorCode = mapProviderErrorCode(err)
@@ -1527,3 +1562,53 @@ func addSecondOpinionReason(dec *engine.RouteDecision, job *router.JobDescriptor
 	dec.DecisionReasons = append(dec.DecisionReasons,
 		"second opinion (local model "+job.SecondOpinionModel+"): "+strings.Join(job.SecondOpinion, ", ")+" — may only make the decision stricter")
 }
+
+// ActionAnswerFlagged records that an answer held a key or a personal
+// identifier the question did not (ISSUE-152). Types only, never values.
+const ActionAnswerFlagged = audit.Action("response.flagged")
+
+// checkAnswer reads a finished answer with the same value detectors as the
+// question and returns what is new in it. A finding is logged, counted and
+// written to the audit chain; the answer itself is never changed or held
+// back. Safe to call with an empty answer.
+func (o *ChatOptions) checkAnswer(r *http.Request, job *router.JobDescriptor, question []openai.Message, modelID, answer string) []string {
+	flags := answercheck.Check(question, answer)
+	if len(flags) == 0 {
+		return nil
+	}
+	answerFlagsTotal.WithLabelValues(strings.Join(answercheck.Classes(flags), ",")).Inc()
+	actor := AdminUserFromContext(r.Context())
+	if o.Logger != nil {
+		o.Logger.WarnContext(r.Context(), "answer flagged: it holds what the question did not",
+			"request_id", job.RequestID, "model", modelID, "flags", strings.Join(flags, ","))
+	}
+	audit.Record(r.Context(), o.Auditor, audit.Entry{
+		Action:    ActionAnswerFlagged,
+		Actor:     actor,
+		TenantID:  job.TenantID,
+		ProjectID: job.ProjectID,
+		RequestID: job.RequestID,
+		Target:    modelID,
+		Outcome:   "flagged",
+		Reason:    "the answer holds a key or a personal identifier the question did not",
+		Detail:    map[string]string{"flags": strings.Join(flags, ",")},
+	})
+	return flags
+}
+
+// answerText is the text of a non-streamed answer.
+func answerText(resp *openai.ChatResponse) string {
+	if resp == nil {
+		return ""
+	}
+	var b strings.Builder
+	for _, ch := range resp.Choices {
+		b.WriteString(ch.Message.Content)
+	}
+	return b.String()
+}
+
+var answerFlagsTotal = promauto.NewCounterVec(prometheus.CounterOpts{
+	Name: "router_answer_flags_total",
+	Help: "Answers that held a key or a personal identifier the question did not (ISSUE-152), by class.",
+}, []string{"classes"})

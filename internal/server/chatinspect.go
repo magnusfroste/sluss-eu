@@ -23,6 +23,9 @@ type chatRequestInfo struct {
 	InputTokens  int     `json:"input_tokens"`
 	OutputTokens int     `json:"output_tokens"`
 	CostUSD      float64 `json:"cost_usd"`
+	// AnswerFlags is what the answer held that the question did not
+	// (ISSUE-152): types only, e.g. "pii:email".
+	AnswerFlags string `json:"answer_flags,omitempty"`
 }
 
 // ChatRequestInfoHandler serves GET /chat/request?id=<request id>.
@@ -52,7 +55,7 @@ func ChatRequestInfoHandler(h *history.Store, rl *eventlog.RequestLogTracker) ht
 				break // not the caller's request: answer as if unknown
 			}
 			out = chatRequestInfo{Found: true, Model: rec.Model, ProviderSlug: rec.ProviderModelID,
-				InputTokens: rec.InputTokens, OutputTokens: rec.OutputTokens, CostUSD: rec.CostUSD}
+				InputTokens: rec.InputTokens, OutputTokens: rec.OutputTokens, CostUSD: rec.CostUSD, AnswerFlags: rec.AnswerFlags}
 			break
 		}
 		_ = json.NewEncoder(w).Encode(out)
