@@ -5,15 +5,18 @@ All notable changes to Sluss. Versions follow [semantic versioning](https://semv
 Releases are published from this file by the `release` workflow (Actions → release → Run workflow). Every release is a container image you can pin:
 
 ```
-ghcr.io/magnusfroste/sluss-eu:v1.3.0   # this release
-ghcr.io/magnusfroste/sluss-eu:1.3      # the newest 1.3.x
+ghcr.io/magnusfroste/sluss-eu:v1.4.0   # this release
+ghcr.io/magnusfroste/sluss-eu:1.4      # the newest 1.4.x
 ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 ```
 
-## Unreleased
+## v1.4.0 — 2026-11-08
+
+A local second opinion: a model on your own hardware that may only make a decision stricter.
 
 ### Protection
 - **A local second opinion that may only make a decision stricter.** Name one of your local models in `ROUTER_SECOND_OPINION_MODEL` and it reads every question after the rules: it can add a kind of data the rules did not see (a name with context, an illness in plain words, a deal described without a financial term), never remove one, and the rule stays the primary reason. A cloud model is refused, so the question never leaves the machine to be classified. Bounded by `ROUTER_SECOND_OPINION_TIMEOUT` (500 ms); past it the rules decide alone. The verdict is in the decision reasons, the dry-run, the request log and the chat inspector (*second opinion from the local model …*), and `router_second_opinion_total` counts the outcomes. The model is asked not to think (`enable_thinking: false`, `/no_think`), so a reasoning model answers in time; a model that gives no answer counts as *empty*, not as *nothing to add*.
+- **Measured.** On the demo's local model the second opinion raised the share of sensitive examples flagged from 30 to 36 of 39, with one harmless question over-flagged as code; median 0.6 s per decision. The table on *What Sluss catches* has the column.
 
 ## v1.3.0 — 2026-11-07
 
