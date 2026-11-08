@@ -133,6 +133,7 @@ P2:
 4. Uppdatera dokumentation om kontrakt ändras.
 5. Kontrollera latency om issue påverkar fast path.
 6. Merge efter review.
+- ISSUE-164 — Fler telefonformat (00, parentes, nordamerikanska) med validering; datum och etiketterade order-/faktura-/ärendenummer räknas inte längre. `epic: EPIC-14`, `priority: P2`, `state: done`, klar 2026-11-08.
 - ISSUE-163 — Lokal andra åsikt som bara får skärpa: `ROUTER_SECOND_OPINION_MODEL` (rostermodell taggad local) får lägga till en dataklass reglerna missade, aldrig ta bort; regeln förblir primär; timeout 500 ms. `epic: EPIC-14`, `priority: P2`, `state: done`, klar 2026-11-07.
 - ISSUE-162 — Positionering: "the AI gateway whose decisions you can read" + manualsidan What Sluss catches med mätt korpus (46 fall) som körs i CI; luckor täppta (telefon, adress, hälsoord, kod utan staket). `epic: EPIC-15`, `priority: P1`, `state: done`, klar 2026-11-07.
 - ISSUE-161 — Leveranskedja: Go 1.26.10, govulncheck i CI, cosign-signerade bilder med SPDX-SBOM (#71). `epic: EPIC-12`, `priority: P1`, `state: done`, klar 2026-11-07.

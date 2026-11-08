@@ -10,6 +10,11 @@ ghcr.io/magnusfroste/sluss-eu:1.5      # the newest 1.5.x
 ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 ```
 
+## Unreleased
+
+### Protection
+- **More phone formats, fewer false alarms.** Phone numbers written with `00` instead of `+`, with the area code in parentheses (`(555) 123-4567`, `(08) 123 456 78`, `+1 (555) …`) and North-American `555-123-4567` / `555.123.4567` are caught, in questions and in answers. A date (`08-11-2024`) and a number labelled as an order, invoice, case, customer or account number no longer count as a phone number. The corpus has three new examples (49).
+
 ## v1.5.0 — 2026-11-08
 
 What comes back is checked too: an answer that holds a key or a personal identifier the question did not is flagged.
