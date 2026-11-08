@@ -8,6 +8,10 @@ The cloud key is not in the server's environment. Whoever runs the server adds `
 
 That is Sluss's built-in test answer. No model is connected: there is no cloud key, and no model has been added on [Models]({{BASE}}/router/models). Do either, and the test answer stops. If a local model *is* added, open it and press *Test now* to see why it does not answer.
 
+## The second opinion never adds anything
+
+Look at `router_second_opinion_total` on `/metrics`, or the log. *empty* or *timeout* means the model never answered in time: often a reasoning model that thinks before it answers. Sluss asks it not to (`enable_thinking: false`, which vLLM passes to the model's chat template, and `/no_think` for Qwen-style models); a model that thinks anyway needs a longer `ROUTER_SECOND_OPINION_TIMEOUT`, or pick a smaller, plain model for the second opinion. *silent* means the model answered and found nothing the rules had missed.
+
 ## The login page says "Too many attempts"
 
 Five wrong passwords for an account within fifteen minutes engage a brake: further attempts are refused for a wait that doubles each time, up to fifteen minutes. Wait it out, or ask another administrator to check [Console users]({{BASE}}/router/users). Every wrong password is in the audit log with the address it came from, so a brake that nobody in the company caused is worth a look.

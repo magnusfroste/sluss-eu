@@ -158,3 +158,22 @@ func TestNilClassifierIsOff(t *testing.T) {
 		t.Fatal("no model id must give nil")
 	}
 }
+
+// A reasoning model that spends its tokens thinking answers nothing. That is
+// "empty", not "nothing to add", and the job stays as the rules left it.
+func TestSecondOpinionEmptyAnswerIsNotSilent(t *testing.T) {
+	srv, last := fakeModel(t, "", 0)
+	store, adapters := rosterWith(t, srv, []string{"local"})
+	c := New(Config{ModelID: "small-local"}, store, adapters, nil)
+	job := plainJob()
+	res := c.Apply(context.Background(), job, []openai.Message{{Role: "user", Content: "hello"}})
+	if res.Err == nil || len(res.Found) != 0 || job.SecondOpinionModel != "" {
+		t.Fatalf("an empty answer must be reported as an error and record nothing: %+v", res)
+	}
+	if last.ChatTemplateKwargs["enable_thinking"] != false || last.MaxTokens == nil || *last.MaxTokens < 256 {
+		t.Fatalf("the call must ask the model not to think and leave room to answer: kwargs=%v max=%v", last.ChatTemplateKwargs, last.MaxTokens)
+	}
+	if !strings.Contains(last.Messages[0].Content, "/no_think") {
+		t.Fatalf("the system prompt should carry /no_think for Qwen-style models")
+	}
+}
