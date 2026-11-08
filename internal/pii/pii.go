@@ -14,6 +14,8 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 )
 
 // Type identifies a category of detected PII.
@@ -51,7 +53,22 @@ var (
 	// Phone numbers as people write them: +46 70 123 45 67, 070-123 45 67,
 	// 08-123 456 78, 0701234567. Groups of digits separated by one space or
 	// hyphen; the digit count is checked afterwards.
-	rePhone = regexp.MustCompile(`\+\d{1,3}(?:[-\s]?\d{1,4}){2,5}|0\d{1,3}(?:[-\s]?\d{2,4}){1,4}`)
+	// Alternatives, tried in order: international with a +, optionally with
+	// the area code in parentheses (+1 (555) 123-4567, +46 70 123 45 67);
+	// international with 00 (0046 70 123 45 67); an area code in parentheses
+	// ((555) 123-4567, (08) 123 456); North-American 555-123-4567 or
+	// 555.123.4567; national with a leading 0 (070-123 45 67, 020 7946 0958).
+	// Every match is validated afterwards (digit count, not a date, not an
+	// order or invoice number).
+	rePhone = regexp.MustCompile(`\+\d{1,3}[-\s]?\(\d{1,4}\)(?:[-\s.]?\d{2,4}){1,3}` +
+		`|\+\d{1,3}(?:[-\s]?\d{1,4}){2,5}` +
+		`|00\d{1,3}(?:[-\s]?\d{1,4}){2,5}` +
+		`|\(\d{2,4}\)\s?\d{2,4}(?:[-\s.]?\d{2,5}){1,2}` +
+		`|\b\d{3}[-.]\d{3}[-.]\d{4}\b` +
+		`|0\d{1,3}(?:[-\s]?\d{2,4}){1,4}`)
+	// reDateLike is a date written with separators (08-11-2024, 2024-11-08):
+	// the national pattern above would otherwise read it as a number.
+	reDateLike = regexp.MustCompile(`^(?:\d{1,2}[-./]\d{1,2}[-./]\d{2,4}|\d{4}[-./]\d{1,2}[-./]\d{1,2})$`)
 	// A Swedish street with a house number: Storgatan 12, Industrivägen 4B,
 	// Kungsgränd 3. The street word is what makes it an address.
 	reStreet = regexp.MustCompile(`(?i)\b\p{L}+(?:gatan|gata|vägen|väg|gränd|gränden|torget|torg|allén|allé|stigen|plan|backen|leden|promenaden|kajen|esplanaden)\s+\d{1,4}\s?[A-Za-z]?\b`)
@@ -88,7 +105,7 @@ func Detect(text string) []Finding {
 		if !digitBounded(text, loc[0], loc[1]) {
 			continue
 		}
-		if validPhone(text[loc[0]:loc[1]]) {
+		if validPhone(text[loc[0]:loc[1]]) && !numberContext(text, loc[0]) {
 			counts[TypePhone]++
 		}
 	}
@@ -222,12 +239,61 @@ func validPersonnummer(candidate string) bool {
 // (leading 0, 8–11 digits total).
 func validPhone(candidate string) bool {
 	digits := onlyDigits(candidate)
-	if strings.HasPrefix(candidate, "+") {
+	if reDateLike.MatchString(strings.TrimSpace(candidate)) {
+		return false
+	}
+	switch {
+	case strings.HasPrefix(candidate, "+"):
 		return len(digits) >= 8 && len(digits) <= 15
+	case strings.HasPrefix(candidate, "00"):
+		// 00 + country code + number: E.164 written without the plus.
+		return len(digits) >= 10 && len(digits) <= 17
+	case strings.HasPrefix(candidate, "("):
+		// (555) 123-4567, (08) 123 456 78, (020) 7946 0958.
+		return len(digits) >= 8 && len(digits) <= 11
+	case !strings.HasPrefix(candidate, "0"):
+		// North-American 555-123-4567: exactly ten digits.
+		return len(digits) == 10
 	}
 	// A Swedish number is 9 or 10 digits with the leading 0; 8 allows short
 	// city numbers written without the area code's full length.
 	return len(digits) >= 8 && len(digits) <= 11
+}
+
+// numberWords are labels that make a run of digits an order, invoice, case or
+// account number rather than a phone number. Account and bank numbers are
+// caught by the financial rules on their own.
+var numberWords = []string{
+	"order", "ordernr", "ordernummer", "beställning", "invoice", "faktura", "fakturanr", "fakturanummer",
+	"ref", "referens", "reference", "ärende", "ärendenr", "case", "ticket", "kundnr", "kundnummer",
+	"customer no", "org.nr", "orgnr", "organisationsnummer", "art.nr", "artikelnr", "artikel",
+	"konto", "kontonr", "account", "bankgiro", "plusgiro", "serial", "serienummer", "id",
+}
+
+// numberContext reports whether the words just before start label the digits
+// as some other kind of number.
+func numberContext(text string, start int) bool {
+	from := start - 28
+	if from < 0 {
+		from = 0
+	}
+	before := strings.ToLower(text[from:start])
+	before = strings.TrimRight(before, " :#.-\t")
+	for _, w := range numberWords {
+		if !strings.HasSuffix(before, w) {
+			continue
+		}
+		// A whole word only: "id" must not match the end of "David".
+		i := len(before) - len(w)
+		if i == 0 {
+			return true
+		}
+		r, _ := utf8.DecodeLastRuneInString(before[:i])
+		if !unicode.IsLetter(r) && !unicode.IsDigit(r) {
+			return true
+		}
+	}
+	return false
 }
 
 // validIBAN checks length and the ISO 13616 mod-97 checksum.

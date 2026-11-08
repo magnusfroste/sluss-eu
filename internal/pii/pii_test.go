@@ -202,3 +202,41 @@ func hasType(findings []Finding, want Type) bool {
 	}
 	return false
 }
+
+// Phone numbers in the formats people outside Sweden write too, and the runs
+// of digits that must not count (ISSUE-164).
+func TestPhoneFormatsAndLookalikes(t *testing.T) {
+	for _, text := range []string{
+		"Call (555) 123-4567 for support.",
+		"Ring 555-123-4567.",
+		"Tel 555.123.4567",
+		"Reach us on +1 (555) 123-4567.",
+		"Ring 0046 70 123 45 67.",
+		"Office +44 20 7946 0958",
+		"London 020 7946 0958",
+		"Växel (08) 123 456 78",
+		"Ring Anna på 070-123 45 67",
+		"Ring David 070-123 45 67",
+		"Kontakta Ingrid 08-123 456 78",
+	} {
+		if !hasType(Detect(text), TypePhone) {
+			t.Errorf("phone not detected in %q", text)
+		}
+	}
+	for _, text := range []string{
+		"Datum 08-11-2024",
+		"Mötet är 2024-11-08 kl 10.",
+		"Ordernummer 0812-345 678",
+		"Fakturanr 0123456789",
+		"Invoice #555-123-4567 is overdue.",
+		"Ärende 0701-2345-67 är stängt.",
+		"Org.nr 556677-8899",
+		"Pris 1 299 kr",
+		"Möte 10 30",
+		"Version 1.2.3, build 555.123.45",
+	} {
+		if hasType(Detect(text), TypePhone) {
+			t.Errorf("phone wrongly detected in %q", text)
+		}
+	}
+}

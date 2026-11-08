@@ -42,6 +42,8 @@ var catchCorpus = []catchCase{
 	{router.SensitivityPII, "Sammanfatta ärendet för 811218+9876 (pensionär).", true, "the + form for people over 100"},
 	{router.SensitivityPII, "Mail anna.svensson@example.com and ask about the invoice.", true, "an e-mail address"},
 	{router.SensitivityPII, "Ring Anna på 070-123 45 67 och boka ett möte.", true, "a Swedish mobile number"},
+	{router.SensitivityPII, "Call our customer Jane on (555) 123-4567 about the refund.", true, "a phone number in parentheses (North-American)"},
+	{router.SensitivityPII, "Kunden nås på +44 20 7946 0958 eller 0046 70 123 45 67.", true, "international numbers with + and with 00"},
 	{router.SensitivityPII, "Anna Svensson, Storgatan 12, 111 22 Stockholm, har klagat på leveransen.", true, "a postal address with a postcode"},
 	{router.SensitivityPII, "Skriv ett brev till vår kund Anna Svensson om den försenade leveransen.", false, "a name alone: no identifier, no term"},
 	{router.SensitivityPII, "Here is the employee list: Anna (sales, 34), Erik (finance, 51), Maria (HR, 29). Who should get the award?", false, "names and ages, no identifier"},
@@ -92,6 +94,7 @@ var catchCorpus = []catchCase{
 	// ---- Harmless (none): must stay none ------------------------------------
 	{router.SensitivityNone, "Write a git commit message for this diff: renamed a variable.", true, "harmless"},
 	{router.SensitivityNone, "Write a haiku about routers.", true, "harmless"},
+	{router.SensitivityNone, "Mötet flyttas till 08-11-2024; ordernummer 0812-345 678 är levererat.", true, "a date and an order number are not phone numbers"},
 	{router.SensitivityNone, "Sammanfatta den här artikeln om Zscaler och Netskope.", true, "harmless, mentions security vendors"},
 	{router.SensitivityNone, "Ge mig konfidentiell feedback på mitt CV.", true, "lower-case konfidentiell is prose"},
 	{router.SensitivityNone, "Det är ingen hemlighet att vi vill växa; skriv en hemlig önskelista till julfesten.", true, "lower-case hemlig is prose, not a stamp"},
