@@ -5,12 +5,14 @@ All notable changes to Sluss. Versions follow [semantic versioning](https://semv
 Releases are published from this file by the `release` workflow (Actions → release → Run workflow). Every release is a container image you can pin:
 
 ```
-ghcr.io/magnusfroste/sluss-eu:v1.5.0   # this release
+ghcr.io/magnusfroste/sluss-eu:v1.5.1   # this release
 ghcr.io/magnusfroste/sluss-eu:1.5      # the newest 1.5.x
 ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 ```
 
-## Unreleased
+## v1.5.1 — 2026-11-08
+
+More phone formats are caught, and dates and order numbers no longer pass for phone numbers.
 
 ### Protection
 - **More phone formats, fewer false alarms.** Phone numbers written with `00` instead of `+`, with the area code in parentheses (`(555) 123-4567`, `(08) 123 456 78`, `+1 (555) …`) and North-American `555-123-4567` / `555.123.4567` are caught, in questions and in answers. A date (`08-11-2024`) and a number labelled as an order, invoice, case, customer or account number no longer count as a phone number. The corpus has three new examples (49).
