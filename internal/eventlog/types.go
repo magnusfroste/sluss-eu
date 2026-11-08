@@ -85,4 +85,7 @@ type AttemptEvent struct {
 	// Egress of the model that ANSWERED (ISSUE-116) — after a fallback this
 	// can differ from the decision's primary.
 	Egress string
+	// AnswerFlags names what the answer held that the question did not
+	// (ISSUE-152): "secret:<kind>" or "pii:<type>", never a value.
+	AnswerFlags []string
 }

@@ -2,6 +2,7 @@ package eventlog
 
 import (
 	"context"
+	"strings"
 	"sync"
 	"time"
 )
@@ -26,6 +27,10 @@ type RequestLogRecord struct {
 	Blocked         bool      `json:"blocked,omitempty"`
 	BlockCode       string    `json:"block_code,omitempty"`
 	Egress          string    `json:"egress,omitempty"` // "local" | "cloud" | "" (blocked/unknown)
+	// AnswerFlags is what the answer held that the question did not
+	// (ISSUE-152), comma-separated types such as "pii:email,secret:api_key";
+	// never a value.
+	AnswerFlags string `json:"answer_flags,omitempty"`
 	// TenantID is the department (API key tenant, or the SSO department for
 	// chat); Actor the signed-in person behind a chat request (ISSUE-130).
 	TenantID string `json:"tenant_id,omitempty"`
@@ -111,6 +116,9 @@ func (t *RequestLogTracker) fillAttempt(a *AttemptEvent) {
 			}
 			if a.Egress != "" {
 				t.records[i].Egress = a.Egress
+			}
+			if len(a.AnswerFlags) > 0 {
+				t.records[i].AnswerFlags = strings.Join(a.AnswerFlags, ",")
 			}
 			return
 		}

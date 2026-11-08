@@ -10,6 +10,11 @@ ghcr.io/magnusfroste/sluss-eu:1.4      # the newest 1.4.x
 ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 ```
 
+## Unreleased
+
+### Protection
+- **The answer is checked too.** Every answer is read with the same value detectors as the question (keys and tokens, personal identity numbers, e-mail addresses, phone numbers, postal addresses, card numbers, IBANs). What the answer holds that the question did not is flagged: in the request log (`answer_flags`), the audit log (`response.flagged`, types only), `/metrics` (`router_answer_flags_total`), the `X-Router-Answer-Flags` header of a non-streamed answer, and the chat inspector. It never blocks or changes the answer; a streamed answer is checked after it has ended, so nothing waits.
+
 ## v1.4.0 — 2026-11-08
 
 A local second opinion: a model on your own hardware that may only make a decision stricter.

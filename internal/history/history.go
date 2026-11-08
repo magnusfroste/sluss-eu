@@ -44,7 +44,8 @@ CREATE TABLE IF NOT EXISTS requests (
 	sensitivity TEXT NOT NULL DEFAULT '',
 	block_code TEXT NOT NULL DEFAULT '',
 	egress TEXT NOT NULL DEFAULT '',
-	actor TEXT NOT NULL DEFAULT ''
+	actor TEXT NOT NULL DEFAULT '',
+	answer_flags TEXT NOT NULL DEFAULT ''
 );
 CREATE INDEX IF NOT EXISTS idx_requests_time ON requests(time);
 CREATE INDEX IF NOT EXISTS idx_requests_request_id ON requests(request_id);
@@ -135,6 +136,8 @@ var migrations = []string{
 	`ALTER TABLE sessions ADD COLUMN department TEXT NOT NULL DEFAULT ''`,
 	// The signed-in person behind a chat request (ISSUE-130); "" for API keys.
 	`ALTER TABLE requests ADD COLUMN actor TEXT NOT NULL DEFAULT ''`,
+	// What the answer held that the question did not (ISSUE-152): types only.
+	`ALTER TABLE requests ADD COLUMN answer_flags TEXT NOT NULL DEFAULT ''`,
 }
 
 // Store is a SQLite-backed request history. It implements eventlog.Handler:
@@ -245,6 +248,10 @@ func (s *Store) fillAttempt(a *eventlog.AttemptEvent) {
 			egress = CASE WHEN ? != '' THEN ? ELSE egress END
 		WHERE id = (SELECT MAX(id) FROM requests WHERE request_id = ?)`,
 		a.InputTokens, a.OutputTokens, cost, cost, a.ModelID, a.ModelID, a.ProviderID, a.ProviderID, a.Egress, a.Egress, a.RequestID)
+	if len(a.AnswerFlags) > 0 {
+		_, _ = s.db.Exec(`UPDATE requests SET answer_flags = ?
+			WHERE id = (SELECT MAX(id) FROM requests WHERE request_id = ?)`, strings.Join(a.AnswerFlags, ","), a.RequestID)
+	}
 }
 
 // Recent returns up to n most recent requests, newest first.
@@ -256,7 +263,7 @@ func (s *Store) Recent(n int) []eventlog.RequestLogRecord {
 		n = 100
 	}
 	rows, err := s.db.Query(`SELECT time, request_id, task_type, risk_level, model, provider_model_id, provider,
-			input_tokens, output_tokens, cost_usd, blocked, sensitivity, block_code, egress, tenant_id, actor
+			input_tokens, output_tokens, cost_usd, blocked, sensitivity, block_code, egress, tenant_id, actor, answer_flags
 		FROM requests ORDER BY id DESC LIMIT ?`, n)
 	if err != nil {
 		return nil
@@ -272,7 +279,7 @@ func scanRequestRows(rows *sql.Rows) []eventlog.RequestLogRecord {
 		var ts string
 		var blocked int
 		if err := rows.Scan(&ts, &r.RequestID, &r.TaskType, &r.RiskLevel, &r.Model, &r.ProviderModelID, &r.Provider,
-			&r.InputTokens, &r.OutputTokens, &r.CostUSD, &blocked, &r.Sensitivity, &r.BlockCode, &r.Egress, &r.TenantID, &r.Actor); err != nil {
+			&r.InputTokens, &r.OutputTokens, &r.CostUSD, &blocked, &r.Sensitivity, &r.BlockCode, &r.Egress, &r.TenantID, &r.Actor, &r.AnswerFlags); err != nil {
 			continue
 		}
 		r.Time, _ = time.Parse(time.RFC3339Nano, ts)
@@ -309,7 +316,7 @@ func (s *Store) Since(t time.Time, limit int) []eventlog.RequestLogRecord {
 		limit = 10_000
 	}
 	rows, err := s.db.Query(`SELECT time, request_id, task_type, risk_level, model, provider_model_id, provider,
-			input_tokens, output_tokens, cost_usd, blocked, sensitivity, block_code, egress, tenant_id, actor
+			input_tokens, output_tokens, cost_usd, blocked, sensitivity, block_code, egress, tenant_id, actor, answer_flags
 		FROM requests WHERE time >= ? ORDER BY id DESC LIMIT ?`,
 		t.UTC().Format(time.RFC3339Nano), limit)
 	if err != nil {
@@ -330,10 +337,10 @@ func (s *Store) ByRequestID(id string) (eventlog.RequestLogRecord, bool) {
 	var ts string
 	var blocked int
 	err := s.db.QueryRow(`SELECT time, request_id, task_type, risk_level, model, provider_model_id, provider,
-			input_tokens, output_tokens, cost_usd, blocked, sensitivity, block_code, egress, tenant_id, actor
+			input_tokens, output_tokens, cost_usd, blocked, sensitivity, block_code, egress, tenant_id, actor, answer_flags
 		FROM requests WHERE request_id = ? ORDER BY id DESC LIMIT 1`, id).Scan(
 		&ts, &r.RequestID, &r.TaskType, &r.RiskLevel, &r.Model, &r.ProviderModelID, &r.Provider,
-		&r.InputTokens, &r.OutputTokens, &r.CostUSD, &blocked, &r.Sensitivity, &r.BlockCode, &r.Egress, &r.TenantID, &r.Actor)
+		&r.InputTokens, &r.OutputTokens, &r.CostUSD, &blocked, &r.Sensitivity, &r.BlockCode, &r.Egress, &r.TenantID, &r.Actor, &r.AnswerFlags)
 	if err != nil {
 		return eventlog.RequestLogRecord{}, false
 	}

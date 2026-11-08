@@ -51,6 +51,12 @@ These are the misses in the set, by design of a rule-based reader:
 - **A deal in plain words.** *We will buy the company for about 40 million next month; keep it quiet.* Also revenue figures about to be published, and a dispute described as *they say we broke the deal*.
 - **A card number is flagged as personal data, not as financial.** It still stays local; only the label differs.
 
+## The answer is checked too
+
+Sluss also reads every answer with the same detectors that find values in a question: keys and tokens, personal identity numbers, e-mail addresses, phone numbers, postal addresses, card numbers and IBANs. If the answer holds one that the question did not, the request is flagged. That covers a model that returns a key from its training data, a tool result that leaks a customer's number, or a prompt injection that makes the model repeat something it should not.
+
+It only flags; it never blocks or changes the answer. The flag is in the request log, in the audit log (*response.flagged*, with the types and never the values), on `/metrics` (`router_answer_flags_total`) and in the chat inspector under *Answer check*. What the person wrote themselves and gets back, such as their own e-mail address in a signature, is not flagged. A streamed answer is checked once it has ended, so nothing waits for the check.
+
 ## How to close the gap
 
 1. **Your own terms.** On [Policy]({{BASE}}/router/policy) a rule can match words of your own: project code names, the names of your products before launch, the word your company uses for its customer files. Sluss has no way to know those; you do.
