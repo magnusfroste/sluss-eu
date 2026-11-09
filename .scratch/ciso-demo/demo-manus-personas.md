@@ -47,7 +47,7 @@ kostnadsmotorn — mätt mot en allt-på-premium-baseline på dashboarden."
 
 ### Beat 2 — Johan, kundtjänst (signaturögonblicket: PII → huset)
 ```
-Summarise the case for customer 811218-9876 who complained about an invoice
+Summarise the case for customer 811218-2392 who complained about an invoice
 ```
 **Utfall:** `qwen36-35b` (balanced) · **LOKAL** · sens `pii` · grön banner
 *"the data never left the house"*.

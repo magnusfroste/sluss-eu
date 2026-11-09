@@ -33,7 +33,7 @@ cases:
   - id: support-ticket
     who: Customer support
     story: Support wants a good cloud model for an everyday ticket. Mask and send gives cloud quality while the customer's number, e-mail and phone never leave the house.
-    prompt: Summarise this support ticket from customer 811218-9876 (anna.svensson@example.com, 070-123 45 67) about a delayed refund.
+    prompt: Summarise this support ticket from customer 811218-2392 (anna.svensson@example.com, 070-123 45 67) about a delayed refund.
     outcome: mask
     classes: [pii]
     masked: [personnummer, email, phone]
@@ -41,7 +41,7 @@ cases:
   - id: support-high-risk
     who: Customer support
     story: Mask and send allows the cloud; it does not force it. This open-ended request is rated high risk and needs a premium model, and here the only premium model is the one on your own hardware, so the question stays local and nothing needs masking.
-    prompt: Draft a friendly reply to customer 811218-9876 (anna.svensson@example.com, 070-123 45 67) about the delayed refund.
+    prompt: Draft a friendly reply to customer 811218-2392 (anna.svensson@example.com, 070-123 45 67) about the delayed refund.
     outcome: local
     classes: [pii]
 
@@ -56,7 +56,7 @@ cases:
   - id: hr-sick-leave
     who: HR
     story: Personal data together with health data. The stricter rule wins, so the question stays on your own hardware instead of being masked.
-    prompt: Erik Larsson, 811218-9876, has been on sick leave since March with burnout. Draft a plan for his return.
+    prompt: Erik Larsson, 811218-2392, has been on sick leave since March with burnout. Draft a plan for his return.
     outcome: local
     classes: [pii, health]
 

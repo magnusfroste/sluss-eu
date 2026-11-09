@@ -27,7 +27,7 @@ func newHistory(t *testing.T) *history.Store {
 func TestDefaultQuickPromptsIncludePII(t *testing.T) {
 	var pii bool
 	for _, p := range defaultQuickPrompts() {
-		if strings.Contains(p.Text, "811218-9876") {
+		if strings.Contains(p.Text, "811218-2392") {
 			pii = true
 			if !strings.Contains(strings.ToLower(p.Note), "local") {
 				t.Fatalf("PII prompt note should explain the local routing: %q", p.Note)

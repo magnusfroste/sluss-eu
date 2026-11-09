@@ -30,10 +30,10 @@ When several rules match, the strictest wins.
 | Marketing | Write a short LinkedIn post announcing our new office in Malmö. | — | cloud model |
 | Developer | Write a git commit message for this diff that renames getUser to fe… | — | cloud model |
 | Developer | Why does this fail? … | secrets_possible | own hardware |
-| Customer support | Summarise this support ticket from customer 811218-9876 (anna.svens… | pii | cloud, masked (email, personnummer, phone) |
-| Customer support | Draft a friendly reply to customer 811218-9876 (anna.svensson@examp… | pii | own hardware |
+| Customer support | Summarise this support ticket from customer 811218-2392 (anna.svens… | pii | cloud, masked (email, personnummer, phone) |
+| Customer support | Draft a friendly reply to customer 811218-2392 (anna.svensson@examp… | pii | own hardware |
 | Customer support | Summarise the call notes and confirm the callback number +44 20 794… | pii | cloud, masked (phone) |
-| HR | Erik Larsson, 811218-9876, has been on sick leave since March with … | pii, health | own hardware |
+| HR | Erik Larsson, 811218-2392, has been on sick leave since March with … | pii, health | own hardware |
 | Finance | Here is the balance sheet and P&L for Q3 before the earnings releas… | financial | own hardware |
 | Finance | Summarise this invoice note in two lines; payment goes to SE45 5000… | pii | cloud, masked (iban) |
 | Legal | Review this NDA and the indemnification clause before we sign. | legal | own hardware |

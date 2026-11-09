@@ -13,9 +13,9 @@ var fakeGitHub = "ghp_" + strings.Repeat("A", 36)
 
 func TestMaskAndRestoreRoundTrip(t *testing.T) {
 	m := New()
-	in := "Customer 811218-9876 (anna.svensson@example.com, 070-123 45 67) paid from SE45 5000 0000 0583 9825 7466. Token " + fakeGitHub + ". Mail anna.svensson@example.com again."
+	in := "Customer 811218-2392 (anna.svensson@example.com, 070-123 45 67) paid from SE45 5000 0000 0583 9825 7466. Token " + fakeGitHub + ". Mail anna.svensson@example.com again."
 	out := m.Text(in)
-	for _, leak := range []string{"811218-9876", "anna.svensson@example.com", "070-123 45 67", "SE45", fakeGitHub} {
+	for _, leak := range []string{"811218-2392", "anna.svensson@example.com", "070-123 45 67", "SE45", fakeGitHub} {
 		if strings.Contains(out, leak) {
 			t.Fatalf("masked text still holds %q: %s", leak, out)
 		}
@@ -48,15 +48,15 @@ func TestMaskWholeLongText(t *testing.T) {
 func TestMaskMessagesEveryRoleContentPartsAndToolCalls(t *testing.T) {
 	var parts json.RawMessage = json.RawMessage(`[{"type":"text","text":"call 070-123 45 67"},{"type":"image_url","image_url":{"url":"data:x"}}]`)
 	in := []openai.Message{
-		{Role: "user", Content: "my number is 811218-9876"},
-		{Role: "assistant", Content: "Noted, 811218-9876."},
+		{Role: "user", Content: "my number is 811218-2392"},
+		{Role: "assistant", Content: "Noted, 811218-2392."},
 		{Role: "user", Content: "call 070-123 45 67", ContentParts: parts},
 		{Role: "assistant", ToolCalls: []any{map[string]any{"function": map[string]any{"arguments": `{"to":"anna.svensson@example.com"}`}}}},
 	}
 	m := New()
 	out := m.Messages(in)
 	b, _ := json.Marshal(out)
-	for _, leak := range []string{"811218-9876", "070-123 45 67", "anna.svensson@example.com"} {
+	for _, leak := range []string{"811218-2392", "070-123 45 67", "anna.svensson@example.com"} {
 		if strings.Contains(string(b), leak) {
 			t.Fatalf("masked conversation still holds %q: %s", leak, b)
 		}
@@ -64,21 +64,21 @@ func TestMaskMessagesEveryRoleContentPartsAndToolCalls(t *testing.T) {
 	if !strings.Contains(string(b), `"image_url"`) {
 		t.Fatal("non-text parts must be kept")
 	}
-	if in[0].Content != "my number is 811218-9876" {
+	if in[0].Content != "my number is 811218-2392" {
 		t.Fatal("the original messages must not be changed")
 	}
 }
 
 func TestRestorerHandlesSplitPlaceholders(t *testing.T) {
 	m := New()
-	_ = m.Text("mail anna.svensson@example.com or 811218-9876")
+	_ = m.Text("mail anna.svensson@example.com or 811218-2392")
 	r := m.NewRestorer()
 	var got strings.Builder
 	for _, piece := range []string{"Write to [EM", "AIL_1] and file it under [PERSON", "NUMMER_1]. Done [x"} {
 		got.WriteString(r.Add(piece))
 	}
 	got.WriteString(r.Flush())
-	want := "Write to anna.svensson@example.com and file it under 811218-9876. Done [x"
+	want := "Write to anna.svensson@example.com and file it under 811218-2392. Done [x"
 	if got.String() != want {
 		t.Fatalf("got  %q\nwant %q", got.String(), want)
 	}
@@ -93,7 +93,7 @@ func TestUnknownPlaceholderIsLeft(t *testing.T) {
 }
 
 func TestFindMatchesDetect(t *testing.T) {
-	text := "811218-9876, anna.svensson@example.com, 070-123 45 67, Storgatan 12, 111 22 Stockholm"
+	text := "811218-2392, anna.svensson@example.com, 070-123 45 67, Storgatan 12, 111 22 Stockholm"
 	types := map[pii.Type]bool{}
 	for _, sp := range pii.Find(text) {
 		types[sp.Type] = true

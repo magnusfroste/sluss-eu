@@ -39,7 +39,7 @@ func defaultQuickPrompts() []QuickPrompt {
 		{
 			Label: "Summarise a customer case (contains a personal ID)",
 			Tier:  "PII → local",
-			Text:  "Summarise the case for customer 811218-9876 who complained about an invoice.",
+			Text:  "Summarise the case for customer 811218-2392 who complained about an invoice.",
 			Note:  "Personal data detected → routed to a local model. The data never leaves the house.",
 		},
 		{

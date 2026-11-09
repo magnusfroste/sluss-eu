@@ -32,7 +32,7 @@ func TestSensitivitySourceHeader(t *testing.T) {
 		h(rec, httptest.NewRequest(http.MethodPost, "/v1/chat/completions", strings.NewReader(body)))
 		return rec.Header()
 	}
-	pii := `{"role":"user","content":"Summarise the case for customer 811218-9876 who complained about an invoice"}`
+	pii := `{"role":"user","content":"Summarise the case for customer 811218-2392 who complained about an invoice"}`
 	if got := send(`{"model":"auto","messages":[` + pii + `]}`).Get("X-Router-Sensitivity-Source"); got != "" {
 		t.Fatalf("single message: header should be absent, got %q", got)
 	}

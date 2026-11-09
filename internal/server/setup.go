@@ -328,7 +328,7 @@ var setupTmpl = template.Must(template.New("setup").Funcs(template.FuncMap{
     <div class="sh"><span class="num">4</span><span class="st">See it work</span><span class="state">{{if gt .S.Requests 0}}{{.S.Requests}} requests{{else}}not yet{{end}}</span></div>
     <div class="body">A dry-run shows the decision without sending anything: the first should stay local, the second go to the cloud. The step completes with the first real request — send one from the live chat or a connected client.
       <div class="tries">
-        <div class="try"><span class="p">Summarise the case for customer 811218-9876 who complained about an invoice</span><span class="res" data-p="Summarise the case for customer 811218-9876 who complained about an invoice">—</span></div>
+        <div class="try"><span class="p">Summarise the case for customer 811218-2392 who complained about an invoice</span><span class="res" data-p="Summarise the case for customer 811218-2392 who complained about an invoice">—</span></div>
         <div class="try"><span class="p">write a concise git commit message for a bugfix</span><span class="res" data-p="write a concise git commit message for a bugfix">—</span></div>
       </div>
       <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap"><button class="btn" type="button" onclick="tryAll()">Run the dry-run</button><a class="btn ghost" href="/chat">Open the live chat</a><a class="btn ghost" href="/router/connect">Connect a client</a></div>

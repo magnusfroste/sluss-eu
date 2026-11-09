@@ -106,7 +106,7 @@ func TestWebSearchSkippedForSensitivePrompt(t *testing.T) {
 	sink := audit.NewMemorySink(0)
 	var fwd []byte
 	h := SearchOptions{URL: srv.URL, Auditor: sink}.Middleware(capture(&fwd))
-	body := `{"search":true,"messages":[{"role":"user","content":"Summarise the case for customer 811218-9876 who complained about an invoice"}]}`
+	body := `{"search":true,"messages":[{"role":"user","content":"Summarise the case for customer 811218-2392 who complained about an invoice"}]}`
 	rec := sendChat(h, body)
 	if *got != "" {
 		t.Fatalf("a PII prompt must never reach the search engine, got %q", *got)
