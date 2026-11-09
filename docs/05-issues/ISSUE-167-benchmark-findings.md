@@ -32,14 +32,21 @@ Varje rättning testas på nya exempel som inte finns i korpusen
 omgenererad med nytt frö; mallarna är desamma, så siffrorna visar
 rättningarna. Manualsidan redovisar före (1.8.0) och efter (1.8.1).
 
+## Syntetiskt, och ingen verklig persons
+
+Generatorn tog förut slumpade personnummer med giltig kontrollsiffra, som
+kan tillhöra en verklig person. Nu: Skatteverkets testpersonnummer
+(`benchmark/test_personnummer.txt`), PTS-serien för fiktion
+(070-174 06 05–99) och kortprefix 4000 00.
+
 ## Resultat (endast regler)
 
 | | 1.8.0 | 1.8.1 |
 |---|---|---|
 | Känsliga flaggade | 71 % | 74 % |
-| Ofarliga flaggade | 18 % | 9 % |
+| Ofarliga flaggade | 18 % | 10 % |
 | Identifierare/nyckel | 90 % | 100 % |
-| Rätt klass exakt | 75 % | 82 % |
+| Rätt klass exakt | 75 % | 81 % |
 
 ## Beteendeändring
 
