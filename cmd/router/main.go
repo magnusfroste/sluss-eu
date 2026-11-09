@@ -636,6 +636,19 @@ func main() {
 	if secondOpinion != nil {
 		logger.Info("second opinion enabled: a local model may only make a decision stricter", "model", secondOpinion.ModelID(), "timeout", soTimeout.String())
 	}
+	// Evidence of how decisions are made from now on (ISSUE-165): one audit
+	// record at every start, so an auditor can show, for any period, whether
+	// a model took part in routing decisions or the rules decided alone.
+	{
+		detail := map[string]string{"decision_mode": secondOpinion.Mode(), "version": buildinfo.Release(), "commit": buildinfo.Short()}
+		if m := secondOpinion.ModelID(); m != "" {
+			detail["second_opinion_model"] = m
+		}
+		audit.Record(context.Background(), auditSink, audit.Entry{
+			Action: audit.Action("router.started"), Actor: "system", Outcome: "success",
+			Reason: "decisions: " + secondOpinion.Describe(), Detail: detail,
+		})
+	}
 
 	buildinfo.Register()
 
@@ -727,12 +740,14 @@ func main() {
 
 	go func() {
 		boot := currentBootInfo(addr, providerMode)
+		boot.Decisions = secondOpinion.Describe()
 		if !strings.EqualFold(strings.TrimSpace(os.Getenv("ROUTER_LOG_BANNER")), "off") {
 			writeBanner(os.Stderr, boot)
 		}
 		logger.Info("sluss ready", "version", boot.Version, "commit", buildinfo.FullCommit(), "built", boot.Built,
 			"addr", addr, "console", boot.consoleURL(), "providers", providerMode, "data_dir", boot.DataDir,
-			"deployment", boot.Deployment, "update_check", boot.UpdateCheck, "go", runtime.Version())
+			"deployment", boot.Deployment, "update_check", boot.UpdateCheck, "go", runtime.Version(),
+			"decision_mode", secondOpinion.Mode())
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			logger.Error("server failed", "err", err)
 			os.Exit(1)

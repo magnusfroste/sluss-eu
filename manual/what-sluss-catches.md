@@ -8,7 +8,7 @@
 
 ## The short version
 
-Sluss reads every question with fixed rules, never with another AI. The rules find **identifiers** (a personal identity number, an e-mail address, a phone number, an address, a card number, an IBAN), **keys and secrets** (an API key, a token, a private key, the word *password* next to one), **markings** (*HEMLIG*, *begränsat hemlig*, NATO and EU markings, the security protection act), **terms** (a patient record, a diagnosis, sick leave; a balance sheet, payroll, insider information; an NDA, a lawsuit; and their Swedish forms) and **code**.
+Sluss reads every question with fixed rules. By default no model takes part in any decision; a second opinion from a model on your own hardware is optional and may only make a decision stricter ([How Sluss decides](/manual/how-sluss-decides)). The rules find **identifiers** (a personal identity number, an e-mail address, a phone number, an address, a card number, an IBAN), **keys and secrets** (an API key, a token, a private key, the word *password* next to one), **markings** (*HEMLIG*, *begränsat hemlig*, NATO and EU markings, the security protection act), **terms** (a patient record, a diagnosis, sick leave; a balance sheet, payroll, insider information; an NDA, a lawsuit; and their Swedish forms) and **code**.
 
 They do not understand meaning. A text that is sensitive only because of what it says, with no identifier, marking or term in it, passes as harmless. That is the price of a decision you can read, and it is stated here rather than hidden.
 

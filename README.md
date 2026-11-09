@@ -23,6 +23,15 @@ Any AI client ──▶ SLUSS (your infra) ──▶ cloud models        (harmle
  OpenWebUI, agents…                                ──▶ BLOCKED, audited   (nothing compliant)
 ```
 
+**It is an address, not a proxy.** Nothing sits in your network traffic and
+nothing is installed on anyone's computer. You give your AI tools Sluss's
+address instead of the AI company's (a base URL and a key — every serious AI
+tool has the setting), and the tools you already run close the other doors:
+**Entra ID** decides who may use AI and from which device, **Intune** pushes
+the address to every computer and checks daily that it holds, and your **DNS
+filter** blocks the AI websites and points people to the company chat.
+[One address, closed doors](manual/one-address.md) explains it in five minutes.
+
 Built for organisations under **NIS2, DORA and GDPR** — but useful to anyone
 who wants to say *yes* to AI on their own rules. It sells **control and
 evidence**; it makes no legal-compliance claims.
@@ -34,6 +43,13 @@ rules an auditor can read, not with another model: the same question gives
 the same decision, every time, which is what evidence needs; the decision
 takes under a millisecond; nothing leaves your machine to be classified; and
 there is no second AI to govern, prompt-inject or explain.
+
+That is how Sluss starts, and an organisation that wants no AI in the
+decision can leave it that way and prove it: the log at start, `/version`,
+the Version page and a `router.started` record in the audit log all say
+*rules only*. If you want more, a small model on your own hardware can give a
+second opinion that may only make a decision stricter
+([How Sluss decides](manual/how-sluss-decides.md)).
 
 The price is stated, not hidden: rules find identifiers, keys, markings,
 terms and code, not meaning. A text that is sensitive only because of what it
@@ -100,10 +116,15 @@ upgrades, backup, air-gapped installs:
 
 | | |
 |---|---|
-| **Classify** | Task type, risk, and data sensitivity per prompt in < 1 ms: `secrets_possible` › `pii` (incl. personnummer) › `security_classified` › `health` › `financial` › `legal` › `source_code`. English + Swedish terms. Attached documents are classified as content; unreadable attachments form their own class. |
+| **Classify** | Task type, risk, and data sensitivity per prompt in < 1 ms: `secrets_possible` › `pii` (personnummer, e-mail, phone, address, card, IBAN — checksum-validated where a checksum exists) › `security_classified` › `health` › `financial` › `legal` › `source_code`. English + Swedish terms. Every class found counts, not only the strongest. Attached documents are classified as content; unreadable attachments form their own class. |
+| **Second opinion** *(optional, off by default)* | A small model on your own hardware reads the question after the rules and may add a class they missed — a name with a story, an illness in plain words — never remove one. A cloud model is refused. The mode is in the banner, `/version` and the audit log. |
 | **Gate agents** | Declared tools are classified `read` ‹ `write` ‹ `external` ‹ `destructive` (unknown → `write`, never `read`). Policy can keep a delete-capable agent on-prem or block it — before any model sees the prompt. |
-| **Route by policy** | Firewall-style rules: `block → force → constraints → defaults`. Constraints accumulate and are **fail-closed**: if no provider carries the required compliance tag, the request is a 403 with an audit entry — never a silent cloud fallback. Client model pins cannot bypass policy. |
-| **Prove it** | Every decision explainable in one line. Hash-chained audit export + offline verifier (`cmd/audit-verify`). Incident evidence for NIS2's 24h/72h windows on one URL. Audited per-tenant GDPR erasure — you can delete data, never the fact that you deleted it. |
+| **Route by policy** | Firewall-style rules with three outcomes: **keep on own hardware**, **mask and send**, **block**. The strictest matching rule wins. Constraints are **fail-closed**: if no provider carries the required tag, the request is a 403 with an audit entry — never a silent cloud fallback. Client model pins cannot bypass policy. |
+| **Mask and send** | Cloud quality without the identifiers: personal identity numbers, e-mail, phone, IBAN, card, address and keys become placeholders (`[EMAIL_1]`) before a cloud model sees the question, and the values are put back in the answer — streamed answers too. Only the types and counts are logged. |
+| **Check answers** | Every answer is read with the same detectors as the question. A key or personal identifier the question did not hold is flagged in the request log and the audit log — a model that leaks training data, a tool that returns a customer's number, a prompt injection that repeats something it should not. |
+| **Prove it** | Every decision explainable in one line, and testable in a dry-run that calls no model. Hash-chained audit export + offline verifier (`cmd/audit-verify`), anchored hourly in your log so a rewritten file is caught. Incident evidence for NIS2's 24h/72h windows on one URL. Audited per-tenant GDPR erasure — you can delete data, never the fact that you deleted it. |
+| **Company chat** | A chat in the browser, signed in with the company account, with a history per person, attachments, optional web search through your own SearXNG, and an inspector that shows for every answer what was found, which rule matched, which model answered and what it cost. |
+| **Built to be audited** | A login brake and browser hardening headers, `/metrics` behind a key, images signed with Sigstore and shipped with an SBOM, `govulncheck` on every change. |
 | **Save** | Cheap tasks go to cheap or local models automatically; the dashboard shows spend and estimated CO₂e against an all-premium baseline (and names the baseline model). |
 
 **Compliance packs** are embedded rulesets you adapt like a firewall's defaults:

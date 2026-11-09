@@ -18,8 +18,10 @@ type Page struct {
 // Pages is the menu. index is the landing page.
 var Pages = []Page{
 	{"index", "Start here"},
+	{"one-address", "One address, closed doors"},
 	{"quick-start", "Models and the first rule"},
 	{"choosing-models", "How Sluss picks a model"},
+	{"how-sluss-decides", "Rules only, or a second opinion"},
 	{"what-sluss-catches", "What Sluss catches"},
 	{"stop-chatgpt", "Stop ChatGPT, offer the company chat"},
 	{"developer-tools", "Developer tools through Sluss"},

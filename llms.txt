@@ -21,9 +21,11 @@ Agents installing or operating Sluss: read "Operate" first. Agents changing the 
 The administrator's manual. A running instance serves the same pages at /manual, with its own address filled in.
 
 - [Start here](https://github.com/magnusfroste/sluss-eu/blob/main/manual/index.md)
+- [One address, closed doors](https://github.com/magnusfroste/sluss-eu/blob/main/manual/one-address.md): Sluss is an address tools are given, not a network proxy; Entra, Intune and the DNS filter close the other doors
 - [Models and the first rule](https://github.com/magnusfroste/sluss-eu/blob/main/manual/quick-start.md)
 - [How Sluss picks a model](https://github.com/magnusfroste/sluss-eu/blob/main/manual/choosing-models.md)
 - [What Sluss catches, and what it does not](https://github.com/magnusfroste/sluss-eu/blob/main/manual/what-sluss-catches.md)
+- [Rules only, or a second opinion](https://github.com/magnusfroste/sluss-eu/blob/main/manual/how-sluss-decides.md): the two decision modes and how to prove which was in use
 - [Stop ChatGPT, offer the company chat](https://github.com/magnusfroste/sluss-eu/blob/main/manual/stop-chatgpt.md)
 - [Developer tools through Sluss](https://github.com/magnusfroste/sluss-eu/blob/main/manual/developer-tools.md)
 - [Show that it works](https://github.com/magnusfroste/sluss-eu/blob/main/manual/prove-it.md)

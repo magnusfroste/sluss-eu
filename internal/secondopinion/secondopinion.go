@@ -315,3 +315,28 @@ func containsWord(s, label string) bool {
 func isWordByte(b byte) bool {
 	return b == '_' || (b >= 'a' && b <= 'z') || (b >= '0' && b <= '9')
 }
+
+// Mode names how this instance decides, for the banner, /version, the Version
+// page and the audit chain: "rules-only" when no second opinion is
+// configured, "rules+second-opinion" when one is. A nil Classifier is
+// rules-only.
+func (c *Classifier) Mode() string {
+	if c == nil {
+		return ModeRulesOnly
+	}
+	return ModeRulesAndSecondOpinion
+}
+
+// The two decision modes.
+const (
+	ModeRulesOnly             = "rules-only"
+	ModeRulesAndSecondOpinion = "rules+second-opinion"
+)
+
+// Describe is the mode in words: what decides, and what the model may do.
+func (c *Classifier) Describe() string {
+	if c == nil {
+		return "rules only — no model takes part in any decision"
+	}
+	return "rules, plus a second opinion from the local model " + c.cfg.ModelID + " that may only make a decision stricter"
+}

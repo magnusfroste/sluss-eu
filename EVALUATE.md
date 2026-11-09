@@ -16,7 +16,9 @@ Write down the claims you will test. The ones that matter most to a security off
 2. When no allowed model exists, the question is refused and recorded, never sent elsewhere.
 3. *Mask and send*: the cloud model never sees the identifiers; the person gets them back.
 4. Every decision is in a tamper-evident log that an auditor can verify offline.
-5. The decision is the same every time for the same question.
+5. The decision is the same every time for the same question (in the default *rules only* mode).
+6. By default no model takes part in any decision, and the mode can be proven for any period ([How Sluss decides](manual/how-sluss-decides.md)).
+7. Sluss is an address tools are given, not a proxy in the network; the other doors are closed by the identity provider, device management and the DNS filter ([One address, closed doors](manual/one-address.md)).
 
 ## 2. Run it
 
@@ -56,7 +58,8 @@ Things worth trying, from easy to hard:
 - **Mask and send.** Send a masked question through `/v1/chat/completions` and look at what the provider received: point `MOCK_PROVIDER_URL` at a small server that logs request bodies. No value may appear; every value must come back in the answer, streamed or not.
 - **Agents.** Declare tools in the request (`"tools": [...]`) with names that read, write, send or delete, and see how the capability is classified.
 - **Evidence.** Export the audit log (`GET /router/audit/export`), change one byte, and run `go run ./cmd/audit-verify` on it. Then take an anchor (`GET /router/audit/anchor`), rewrite the file from that point with recomputed hashes, and run `audit-verify -anchor`.
-- **Determinism.** Send the same question a hundred times. The decision must not change.
+- **Determinism.** Send the same question a hundred times. In *rules only* mode the decision must not change.
+- **The mode.** Check the start banner, `GET /version` (`decisions`) and the `router.started` record in the audit export. Then start with `ROUTER_SECOND_OPINION_MODEL` naming a model that is *not* tagged local, and confirm that it is refused and the rules decide alone.
 
 ## 4. Write it up
 

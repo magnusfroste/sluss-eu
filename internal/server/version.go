@@ -11,12 +11,18 @@ import (
 // of the running binary, and nothing else. It needs no key, so a deploy check
 // or an operator can ask which build runs without holding an admin secret;
 // the same facts are on the public landing page's footer.
-func VersionJSONHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Cache-Control", "no-store")
-	_ = json.NewEncoder(w).Encode(map[string]string{
-		"version": buildinfo.Release(),
-		"commit":  buildinfo.FullCommit(),
-		"built":   buildinfo.BuiltAt(),
-	})
+func VersionJSONHandler(decisionMode string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Cache-Control", "no-store")
+		_ = json.NewEncoder(w).Encode(map[string]string{
+			"version": buildinfo.Release(),
+			"commit":  buildinfo.FullCommit(),
+			"built":   buildinfo.BuiltAt(),
+			// How routing decisions are made: "rules-only" or
+			// "rules+second-opinion" (ISSUE-165). No model name: that is
+			// for the signed-in console.
+			"decisions": decisionMode,
+		})
+	}
 }

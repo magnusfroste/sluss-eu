@@ -33,6 +33,9 @@ type bootInfo struct {
 	Providers              string // "openrouter" or "mock"
 	Deployment             string
 	UpdateCheck            bool
+	// Decisions says how routing decisions are made: rules only, or rules
+	// plus a local second opinion (ISSUE-165). Shown so it can be verified.
+	Decisions string
 }
 
 func currentBootInfo(addr, providers string) bootInfo {
@@ -99,6 +102,7 @@ func writeBanner(w io.Writer, b bootInfo) {
 		{"Listening", b.Addr},
 		{"Console", b.consoleURL()},
 		{"Providers", b.Providers},
+		{"Decisions", b.Decisions},
 		{"Data", data},
 		{"Deployment", deploy},
 		{"Update check", upd},
