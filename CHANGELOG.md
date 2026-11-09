@@ -5,12 +5,14 @@ All notable changes to Sluss. Versions follow [semantic versioning](https://semv
 Releases are published from this file by the `release` workflow (Actions → release → Run workflow). Every release is a container image you can pin:
 
 ```
-ghcr.io/magnusfroste/sluss-eu:v1.6.0   # this release
-ghcr.io/magnusfroste/sluss-eu:1.6      # the newest 1.6.x
+ghcr.io/magnusfroste/sluss-eu:v1.7.0   # this release
+ghcr.io/magnusfroste/sluss-eu:1.7      # the newest 1.7.x
 ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 ```
 
-## Unreleased
+## v1.7.0 — 2026-11-09
+
+How Sluss decides, provably: rules only by default, a local second opinion if you choose, and the mode recorded for every period. Plus the one idea most people miss: Sluss is an address, not a proxy.
 
 ### Evidence
 - **Which way Sluss decided is visible and recorded.** The start banner, `GET /version` (`decisions`: `rules-only` or `rules+second-opinion`) and the Version page say whether a model takes part in decisions, and every start writes a `router.started` record with the mode to the audit log. An organisation that wants no AI in the decision can show, for any period, that there was none.
