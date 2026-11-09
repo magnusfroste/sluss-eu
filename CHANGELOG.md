@@ -5,12 +5,14 @@ All notable changes to Sluss. Versions follow [semantic versioning](https://semv
 Releases are published from this file by the `release` workflow (Actions → release → Run workflow). Every release is a container image you can pin:
 
 ```
-ghcr.io/magnusfroste/sluss-eu:v1.5.1   # this release
-ghcr.io/magnusfroste/sluss-eu:1.5      # the newest 1.5.x
+ghcr.io/magnusfroste/sluss-eu:v1.6.0   # this release
+ghcr.io/magnusfroste/sluss-eu:1.6      # the newest 1.6.x
 ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 ```
 
-## Unreleased
+## v1.6.0 — 2026-11-09
+
+Mask and send: cloud quality, and the identifiers never leave the house. Plus use cases anyone can run, and a brief for evaluating Sluss.
 
 ### Protection
 - **Mask and send: a third outcome for a rule.** Besides *keep on own hardware* and *block*, a rule can now say *mask and send*: the question goes to a cloud model with personal identity numbers, e-mail addresses, phone numbers, IBANs, card numbers, postal addresses and keys replaced by placeholders such as `[EMAIL_1]`, and the values are put back in the answer before the person sees it, in streamed answers too. It only applies when the answer would come from a model that is not local, and it never relaxes another rule: a block or *keep on own hardware* from any matched rule still wins. Names in free text are not masked. The values live only in memory for the request; the audit chain (`request.masked`), the `X-Router-Masked` header, the dry-run and the chat inspector show the types and counts, never the values. In the policy language it is `route: { mask: true }`.
