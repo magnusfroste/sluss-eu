@@ -10,6 +10,11 @@ ghcr.io/magnusfroste/sluss-eu:1.7      # the newest 1.7.x
 ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 ```
 
+## Unreleased
+
+### Evidence
+- **Benchmark.** 444 labelled synthetic questions in Swedish and English (`benchmark/`), from a generator with a fixed seed, scored by `cmd/benchmark`: the share of sensitive questions flagged, the share of harmless ones flagged, results per kind (identifier, term, meaning only, look-alike) and per class, latency and whether the answer is the same every run. Rules only: 71 % of sensitive questions flagged, 18 % of harmless ones, 0.08 ms per question. Shown beside Microsoft Presidio on the same questions, and `benchmark export` writes the questions and a template so any other gateway can be scored the same way. `make benchmark` runs in CI. New manual page *Benchmark*.
+
 ## v1.7.0 — 2026-11-09
 
 How Sluss decides, provably: rules only by default, a local second opinion if you choose, and the mode recorded for every period. Plus the one idea most people miss: Sluss is an address, not a proxy.

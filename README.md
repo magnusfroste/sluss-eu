@@ -54,7 +54,10 @@ second opinion that may only make a decision stricter
 The price is stated, not hidden: rules find identifiers, keys, markings,
 terms and code, not meaning. A text that is sensitive only because of what it
 says passes as harmless. [What Sluss catches](manual/what-sluss-catches.md)
-measures it on a fixed set of examples that runs with every change. You close
+measures it on a fixed set of examples that runs with every change, and the
+[benchmark](manual/benchmark.md) scores 444 labelled questions, false alarms
+included, beside an open-source PII detector, with a template to score your
+current gateway the same way. You close
 the gap with your own terms, with *default to local*, and, if you turn it on, with a
 local model that may only make a decision stricter, never looser.
 

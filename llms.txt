@@ -7,6 +7,7 @@ Agents installing or operating Sluss: read "Operate" first. Agents changing the 
 ## Evaluate
 
 - [EVALUATE.md](https://github.com/magnusfroste/sluss-eu/blob/main/EVALUATE.md): the claims to test, what to run, what to try to break, and how to write it up
+- [Benchmark](https://github.com/magnusfroste/sluss-eu/blob/main/manual/benchmark.md): 444 labelled synthetic questions, `make benchmark`, and how to score another gateway on them
 - [Use cases](https://github.com/magnusfroste/sluss-eu/blob/main/examples/use-cases/README.md): fifteen people and agents, one policy, every outcome checked by `make use-cases`
 
 ## Operate

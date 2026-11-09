@@ -133,6 +133,7 @@ P2:
 4. Uppdatera dokumentation om kontrakt ändras.
 5. Kontrollera latency om issue påverkar fast path.
 6. Merge efter review.
+- ISSUE-166 — Benchmark: 444 märkta syntetiska frågor (generator med fast frö), `cmd/benchmark` run/score/export, jämförelse med Presidio, mall för att mäta Zscaler/Netskope likadant; `make benchmark` i CI; manualsidan *Benchmark*. `epic: EPIC-15`, `priority: P1`, `state: done`, klar 2026-11-09.
 - ISSUE-165 — Beslutslägen som går att bevisa (banner, /version, Version-sidan, `router.started` i audit) och manualsidan *One address, closed doors*; dokumentationen svept över alla funktioner. `epic: EPIC-15`, `priority: P1`, `state: done`, klar 2026-11-09.
 - ISSUE-151 — Mask and send: tredje utfallet för en regel; personuppgifter och nycklar som platshållare till molnet, värdena tillbaka i svaret. `epic: EPIC-14`, `priority: P1`, `state: done`, klar 2026-11-09.
 - ISSUE-164 — Fler telefonformat (00, parentes, nordamerikanska) med validering; datum och etiketterade order-/faktura-/ärendenummer räknas inte längre. `epic: EPIC-14`, `priority: P2`, `state: done`, klar 2026-11-08.
