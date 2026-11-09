@@ -37,7 +37,7 @@ When several rules match, the strictest wins.
 | Finance | Here is the balance sheet and P&L for Q3 before the earnings releas… | financial | own hardware |
 | Finance | Summarise this invoice note in two lines; payment goes to SE45 5000… | pii | cloud, masked (iban) |
 | Legal | Review this NDA and the indemnification clause before we sign. | legal | own hardware |
-| Defence supplier | HEMLIG enligt säkerhetsskyddslagen. Sammanfatta lägesbilden. Token … | security_classified (and more) | blocked |
+| Defence supplier | HEMLIG enligt säkerhetsskyddslagen. Sammanfatta lägesbilden; API-ny… | security_classified (and more) | blocked |
 | Anyone | Det är ingen hemlighet att vi vill växa; skriv en hemlig önskelista… | — | cloud model |
 | Logistics | Mötet flyttas till 08-11-2024; ordernummer 0812-345 678 är leverera… | — | cloud model |
 | An AI agent | Clean up the staging database tables older than 90 days. *(tools: drop_table, delete_rows)* | agent tools: destructive | own hardware |
@@ -51,7 +51,7 @@ When several rules match, the strictest wins.
 - **Mask and send allows the cloud; it does not force it.** The open-ended support reply is rated high risk and needs a premium model. In this setup the only premium model is the local one, so the question stays local and nothing needs masking.
 - **Values, not words.** The pasted key is found because it *is* a key, not because the word "key" appears. Lower-case *hemlig* is prose, not a stamp. A date and an order number are not phone numbers.
 - **Agents are judged by what they can do.** The same Sluss sends a read-only agent to the cloud and keeps one that can drop tables on your own hardware, before any model sees the prompt.
-- **A block holds even when other rules would allow the question.** The classified document also holds a key; it is blocked, not kept local.
+- **A block holds even when another rule would keep the question local.** The classified document also mentions a key; it is blocked, not kept local.
 
 ## Add your own
 

@@ -84,8 +84,8 @@ cases:
 
   - id: defence-classified
     who: Defence supplier
-    story: Material marked under the Swedish security protection act is blocked outright, even if it also holds a key. No model answers.
-    prompt: HEMLIG enligt säkerhetsskyddslagen. Sammanfatta lägesbilden. Token ghp_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+    story: Material marked under the Swedish security protection act is blocked outright, even when it also mentions a key that another rule would keep local. No model answers.
+    prompt: HEMLIG enligt säkerhetsskyddslagen. Sammanfatta lägesbilden; API-nyckeln till ledningssystemet står i bilagan.
     outcome: block
 
   - id: lower-case-is-prose
