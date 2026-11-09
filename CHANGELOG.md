@@ -5,12 +5,14 @@ All notable changes to Sluss. Versions follow [semantic versioning](https://semv
 Releases are published from this file by the `release` workflow (Actions → release → Run workflow). Every release is a container image you can pin:
 
 ```
-ghcr.io/magnusfroste/sluss-eu:v1.7.0   # this release
-ghcr.io/magnusfroste/sluss-eu:1.7      # the newest 1.7.x
+ghcr.io/magnusfroste/sluss-eu:v1.8.0   # this release
+ghcr.io/magnusfroste/sluss-eu:1.8      # the newest 1.8.x
 ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 ```
 
-## Unreleased
+## v1.8.0 — 2026-11-09
+
+A benchmark anyone can run: what Sluss catches, what it flags by mistake, what a local model adds, and how to score any other gateway on the same questions.
 
 ### Evidence
 - **Benchmark.** 444 labelled synthetic questions in Swedish and English (`benchmark/`), from a generator with a fixed seed, scored by `cmd/benchmark`: the share of sensitive questions flagged, the share of harmless ones flagged, results per kind (identifier, term, meaning only, look-alike) and per class, latency and whether the answer is the same every run. Rules only: 71 % of sensitive questions flagged, 18 % of harmless ones, 0.08 ms per question. With the local second opinion on the demo's model: 93 % and 23 %, and questions that are sensitive only by meaning go from 7 % to 74 %. Shown beside Microsoft Presidio on the same questions, and `benchmark export` writes the questions and a template so any other gateway can be scored the same way. `make benchmark` runs in CI. New manual page *Benchmark*.
