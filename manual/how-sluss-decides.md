@@ -22,7 +22,7 @@
 
 **Choose rules only** if your organisation does not want any AI involved in deciding where data may go, if every decision must be repeatable exactly, or if you do not have a local model. It is the default, and it is a complete product: add your own terms as rules, and keep sensitive kinds of question on your own hardware.
 
-**Add the second opinion** if the misses on [What Sluss catches](/manual/what-sluss-catches) matter to you, and you have a model on your own hardware that answers quickly. Measured on the demo's local model, it raised the share of sensitive examples caught from 31 to 37 of 40, and flagged one harmless question that did not need it. On the 444-question [benchmark](/manual/benchmark) it raised it from 71 % to 93 %.
+**Add the second opinion** if the misses on [What Sluss catches](/manual/what-sluss-catches) matter to you, and you have a model on your own hardware that answers quickly. Measured on the demo's local model, it raised the share of sensitive examples caught from 31 to 37 of 40, and flagged one harmless question that did not need it. On the 444-question [benchmark](/manual/benchmark) it raised it from 74 % to 92 %.
 
 Either way, the rules are the floor. Nothing the model says can make a decision less strict than the rules made it.
 

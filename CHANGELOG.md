@@ -17,7 +17,8 @@ ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 - This changes routing for some questions: a letter that mentions an invoice or an e-mail, with no values in it, was kept on your own models by a rule on *source code* or *personal data* and may now go to the cloud. Check with the dry-run if you relied on it.
 
 ### Evidence
-- The benchmark set is regenerated with a new seed after the fixes, and each fix is tested on examples that are not in the set. Nothing in the set belongs to anyone: personal identity numbers come from Skatteverket's list of test numbers and phone numbers from the range reserved for fiction. The manual page shows before and after.
+- `benchmark run -url` retries a dropped connection or a 5xx, so one network hiccup does not end a long run.
+- The benchmark set is regenerated with a new seed after the fixes, and each fix is tested on examples that are not in the set. Nothing in the set belongs to anyone: personal identity numbers come from Skatteverket's list of test numbers and phone numbers from the range reserved for fiction. The manual page shows before and after. With the local second opinion on the demo's model: 92 % of sensitive questions flagged (rules only 74 %), 13 % of harmless ones (rules only 10 %).
 
 ## v1.8.0 — 2026-11-09
 
