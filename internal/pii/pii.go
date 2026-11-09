@@ -70,8 +70,9 @@ var (
 	// the national pattern above would otherwise read it as a number.
 	reDateLike = regexp.MustCompile(`^(?:\d{1,2}[-./]\d{1,2}[-./]\d{2,4}|\d{4}[-./]\d{1,2}[-./]\d{1,2})$`)
 	// A Swedish street with a house number: Storgatan 12, Industrivägen 4B,
-	// Kungsgränd 3. The street word is what makes it an address.
-	reStreet = regexp.MustCompile(`(?i)\b\p{L}+(?:gatan|gata|vägen|väg|gränd|gränden|torget|torg|allén|allé|stigen|plan|backen|leden|promenaden|kajen|esplanaden)\s+\d{1,4}\s?[A-Za-z]?\b`)
+	// Kungsgränd 3, and the two-word form Lilla torget 47, Stora gatan 2.
+	// The street word is what makes it an address.
+	reStreet = regexp.MustCompile(`(?i)\b(?:\p{L}+(?:gatan|gata|vägen|väg|gränd|gränden|torget|torg|allén|allé|stigen|plan|backen|leden|promenaden|kajen|esplanaden)|\p{L}+\s(?:gatan|vägen|gränden|torget|allén|stigen|backen|kajen))\s+\d{1,4}\s?[A-Za-z]?\b`)
 	// A Swedish postcode followed by a town: 111 22 Stockholm.
 	rePostcode = regexp.MustCompile(`\b\d{3}\s?\d{2}\s+\p{Lu}\p{L}+`)
 	// An IBAN written as one run or in groups of four, as it is printed on

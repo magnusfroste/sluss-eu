@@ -413,12 +413,9 @@ func sensitivitiesFromFeatureHints(hints []string, primary Sensitivity) []Sensit
 	add(primary)
 	for _, hint := range hints {
 		// "auth", "payment" and "security" are words about code topics
-		// ("invoice" is payment). They only nudge the single primary class;
-		// in the full list, source_code comes from actual code
-		// (the "source_code" hint), so a customer letter is not code.
-		if hint == "auth" || hint == "payment" || hint == "security" {
-			continue
-		}
+		// ("invoice" is payment). They raise the risk, never a data class:
+		// source_code comes from actual code (the "source_code" hint), so a
+		// customer letter is not code (ISSUE-167).
 		add(sensitivityFromFeatureHints([]string{hint}))
 	}
 	sort.SliceStable(out, func(i, j int) bool { return sensitivityHintRank(out[i]) > sensitivityHintRank(out[j]) })
@@ -508,7 +505,7 @@ func sensitivityFromFeatureHints(hints []string) Sensitivity {
 			s = SensitivityFinancial
 		case string(SensitivityLegal):
 			s = SensitivityLegal
-		case string(SensitivitySourceCode), "auth", "payment", "security":
+		case string(SensitivitySourceCode):
 			s = SensitivitySourceCode
 		default:
 			continue
