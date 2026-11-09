@@ -18,7 +18,7 @@ func TestFlagsWhatTheAnswerAddsOnly(t *testing.T) {
 		want                   string
 	}{
 		{"key the question never had", "How do I call the API?", "Use this: OPENAI_API_KEY=" + fakeOpenAIKey, "secret:api_key"},
-		{"personnummer in the answer", "Who is the customer in case 4471?", "The customer is 811218-9876, Anna Svensson.", "pii:personnummer"},
+		{"personnummer in the answer", "Who is the customer in case 4471?", "The customer is 811218-2392, Anna Svensson.", "pii:personnummer"},
 		{"e-mail and phone in the answer", "How do I reach support?", "Mail anna.svensson@example.com or call 070-123 45 67.", "pii:email,pii:phone"},
 		{"the user's own e-mail coming back is not new", "My address is anna.svensson@example.com, write a signature.", "Best regards, Anna — anna.svensson@example.com", ""},
 		{"explaining what a password is, without one", "What makes a good password?", "A good password is long, unique and kept in a password manager.", ""},

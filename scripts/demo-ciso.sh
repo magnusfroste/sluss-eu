@@ -26,7 +26,7 @@ KEY="demo_admin_key"                 # bootstrap admin key (env), gates the cont
 MOCK_ADDR=":18097"; MOCK_URL="http://localhost:18097"
 ROUTER_ADDR=":8097"; BASE="http://localhost:8097"
 DATA_DIR="$(mktemp -d)"
-PN="811218-9876"                     # SYNTHETIC personnummer (fake, Luhn-valid)
+PN="811218-2392"                     # SYNTHETIC personnummer (fake, Luhn-valid)
 
 pass() { echo "  ok: $1"; }
 fail() { echo "DEMO FAIL: $1" >&2; exit 1; }

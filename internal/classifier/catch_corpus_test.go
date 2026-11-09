@@ -37,9 +37,9 @@ var fakeSlackToken = "xoxb-" + strings.Repeat("1", 12) + "-" + strings.Repeat("2
 
 var catchCorpus = []catchCase{
 	// ---- Personal data (pii) -------------------------------------------------
-	{router.SensitivityPII, "Summarise the case for customer 811218-9876.", true, "Swedish personal identity number, checksum-validated"},
-	{router.SensitivityPII, "Kunden med personnummer 19811218-9876 vill avsluta sitt konto.", true, "12-digit personnummer"},
-	{router.SensitivityPII, "Sammanfatta ärendet för 811218+9876 (pensionär).", true, "the + form for people over 100"},
+	{router.SensitivityPII, "Summarise the case for customer 811218-2392.", true, "Swedish personal identity number, checksum-validated"},
+	{router.SensitivityPII, "Kunden med personnummer 19811218-2392 vill avsluta sitt konto.", true, "12-digit personnummer"},
+	{router.SensitivityPII, "Sammanfatta ärendet för 811218+2392 (pensionär).", true, "the + form for people over 100"},
 	{router.SensitivityPII, "Mail anna.svensson@example.com and ask about the invoice.", true, "an e-mail address"},
 	{router.SensitivityPII, "Ring Anna på 070-123 45 67 och boka ett möte.", true, "a Swedish mobile number"},
 	{router.SensitivityPII, "Call our customer Jane on (555) 123-4567 about the refund.", true, "a phone number in parentheses (North-American)"},

@@ -21,16 +21,16 @@ func TestPersonnummer(t *testing.T) {
 		text string
 		want int
 	}{
-		{"valid short with dash", "kund 811218-9876 ringde", 1},
-		{"valid short no dash", "pnr 8112189876 finns", 1},
-		{"valid 12-digit", "personnummer 198112189876 registrerat", 1},
-		{"valid 12-digit with dash", "19811218-9876", 1},
+		{"valid short with dash", "kund 811218-2392 ringde", 1},
+		{"valid short no dash", "pnr 8112182392 finns", 1},
+		{"valid 12-digit", "personnummer 198112182392 registrerat", 1},
+		{"valid 12-digit with dash", "19811218-2392", 1},
 		{"valid samordningsnummer (+60 day)", "sam 811278-9873 ok", 1},
 		{"invalid luhn", "811218-9877", 0},
 		{"invalid month passes luhn", "811318-9875", 0},
-		{"invalid century", "218112189876", 0},
-		{"embedded in longer number", "9999811218-98761111", 0},
-		{"two valid", "811218-9876 och 19811218-9876", 2},
+		{"invalid century", "218112182392", 0},
+		{"embedded in longer number", "9999811218-23921111", 0},
+		{"two valid", "811218-2392 och 19811218-2392", 2},
 		{"plain year no pnr", "året 1985 hände det", 0},
 	}
 	for _, tc := range cases {
@@ -114,7 +114,7 @@ func TestCard(t *testing.T) {
 
 // A personnummer must not double-count as phone or card.
 func TestNoCrossCategoryDoubleCount(t *testing.T) {
-	findings := Detect("kund 811218-9876")
+	findings := Detect("kund 811218-2392")
 	if got := count(findings, TypePersonnummer); got != 1 {
 		t.Fatalf("personnummer = %d, want 1", got)
 	}
@@ -124,7 +124,7 @@ func TestNoCrossCategoryDoubleCount(t *testing.T) {
 }
 
 func TestFindingsNeverContainValues(t *testing.T) {
-	findings := Detect("811218-9876 och anna@example.se")
+	findings := Detect("811218-2392 och anna@example.se")
 	for _, f := range findings {
 		if strings.Contains(string(f.Type), "9876") || strings.Contains(string(f.Type), "anna") {
 			t.Fatalf("finding leaked matched value: %+v", f)
@@ -146,7 +146,7 @@ func TestEmptyAndCleanText(t *testing.T) {
 }
 
 func TestScanCapDoesNotPanic(t *testing.T) {
-	big := strings.Repeat("a", maxScanBytes) + " 811218-9876"
+	big := strings.Repeat("a", maxScanBytes) + " 811218-2392"
 	// PII beyond the cap is not seen — the cap bounds cost, and that trade-off
 	// is intentional.
 	if got := count(Detect(big), TypePersonnummer); got != 0 {
@@ -156,7 +156,7 @@ func TestScanCapDoesNotPanic(t *testing.T) {
 
 func BenchmarkDetect10KB(b *testing.B) {
 	text := strings.Repeat("vanlig prosa med siffror 12345 och ord ", 250) // ~10KB
-	text += " 811218-9876 anna@example.se +46701234567"
+	text += " 811218-2392 anna@example.se +46701234567"
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
 		Detect(text)

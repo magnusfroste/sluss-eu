@@ -16,7 +16,7 @@ func TestAttachedDocumentIsClassified(t *testing.T) {
 		"model": "auto",
 		"messages": [{"role":"user","content":[
 			{"type":"text","text":"Summarise the attached contract"},
-			{"type":"text","text":"EMPLOYMENT AGREEMENT for Anna, personnummer 811218-9876, salary per payroll appendix"}
+			{"type":"text","text":"EMPLOYMENT AGREEMENT for Anna, personnummer 811218-2392, salary per payroll appendix"}
 		]}]
 	}`
 	var req openai.ChatRequest

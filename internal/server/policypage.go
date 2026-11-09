@@ -292,9 +292,9 @@ textarea{width:100%;background:#081328;border:1px solid #2c4066;border-radius:8p
 <div class="card">
   <h2>Dry-run — test a prompt</h2>
   <div class="note" style="margin-bottom:8px">Paste a prompt → see the classification, selected model, tier and egress (or a fail-closed block). No data leaves the router; no provider is called.</div>
-  <textarea id="p" placeholder="e.g. Summarise the case for customer 811218-9876 ..."></textarea>
+  <textarea id="p" placeholder="e.g. Summarise the case for customer 811218-2392 ..."></textarea>
   <div class="eg">Examples:
-    <a onclick="ex('Summarise the case for customer 811218-9876 who complained about an invoice.')">personal ID</a> ·
+    <a onclick="ex('Summarise the case for customer 811218-2392 who complained about an invoice.')">personal ID</a> ·
     <a onclick="ex('security review our SSO login flow for auth bypass and secret leakage')">security review</a> ·
     <a onclick="ex('write a concise git commit message for a bugfix')">trivial</a>
   </div>

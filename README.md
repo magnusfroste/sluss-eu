@@ -84,7 +84,7 @@ Now watch the signature moment — the same client, two prompts, two destination
 
 # Contains a Swedish personal ID (checksum-validated, not just a regex) → LOCAL only
 ./bin/routerctl -url http://localhost:8080 -key local_router_key \
-  -message "summarise the case for customer 811218-9876"
+  -message "summarise the case for customer 811218-2392"
 ```
 
 `routerctl` is a **dry run**: it shows which rule fired, which model was chosen,

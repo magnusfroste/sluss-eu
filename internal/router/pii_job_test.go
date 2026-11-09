@@ -15,7 +15,7 @@ func TestNewJobDescriptorEscalatesOnDetectedPersonnummer(t *testing.T) {
 		Request: &openai.ChatRequest{
 			Model: "auto",
 			Messages: []openai.Message{
-				{Role: "user", Content: "Sammanfatta ärendet för kund 811218-9876 kortfattat"},
+				{Role: "user", Content: "Sammanfatta ärendet för kund 811218-2392 kortfattat"},
 			},
 		},
 	})

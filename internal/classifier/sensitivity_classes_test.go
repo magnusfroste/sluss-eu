@@ -105,7 +105,7 @@ func TestRicherSensitivityClasses(t *testing.T) {
 		// policies already match on.
 		{
 			name:            "health with a personnummer stays pii",
-			prompt:          "Sammanfatta patientjournalen för personen med personnummer 811218-9876.",
+			prompt:          "Sammanfatta patientjournalen för personen med personnummer 811218-2392.",
 			wantSensitivity: router.SensitivityPII,
 			wantAtLeastRisk: router.RiskMedium,
 		},

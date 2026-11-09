@@ -11,7 +11,7 @@ import (
 // per-type reason — the content-level gap ISSUE-077 closes.
 func TestPIIContentEscalatesWithoutKeywords(t *testing.T) {
 	f := ExtractFromMessages([]openai.Message{
-		{Role: "user", Content: "Skriv ett välkomstbrev till kunden 811218-9876 tack"},
+		{Role: "user", Content: "Skriv ett välkomstbrev till kunden 811218-2392 tack"},
 	}, RequestHints{})
 
 	if len(f.PIIFindings) != 1 || string(f.PIIFindings[0].Type) != "personnummer" {
@@ -36,8 +36,8 @@ func TestPIIContentEscalatesWithoutKeywords(t *testing.T) {
 // Findings from several messages merge (counts summed per type).
 func TestPIIFindingsMergeAcrossMessages(t *testing.T) {
 	f := ExtractFromMessages([]openai.Message{
-		{Role: "user", Content: "kund 811218-9876"},
-		{Role: "user", Content: "och 19811218-9876 samt anna@example.se"},
+		{Role: "user", Content: "kund 811218-2392"},
+		{Role: "user", Content: "och 19811218-2392 samt anna@example.se"},
 	}, RequestHints{})
 
 	var pnr, email int

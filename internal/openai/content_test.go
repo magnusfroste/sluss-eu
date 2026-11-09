@@ -26,12 +26,12 @@ func TestMessageStringContentRoundTrip(t *testing.T) {
 // the text parts are concatenated into Content — the classifier sees the full
 // document — and the ORIGINAL array is re-emitted to the provider.
 func TestMessageArrayTextContent(t *testing.T) {
-	in := `{"role":"user","content":[{"type":"text","text":"Summarise the contract:"},{"type":"text","text":"personnummer 811218-9876"}]}`
+	in := `{"role":"user","content":[{"type":"text","text":"Summarise the contract:"},{"type":"text","text":"personnummer 811218-2392"}]}`
 	var m Message
 	if err := json.Unmarshal([]byte(in), &m); err != nil {
 		t.Fatalf("unmarshal: %v", err)
 	}
-	if m.Content != "Summarise the contract:\npersonnummer 811218-9876" {
+	if m.Content != "Summarise the contract:\npersonnummer 811218-2392" {
 		t.Fatalf("text parts not concatenated: %q", m.Content)
 	}
 	if m.NonTextParts {
