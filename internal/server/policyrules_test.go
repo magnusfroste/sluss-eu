@@ -242,3 +242,23 @@ func TestPolicyPageShowsRulesCard(t *testing.T) {
 		}
 	}
 }
+
+// "Mask and send" is the third outcome of a console rule (ISSUE-151): it
+// validates, renders as mask: true and compiles in the policy dialect.
+func TestConsoleRuleMaskAction(t *testing.T) {
+	r := ConsoleRule{ID: "console_rule_1", Sensitivities: []string{"pii"}, Action: "mask"}
+	if err := r.Validate(); err != nil {
+		t.Fatalf("mask must validate: %v", err)
+	}
+	y := GenerateConsolePolicyYAML("pv_console_009", []ConsoleRule{r})
+	if !strings.Contains(y, "      mask: true\n") {
+		t.Fatalf("mask rule must render as mask: true:\n%s", y)
+	}
+	p, err := policy.Parse([]byte(y))
+	if err != nil || !p.Rules[0].Route.Mask {
+		t.Fatalf("rendered policy must parse with mask on: %v", err)
+	}
+	if !strings.Contains(r.ActionSummary(), "MASK") {
+		t.Fatalf("summary: %s", r.ActionSummary())
+	}
+}

@@ -240,3 +240,14 @@ func TestPhoneFormatsAndLookalikes(t *testing.T) {
 		}
 	}
 }
+
+// An IBAN is usually printed in groups of four (ISSUE-151: it must be found
+// to be masked).
+func TestIBANWithSpaces(t *testing.T) {
+	if !hasType(Detect("Betala till SE45 5000 0000 0583 9825 7466 idag."), TypeIBAN) {
+		t.Fatal("a grouped IBAN must be detected")
+	}
+	if hasType(Detect("Betala till SE45 5000 0000 0583 9825 7467 idag."), TypeIBAN) {
+		t.Fatal("a grouped IBAN with a wrong check digit must not")
+	}
+}

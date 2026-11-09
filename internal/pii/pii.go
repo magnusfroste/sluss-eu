@@ -74,9 +74,93 @@ var (
 	reStreet = regexp.MustCompile(`(?i)\b\p{L}+(?:gatan|gata|vägen|väg|gränd|gränden|torget|torg|allén|allé|stigen|plan|backen|leden|promenaden|kajen|esplanaden)\s+\d{1,4}\s?[A-Za-z]?\b`)
 	// A Swedish postcode followed by a town: 111 22 Stockholm.
 	rePostcode = regexp.MustCompile(`\b\d{3}\s?\d{2}\s+\p{Lu}\p{L}+`)
-	reIBAN     = regexp.MustCompile(`[A-Z]{2}\d{2}[A-Za-z0-9]{10,30}`)
-	reCard     = regexp.MustCompile(`\d(?:[\d -]{11,24})\d`)
+	// An IBAN written as one run or in groups of four, as it is printed on
+	// invoices: SE45 5000 0000 0583 9825 7466. Validated with mod 97.
+	reIBAN = regexp.MustCompile(`[A-Z]{2}\d{2}(?:[A-Za-z0-9]{10,30}|(?: [A-Z0-9]{4}){2,7}(?: [A-Z0-9]{1,3})?)`)
+	reCard = regexp.MustCompile(`\d(?:[\d -]{11,24})\d`)
 )
+
+// Span is one detected personal identifier: its type and byte offsets in the
+// scanned text. Used to mask values before a question is sent (ISSUE-151);
+// Detect uses the same scan and keeps only the counts.
+type Span struct {
+	Type       Type
+	Start, End int
+}
+
+// Find returns every identifier in text, sorted by position, with overlaps
+// removed (the earlier, then the longer, match wins). Unlike Detect it scans
+// the whole text: masking must not stop at a size limit.
+func Find(text string) []Span {
+	var spans []Span
+	scan(text, func(t Type, start, end int) { spans = append(spans, Span{t, start, end}) })
+	sort.Slice(spans, func(i, j int) bool {
+		if spans[i].Start != spans[j].Start {
+			return spans[i].Start < spans[j].Start
+		}
+		return spans[i].End > spans[j].End
+	})
+	out := spans[:0]
+	last := -1
+	for _, sp := range spans {
+		if sp.Start < last {
+			continue
+		}
+		out = append(out, sp)
+		last = sp.End
+	}
+	return out
+}
+
+// scan runs every detector over text and reports each validated match.
+func scan(text string, emit func(t Type, start, end int)) {
+	for _, loc := range rePersonnummer.FindAllStringIndex(text, -1) {
+		if digitBounded(text, loc[0], loc[1]) && validPersonnummer(text[loc[0]:loc[1]]) {
+			emit(TypePersonnummer, loc[0], loc[1])
+		}
+	}
+	for _, loc := range reEmail.FindAllStringIndex(text, -1) {
+		emit(TypeEmail, loc[0], loc[1])
+	}
+	for _, loc := range rePhone.FindAllStringIndex(text, -1) {
+		if digitBounded(text, loc[0], loc[1]) && validPhone(text[loc[0]:loc[1]]) && !numberContext(text, loc[0]) {
+			emit(TypePhone, loc[0], loc[1])
+		}
+	}
+	for _, loc := range reIBAN.FindAllStringIndex(text, -1) {
+		// A grouped IBAN may have swallowed the next word ("… 7466 IDAG"):
+		// drop trailing groups until the checksum holds or it is too short.
+		start, end := loc[0], loc[1]
+		for end-start >= 15 {
+			if alnumBounded(text, start, end) && validIBAN(text[start:end]) {
+				emit(TypeIBAN, start, end)
+				break
+			}
+			sp := strings.LastIndex(text[start:end], " ")
+			if sp < 0 {
+				break
+			}
+			end = start + sp
+		}
+	}
+	// An address is a street with a house number AND a postcode in the same
+	// text; both parts are reported, so masking hides both.
+	if streets := reStreet.FindAllStringIndex(text, -1); len(streets) > 0 {
+		if posts := rePostcode.FindAllStringIndex(text, -1); len(posts) > 0 {
+			for _, loc := range streets {
+				emit(TypeAddress, loc[0], loc[1])
+			}
+			for _, loc := range posts {
+				emit(TypeAddress, loc[0], loc[1])
+			}
+		}
+	}
+	for _, loc := range reCard.FindAllStringIndex(text, -1) {
+		if digitBounded(text, loc[0], loc[1]) && validCard(text[loc[0]:loc[1]]) {
+			emit(TypeCard, loc[0], loc[1])
+		}
+	}
+}
 
 // Detect scans text and returns the detected PII categories with counts,
 // sorted by type for determinism. It never returns matched values.
@@ -89,44 +173,10 @@ func Detect(text string) []Finding {
 	}
 
 	counts := map[Type]int{}
-
-	for _, loc := range rePersonnummer.FindAllStringIndex(text, -1) {
-		if !digitBounded(text, loc[0], loc[1]) {
-			continue
-		}
-		if validPersonnummer(text[loc[0]:loc[1]]) {
-			counts[TypePersonnummer]++
-		}
-	}
-	for range reEmail.FindAllString(text, -1) {
-		counts[TypeEmail]++
-	}
-	for _, loc := range rePhone.FindAllStringIndex(text, -1) {
-		if !digitBounded(text, loc[0], loc[1]) {
-			continue
-		}
-		if validPhone(text[loc[0]:loc[1]]) && !numberContext(text, loc[0]) {
-			counts[TypePhone]++
-		}
-	}
-	for _, loc := range reIBAN.FindAllStringIndex(text, -1) {
-		if !alnumBounded(text, loc[0], loc[1]) {
-			continue
-		}
-		if validIBAN(text[loc[0]:loc[1]]) {
-			counts[TypeIBAN]++
-		}
-	}
-	if reStreet.MatchString(text) && rePostcode.MatchString(text) {
-		counts[TypeAddress]++
-	}
-	for _, loc := range reCard.FindAllStringIndex(text, -1) {
-		if !digitBounded(text, loc[0], loc[1]) {
-			continue
-		}
-		if validCard(text[loc[0]:loc[1]]) {
-			counts[TypeCard]++
-		}
+	scan(text, func(t Type, _, _ int) { counts[t]++ })
+	// An address counts once, however many street and postcode parts it has.
+	if counts[TypeAddress] > 0 {
+		counts[TypeAddress] = 1
 	}
 
 	if len(counts) == 0 {
@@ -298,6 +348,7 @@ func numberContext(text string, start int) bool {
 
 // validIBAN checks length and the ISO 13616 mod-97 checksum.
 func validIBAN(candidate string) bool {
+	candidate = strings.ReplaceAll(candidate, " ", "")
 	if len(candidate) < 15 || len(candidate) > 34 {
 		return false
 	}

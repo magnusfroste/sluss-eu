@@ -134,6 +134,16 @@ func explainRoute(eng *engine.Engine, cache *policy.Cache, so *secondopinion.Cla
 	pol := lookupPolicy(cache, job)
 	dec, err := eng.Decide(job, pol, engine.FullyHealthy, in.Request.Stream)
 	addSecondOpinionReason(&dec, job)
+	// Mask and send (ISSUE-151): say what would be replaced, types and
+	// counts only, so the dry-run shows the same decision a request gets.
+	if err == nil && dec.Mask {
+		o := &ChatOptions{Engine: eng}
+		if plan := o.maskPlan(dec, in.Request.Messages); plan != "" {
+			dec.DecisionReasons = append(dec.DecisionReasons, "mask and send: "+plan+" replaced with placeholders before the cloud model, restored in the answer")
+		} else if o.egressForModel(dec.SelectedModel) == "local" {
+			dec.DecisionReasons = append(dec.DecisionReasons, "mask and send: the answering model is local, so nothing is masked")
+		}
+	}
 	return dec, job, err
 }
 

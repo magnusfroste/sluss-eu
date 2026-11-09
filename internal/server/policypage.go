@@ -359,7 +359,8 @@ textarea{width:100%;background:#081328;border:1px solid #2c4066;border-radius:8p
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:10px">
       <label style="font-size:.85rem;color:#8fa1bf">action
         <select name="action" id="ruleaction" style="display:block;background:#081328;border:1px solid #22324f;color:#e8eef7;border-radius:8px;padding:7px 9px;margin-top:4px">
-          <option value="require_tags">require provider tags (stay in the house / EU)</option>
+          <option value="require_tags">keep on own hardware (require provider tags)</option>
+          <option value="mask">mask and send (placeholders to the cloud, restored in the answer)</option>
           <option value="block">block (fail-closed)</option>
         </select></label>
       <label style="font-size:.85rem;color:#8fa1bf" id="tagslabel">provider tags (comma-separated)
@@ -418,7 +419,7 @@ textarea{width:100%;background:#081328;border:1px solid #2c4066;border-radius:8p
 </div></div></div>
 <script>
 const ra=document.getElementById('ruleaction');
-if(ra){ra.onchange=function(){document.getElementById('tagslabel').style.display=ra.value==='block'?'none':'';};}
+if(ra){ra.onchange=function(){document.getElementById('tagslabel').style.display=(ra.value==='block'||ra.value==='mask')?'none':'';};}
 function ex(t){document.getElementById('p').value=t;run();}
 async function run(){
   const p=document.getElementById('p').value.trim();if(!p)return;

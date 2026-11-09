@@ -10,6 +10,12 @@ ghcr.io/magnusfroste/sluss-eu:1.5      # the newest 1.5.x
 ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 ```
 
+## Unreleased
+
+### Protection
+- **Mask and send: a third outcome for a rule.** Besides *keep on own hardware* and *block*, a rule can now say *mask and send*: the question goes to a cloud model with personal identity numbers, e-mail addresses, phone numbers, IBANs, card numbers, postal addresses and keys replaced by placeholders such as `[EMAIL_1]`, and the values are put back in the answer before the person sees it, in streamed answers too. It only applies when the answer would come from a model that is not local, and it never relaxes another rule: a block or *keep on own hardware* from any matched rule still wins. Names in free text are not masked. The values live only in memory for the request; the audit chain (`request.masked`), the `X-Router-Masked` header, the dry-run and the chat inspector show the types and counts, never the values. In the policy language it is `route: { mask: true }`.
+- **IBANs written in groups of four** (`SE45 5000 0000 …`), as they are printed on invoices, are detected and validated; an IBAN now counts as personal data, like a card number.
+
 ## v1.5.1 — 2026-11-08
 
 More phone formats are caught, and dates and order numbers no longer pass for phone numbers.

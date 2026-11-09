@@ -1,6 +1,6 @@
 # ISSUE-151 — "Mask and send": tredje utfall för en regel
 
-`epic: EPIC-14` · `priority: P1` · `state: needs-info` (efter ISSUE-150)
+`epic: EPIC-14` · `priority: P1` · `state: done` · klar 2026-11-09
 
 ## Idé
 
@@ -26,3 +26,24 @@ Ingen ny inställning: ett tredje alternativ i den enkla regeldialogen —
   hur många — aldrig värdena.
 - Platshållarnas värden lever bara i minnet för den förfrågan.
 - Bygger på befintlig maskning av hemligheter (ISSUE-042).
+
+## Levererat (2026-11-09)
+
+- Policy: `route: { mask: true }`; ett tredje alternativ i konsolens regeldialog
+  (*keep on own hardware · mask and send · block*). Slås ihop med andra regler
+  utan att lätta på något; tillämpas bara när svaret kommer från en modell som
+  inte är lokal.
+- `internal/masking`: platshållare per värde (samma värde, samma platshållare),
+  hela konversationen (alla roller, textdelar i arrayform, verktygsanrop),
+  hela texten (ingen 64 KiB-gräns). Återställning i vanliga svar och i
+  strömmade, där en platshållare kan delas mellan två bitar.
+- Detektorerna fick positioner (`pii.Find`, `secrets.MaskWith`) som delar
+  mönster med klassningen. Grupperade IBAN upptäcks nu.
+- Syns i dry-run, `X-Router-Masked`, inspektorn och auditkedjan
+  (`request.masked`, typer och antal); mätvärde
+  `router_masked_requests_total`.
+- Verifierat end-to-end mot en molnleverantör som loggar vad den får: inga
+  värden, bara platshållare; användaren fick värdena tillbaka i båda vägarna.
+
+Kvar: namn i fritext (kräver pålitlig namnigenkänning; den lokala andra
+åsikten kan bli vägen dit).

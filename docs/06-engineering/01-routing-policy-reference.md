@@ -224,7 +224,26 @@ För kompatibilitet med tidigare referens accepteras följande hints direkt unde
 Nya policys bör använda `force`/`constraints`/`defaults` direkt. Hints är ett
 migrationsstöd och kan deprekeras i en senare DSL-version.
 
-### 6.6 `reason`
+### 6.6 `mask` — mask and send (ISSUE-151)
+
+```yaml
+route:
+  mask: true        # eller mask: {}
+```
+
+När beslutet går till en modell som inte är taggad `local`/`on-prem`/
+`air-gapped` ersätts personuppgifter och hemligheter som detektorerna hittar
+säkert (personnummer, e-post, telefon, IBAN, kort, postadress, nycklar och
+tokens) med platshållare (`[EMAIL_1]`) innan frågan skickas, och värdena fylls
+i igen i svaret. Går beslutet till en lokal modell skickas frågan som den är.
+
+`mask` lättar aldrig på något: en `block` eller en `constraints` från någon
+annan matchad regel gäller fortfarande, och den strängaste vinner. Namn i
+fritext maskeras inte. Värdena lever bara i minnet för förfrågan; auditkedjan
+(`request.masked`), headern `X-Router-Masked` och decision-skälen bär typer
+och antal, aldrig värden. Council-läget används inte för en maskerad fråga.
+
+### 6.7 `reason`
 
 Fri sträng på `route`-nivå. Infogas i decision-explanation när regeln matchar.
 

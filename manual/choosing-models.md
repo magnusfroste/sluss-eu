@@ -18,7 +18,7 @@ Step 1 is the floor Sluss protects. Step 2 is where it saves money. Nothing in s
 
 ## Step 1: what is not allowed
 
-**Your rules.** A rule such as *personal data → only models tagged local* removes every model without the tag *local* for that question. A *block* rule stops the question. Rules are on [Policy]({{BASE}}/router/policy).
+**Your rules.** A rule has one of three outcomes. *Keep on own hardware* (a rule such as *personal data → only models tagged local*) removes every model without the tag *local* for that question. *Mask and send* lets the question go to a cloud model, but first replaces personal identity numbers, e-mail addresses, phone numbers, IBANs, card numbers, postal addresses and keys with placeholders such as `[EMAIL_1]`, and puts the values back in the answer before the person sees it: cloud quality, and the identifiers never leave the house. Names in free text are not masked, so use *keep on own hardware* where a name alone matters. *Block* stops the question. Rules are on [Policy]({{BASE}}/router/policy).
 
 A question can hold several kinds of data at once, for example a classified document with a password in it. Every rule that matches *any* of them applies, and the strictest outcome wins: a block beats *local only*, and *local only* beats no rule.
 
