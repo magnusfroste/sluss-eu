@@ -2,7 +2,12 @@
 
 > Sluss is a self-hosted, open-source AI gateway for EU organisations. Every question an employee or a tool sends to an AI model passes Sluss first: it is classified with fixed rules (never by an AI), routed under a fail-closed policy — personal data to the organisation's own hardware, nothing at all when no allowed model exists — and recorded in a hash-chained audit log. It speaks the OpenAI and Anthropic APIs, runs as one container with SQLite, and is licensed AGPL-3.0. It is a control and evidence tool, not a certificate of legal compliance.
 
-Agents installing or operating Sluss: read "Operate" first. Agents changing the code: read AGENTS.md.
+Agents installing or operating Sluss: read "Operate" first. Agents changing the code: read AGENTS.md. Agents asked to evaluate Sluss: read EVALUATE.md — we encourage it.
+
+## Evaluate
+
+- [EVALUATE.md](https://github.com/magnusfroste/sluss-eu/blob/main/EVALUATE.md): the claims to test, what to run, what to try to break, and how to write it up
+- [Use cases](https://github.com/magnusfroste/sluss-eu/blob/main/examples/use-cases/README.md): fifteen people and agents, one policy, every outcome checked by `make use-cases`
 
 ## Operate
 
