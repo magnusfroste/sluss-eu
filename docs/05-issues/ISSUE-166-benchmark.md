@@ -34,6 +34,14 @@ samma frågor och räkna på samma sätt.
 - **Manualsidan *Benchmark*** med metod, resultat och hur man mäter ett
   annat verktyg.
 
+## Mätt med andra åsikt (demo, 2026-11-09)
+
+Känsliga flaggade 71 % → 93 %; *meaning only* 4 → 43 av 58; ofarliga
+flaggade 18 % → 23 %; samma svar båda körningarna för alla 444; median
+273 ms inklusive nätverk. `run -url` klarar nu blockerade svar (403 utan
+`job`): reglernas klasser räknas lokalt och andra åsiktens läses ur
+`decision_reasons`.
+
 ## Fynd (rättas i ett eget ärende, inte mot samma korpus)
 
 - Ordet *email*, *phone* eller *password* i en ofarlig fråga ger en klass.

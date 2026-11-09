@@ -43,3 +43,10 @@ func TestLocalRulesAreDeterministicAndFindAnIdentifier(t *testing.T) {
 		t.Fatalf("classes %v / %v", a, b)
 	}
 }
+
+func TestSecondOpinionClasses(t *testing.T) {
+	got := secondOpinionClasses([]string{"Policy rule r1 matched", "second opinion (local model m): pii, health — may only make the decision stricter"})
+	if len(got) != 2 || got[0] != "pii" || got[1] != "health" {
+		t.Fatalf("got %v", got)
+	}
+}
