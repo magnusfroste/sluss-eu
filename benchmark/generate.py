@@ -20,6 +20,7 @@ The generator is deterministic (fixed seed), so the corpus only changes when
 this file does. Run:  python3 benchmark/generate.py > benchmark/corpus.jsonl
 """
 import json
+import os
 import random
 import sys
 
@@ -82,16 +83,18 @@ def luhn_digit(digits):
     return str((10 - total % 10) % 10)
 
 
+# Personal identity numbers come from Skatteverket's open list of test
+# numbers (benchmark/test_personnummer.txt), which belong to no one. A random
+# number with a valid check digit could be a real person's.
+with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_personnummer.txt"), encoding="utf-8") as _f:
+    TEST_PNR = [l.strip() for l in _f if l.strip() and not l.startswith("#")]
+
+
 def personnummer(full=False, plus=False):
-    y = rng.randint(40, 99)
-    m = rng.randint(1, 12)
-    d = rng.randint(1, 28)
-    n = rng.randint(200, 999)
-    base = f"{y:02d}{m:02d}{d:02d}{n:03d}"
-    c = luhn_digit(base)
+    n = rng.choice(TEST_PNR)            # YYYYMMDDNNNC
     sep = "+" if plus else "-"
-    s = f"{base[:6]}{sep}{base[6:]}{c}"
-    return ("19" + s) if full else s
+    s = f"{n[2:8]}{sep}{n[8:]}"
+    return (n[:2] + s) if full else s
 
 
 def iban(grouped=True):
@@ -108,21 +111,25 @@ def iban(grouped=True):
 
 
 def card():
-    body = "4" + "".join(str(rng.randint(0, 9)) for _ in range(14))
+    # 4000 00 is a prefix card schemes use for test cards.
+    body = "400000" + "".join(str(rng.randint(0, 9)) for _ in range(9))
     c = body + luhn_digit(body)
     return " ".join(c[i:i+4] for i in range(0, 16, 4))
 
 
 def phone():
     style = rng.choice(["se-mobile", "se-mobile-flat", "intl", "zero-intl", "paren", "nanp"])
+    # Swedish numbers are from the range PTS reserves for fiction
+    # (070-174 06 05 to 070-174 06 99); 555 numbers are fictional too.
+    nn = rng.randint(5, 99)
     if style == "se-mobile":
-        return f"07{rng.randint(0,9)}-{rng.randint(100,999)} {rng.randint(10,99)} {rng.randint(10,99)}"
+        return f"070-174 06 {nn:02d}"
     if style == "se-mobile-flat":
-        return f"07{rng.randint(0,9)}{rng.randint(1000000,9999999)}"
+        return f"07017406{nn:02d}"
     if style == "intl":
-        return f"+46 7{rng.randint(0,9)} {rng.randint(100,999)} {rng.randint(10,99)} {rng.randint(10,99)}"
+        return f"+46 70 174 06 {nn:02d}"
     if style == "zero-intl":
-        return f"0046 7{rng.randint(0,9)} {rng.randint(100,999)} {rng.randint(10,99)} {rng.randint(10,99)}"
+        return f"0046 70 174 06 {nn:02d}"
     if style == "paren":
         return f"(555) {rng.randint(100,999)}-{rng.randint(1000,9999)}"
     return f"555-{rng.randint(100,999)}-{rng.randint(1000,9999)}"

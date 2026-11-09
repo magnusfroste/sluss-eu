@@ -12,7 +12,7 @@ Every AI gateway and DLP product says it finds sensitive data. Few say how often
 
 ## The questions
 
-444 synthetic questions in Swedish and English (`benchmark/corpus.jsonl`), written by a generator with a fixed seed (`benchmark/generate.py`), so anyone gets exactly the same set. Personal identity numbers, card numbers and IBANs have valid check digits; names, companies and amounts are made up. Each question has the data classes a careful reader would give it, and a *kind*:
+444 synthetic questions in Swedish and English (`benchmark/corpus.jsonl`), written by a generator with a fixed seed (`benchmark/generate.py`), so anyone gets exactly the same set. Nothing in it belongs to anyone: personal identity numbers come from Skatteverket's open list of test numbers, Swedish phone numbers from the range the telecom authority reserves for fiction, card numbers use a test prefix, and names, companies and amounts are made up. Card numbers and IBANs have valid check digits. Each question has the data classes a careful reader would give it, and a *kind*:
 
 | Kind | Questions | What it tests |
 |---|---|---|
@@ -35,21 +35,21 @@ Version 1.8.1.
 
 | | Sluss, rules only | Presidio |
 |---|---|---|
-| Sensitive questions flagged | 166 of 224 (74 %) | 146 of 224 (65 %) |
-| Harmless questions flagged | 20 of 220 (9 %) | 42 of 220 (19 %) |
-| — with an identifier or key | 104 of 104 (100 %) | 75 of 104 (72 %) |
-| — with a term or marking | 62 of 62 (100 %) | 33 of 62 (53 %) |
+| Sensitive questions flagged | 166 of 224 (74 %) | 139 of 224 (62 %) |
+| Harmless questions flagged | 22 of 220 (10 %) | 41 of 220 (19 %) |
+| — with an identifier or key | 104 of 104 (100 %) | 74 of 104 (71 %) |
+| — with a term or marking | 62 of 62 (100 %) | 27 of 62 (44 %) |
 | — with meaning only | 0 of 58 (0 %) | 38 of 58 (66 %) |
-| — look-alikes left alone | 90 of 110 (82 %) | 71 of 110 (65 %) |
-| — plain questions left alone | 110 of 110 (100 %) | 107 of 110 (97 %) |
-| Right class, exactly | 362 of 444 (82 %) | 251 of 444 (57 %) |
+| — look-alikes left alone | 88 of 110 (80 %) | 73 of 110 (66 %) |
+| — plain questions left alone | 110 of 110 (100 %) | 106 of 110 (96 %) |
+| Right class, exactly | 360 of 444 (81 %) | 251 of 444 (57 %) |
 | Same answer every run | yes (5 runs) | not measured |
-| Time per question (median / p95) | 0.09 ms / 0.14 ms | 5 ms / 9 ms |
+| Time per question (median / p95) | 0.09 ms / 0.14 ms | 5 ms / 8 ms |
 
 | Class | Sluss recall / precision | Presidio recall / precision |
 |---|---|---|
-| Personal data | 0.82 / 0.94 | 0.94 / 0.39 |
-| Keys and secrets | 0.75 / 0.75 | — |
+| Personal data | 0.82 / 0.94 | 0.94 / 0.41 |
+| Keys and secrets | 0.75 / 0.71 | — |
 | Security-classified | 0.67 / 1.00 | — |
 | Health | 0.62 / 0.73 | — |
 | Financial | 0.62 / 0.84 | — |
@@ -61,8 +61,8 @@ Version 1.8.1.
 ## What the numbers say
 
 - **Rules find everything there is to find.** Every identifier, key, term and marking in the set, in a tenth of a millisecond and the same way every time. Presidio has no notion of keys, security markings, health, finance, legal or code, which is most of what an organisation means by sensitive.
-- **Rules do not read meaning, at all.** 0 of 58 meaning-only questions: every miss in the set is of this kind. Presidio flags 38 of them, every one because it recognises a person's name (PERSON). The same habit makes it flag names in harmless questions (precision 0.39 on personal data), and its 33 *term* hits are a name or a place in the question, sometimes a Swedish word taken for one, never the term itself.
-- **Rules still over-flag on some words.** 9 % of harmless questions, all look-alikes: *password policy*, *how API keys should be rotated*, *what an IBAN is*, *patient*, *court cases*. A question about passwords is deliberately treated as possibly holding one. That costs no protection; such a question is kept on your own models instead of the cloud.
+- **Rules do not read meaning, at all.** 0 of 58 meaning-only questions: every miss in the set is of this kind. Presidio flags 38 of them, every one because it recognises a person's name (PERSON). The same habit makes it flag names in harmless questions (precision 0.41 on personal data), and its 27 *term* hits are a name or a place in the question, sometimes a Swedish word taken for one, never the term itself.
+- **Rules still over-flag on some words.** 10 % of harmless questions, all look-alikes: *password policy*, *how API keys should be rotated*, *what an IBAN is*, *patient*, *court cases*. A question about passwords is deliberately treated as possibly holding one. That costs no protection; such a question is kept on your own models instead of the cloud.
 - **The second opinion is what reads meaning.** With a model on your own hardware reading the question after the rules ([How Sluss decides](/manual/how-sluss-decides)), measured on version 1.8.0 against the demo instance's local model (a 27B reasoning model with thinking turned off), each question twice: *meaning only* went from 4 to 43 of 58 and sensitive questions flagged from 71 % to 93 %, with 11 more harmless questions flagged (a git commit message read as code, *the summer party* as personal data) and about a quarter of a second per question including the network. It gave the same answer both times for all 444 questions; that is an observation on this model, not a guarantee, and only the rules' part is the same by construction. What it still missed: a performance review of a named person, a backup site for critical infrastructure with no marking, and *has had it tough since the accident*. A different model gives different numbers; measure yours with the commands below.
 
 ## Before and after
@@ -72,11 +72,11 @@ The same rules, before the benchmark had been run on them (version 1.8.0, the fi
 | | 1.8.0 | 1.8.1 |
 |---|---|---|
 | Sensitive questions flagged | 71 % | 74 % |
-| Harmless questions flagged | 18 % | 9 % |
+| Harmless questions flagged | 18 % | 10 % |
 | — with an identifier or key | 90 % | 100 % |
 | — with meaning only | 7 % | 0 % |
-| — look-alikes left alone | 65 % | 82 % |
-| Right class, exactly | 75 % | 82 % |
+| — look-alikes left alone | 65 % | 80 % |
+| Right class, exactly | 75 % | 81 % |
 
 *Meaning only* went down because the four hits in 1.8.0 were accidents: a word such as *email* in a sentence that happened to be sensitive for another reason.
 
