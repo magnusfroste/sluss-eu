@@ -13,6 +13,17 @@ Routing engine väljer bästa modell/provider för varje prompt givet:
 - Tenantpolicy.
 - Historiska outcomes.
 
+## Beslutslägen
+
+Sluss har två lägen, och läget syns i startbannern, i `GET /version` (`decisions`), på Version-sidan och i auditkedjan (`router.started` vid varje start):
+
+| Läge | Hur | Determinism |
+|---|---|---|
+| `rules-only` (standard) | Reglerna klassar och policyn beslutar. Ingen modell deltar i något beslut. | Samma fråga ger alltid samma beslut. |
+| `rules+second-opinion` | `ROUTER_SECOND_OPINION_MODEL` pekar på en lokal modell som läser frågan efter reglerna och får lägga till en dataklass. | Reglernas del är deterministisk; modellens tillägg kan variera. Ett tillägg kan bara göra beslutet strängare. |
+
+En organisation som inte vill ha någon AI i beslutet låter variabeln vara tom och kan visa, för varje period, att läget var `rules-only`.
+
 ## Input
 
 Input är ett `JobDescriptor` plus tenant context.

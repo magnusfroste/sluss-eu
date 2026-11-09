@@ -177,3 +177,16 @@ func TestSecondOpinionEmptyAnswerIsNotSilent(t *testing.T) {
 		t.Fatalf("the system prompt should carry /no_think for Qwen-style models")
 	}
 }
+
+// The mode is what the banner, /version, the Version page and the audit log
+// report, so an organisation can show whether a model took part (ISSUE-165).
+func TestModeReportsRulesOnlyByDefault(t *testing.T) {
+	var off *Classifier
+	if off.Mode() != ModeRulesOnly || !strings.Contains(off.Describe(), "no model takes part") {
+		t.Fatalf("off: %q / %q", off.Mode(), off.Describe())
+	}
+	on := &Classifier{cfg: Config{ModelID: "small-local"}}
+	if on.Mode() != ModeRulesAndSecondOpinion || !strings.Contains(on.Describe(), "small-local") || !strings.Contains(on.Describe(), "only make a decision stricter") {
+		t.Fatalf("on: %q / %q", on.Mode(), on.Describe())
+	}
+}

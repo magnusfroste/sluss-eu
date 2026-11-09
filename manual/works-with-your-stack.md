@@ -1,6 +1,6 @@
 # Works with your stack
 
-**What you get:** a clear picture of where Sluss sits next to the tools your company already has, and what each one does. Sluss does not replace your web filter, your existing AI tools or your sign-in. It works between them.
+**What you get:** a clear picture of where Sluss sits next to the tools your company already has, and what each one does. Sluss does not replace your web filter, your existing AI tools or your sign-in. It works between them. If you read one page first, read [One address, closed doors](/manual/one-address): Sluss is an address your tools are given, not a proxy in the network.
 
 **What you need:** nothing new. Each section says which page in Sluss connects the tool.
 

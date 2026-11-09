@@ -42,13 +42,14 @@ var upgradePaths = []upgradePath{
 
 type versionPageData struct {
 	Commit, Short, Built, Release string
+	Decisions                     string
 	S                             UpdateStatus
 	Paths                         []upgradePath
 	Notice                        string
 }
 
 // VersionPageHandler renders /router/system.
-func VersionPageHandler(u *UpdateChecker, logger *slog.Logger) http.HandlerFunc {
+func VersionPageHandler(u *UpdateChecker, logger *slog.Logger, decisions string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		s := u.Status()
 		paths := make([]upgradePath, 0, len(upgradePaths))
@@ -65,7 +66,7 @@ func VersionPageHandler(u *UpdateChecker, logger *slog.Logger) http.HandlerFunc 
 		}
 		d := versionPageData{
 			Commit: buildinfo.FullCommit(), Short: buildinfo.Short(), Built: buildinfo.BuiltAt(), Release: buildinfo.Release(),
-			S: s, Paths: paths, Notice: r.URL.Query().Get("ok"),
+			S: s, Paths: paths, Notice: r.URL.Query().Get("ok"), Decisions: decisions,
 		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		if err := versionTmpl.Execute(w, d); err != nil && logger != nil {
@@ -139,6 +140,11 @@ details.path summary{cursor:pointer;font-weight:600}
     {{else if not .S.Checked.IsZero}}<div class="ds-value ds-v-ok" style="font-size:1.6rem">Up to date</div><div class="ds-hint">checked {{clock .S.Checked}}</div>
     {{else}}<div class="ds-value" style="font-size:1.3rem">Not checked yet</div><div class="ds-hint">The first check runs shortly after start.</div>{{end}}
     {{if not .S.Disabled}}<form method="post" action="/router/system/check" style="margin-top:12px"><button class="ds-btn sm" type="submit">Check now</button></form>{{end}}
+  </div>
+  <div class="ds-card ds-c12">
+    <div class="ds-label">How decisions are made</div>
+    <div style="font-size:1.05rem;margin-top:4px">{{.Decisions}}</div>
+    <div class="ds-hint">Rules decide where every question may go. A second opinion, if one is configured (ROUTER_SECOND_OPINION_MODEL), runs on your own hardware and may only make a decision stricter. Every start writes the mode to the audit log (router.started), so it can be shown for any period. <a style="color:#7fd3ff" href="/manual/how-sluss-decides">How Sluss decides</a></div>
   </div>
 </div>
 

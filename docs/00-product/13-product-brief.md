@@ -18,7 +18,9 @@ internal apps, SDKs, agents — connects by changing a base URL and a key.
 Every prompt that passes through is:
 
 1. **Classified** — in under a millisecond, with deterministic rules (no LLM,
-   no ML in the decision): task type, risk level, and data sensitivity —
+   no ML in the decision by default; an optional model on your own hardware
+   may only make a decision stricter, and the mode is recorded in the audit
+   log): task type, risk level, and data sensitivity —
    personal data (incl. Swedish personnummer), possible secrets, financial,
    health, legal and security-classified content, in English and Swedish.
    Attached documents are classified as content; unreadable attachments

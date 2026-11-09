@@ -10,6 +10,16 @@ ghcr.io/magnusfroste/sluss-eu:1.6      # the newest 1.6.x
 ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 ```
 
+## Unreleased
+
+### Evidence
+- **Which way Sluss decided is visible and recorded.** The start banner, `GET /version` (`decisions`: `rules-only` or `rules+second-opinion`) and the Version page say whether a model takes part in decisions, and every start writes a `router.started` record with the mode to the audit log. An organisation that wants no AI in the decision can show, for any period, that there was none.
+
+### Documentation
+- **One address, closed doors**, a new manual page: Sluss is an address your tools are given, not a proxy in the network, and Entra ID, Intune and the DNS filter close the other doors. Linked first from the manual, the README and the architecture overview, which now calls the entry point an API ingress instead of a proxy.
+- **Rules only, or a second opinion**, a new manual page: the two decision modes, which fits whom, and how to prove which one was in use.
+- The README describes every feature (mask and send, answer check, the second opinion, the company chat, the hardening and supply chain), and the claims "no LLM in the decision" and "same question, same decision" now say when they hold. The architecture documents cover the second opinion, mask and send, the answer check and the audit anchor.
+
 ## v1.6.0 — 2026-11-09
 
 Mask and send: cloud quality, and the identifiers never leave the house. Plus use cases anyone can run, and a brief for evaluating Sluss.

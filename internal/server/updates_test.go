@@ -91,7 +91,7 @@ func TestVersionPageFooterDotAndOverviewInfo(t *testing.T) {
 	t.Cleanup(func() { activeUpdates = nil })
 
 	rec := httptest.NewRecorder()
-	VersionPageHandler(u, nil)(rec, httptest.NewRequest(http.MethodGet, "/router/system", nil))
+	VersionPageHandler(u, nil, "rules only — no model takes part in any decision")(rec, httptest.NewRequest(http.MethodGet, "/router/system", nil))
 	body := rec.Body.String()
 	for _, want := range []string{"2 changes behind", "change number 2", "EasyPanel", "docker compose pull", "Sluss never upgrades itself", "Check now"} {
 		if !strings.Contains(body, want) {
