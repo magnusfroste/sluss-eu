@@ -13,7 +13,7 @@ ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 ## Unreleased
 
 ### Evidence
-- **Benchmark.** 444 labelled synthetic questions in Swedish and English (`benchmark/`), from a generator with a fixed seed, scored by `cmd/benchmark`: the share of sensitive questions flagged, the share of harmless ones flagged, results per kind (identifier, term, meaning only, look-alike) and per class, latency and whether the answer is the same every run. Rules only: 71 % of sensitive questions flagged, 18 % of harmless ones, 0.08 ms per question. Shown beside Microsoft Presidio on the same questions, and `benchmark export` writes the questions and a template so any other gateway can be scored the same way. `make benchmark` runs in CI. New manual page *Benchmark*.
+- **Benchmark.** 444 labelled synthetic questions in Swedish and English (`benchmark/`), from a generator with a fixed seed, scored by `cmd/benchmark`: the share of sensitive questions flagged, the share of harmless ones flagged, results per kind (identifier, term, meaning only, look-alike) and per class, latency and whether the answer is the same every run. Rules only: 71 % of sensitive questions flagged, 18 % of harmless ones, 0.08 ms per question. With the local second opinion on the demo's model: 93 % and 23 %, and questions that are sensitive only by meaning go from 7 % to 74 %. Shown beside Microsoft Presidio on the same questions, and `benchmark export` writes the questions and a template so any other gateway can be scored the same way. `make benchmark` runs in CI. New manual page *Benchmark*.
 
 ## v1.7.0 — 2026-11-09
 

@@ -209,16 +209,24 @@ func remoteClassifier(base, key string) func(string) ([]string, error) {
 				Sensitivity   string   `json:"Sensitivity"`
 				Sensitivities []string `json:"Sensitivities"`
 			} `json:"job"`
+			DecisionReasons []string `json:"decision_reasons"`
 		}
 		if err := json.Unmarshal(data, &dec); err != nil {
 			return nil, fmt.Errorf("decode: %w", err)
 		}
-		if dec.Job == nil {
-			return nil, fmt.Errorf("no job in response (is X-Router-Explain allowed?)")
+		var found []string
+		if dec.Job != nil {
+			found = append([]string{dec.Job.Sensitivity}, dec.Job.Sensitivities...)
+		} else {
+			// A block carries no job. The rules' classes are the same code as
+			// this binary's (run it from the commit the instance runs, see
+			// GET /version); the second opinion's are in decision_reasons.
+			found, _ = classifyLocal(text)
+			found = append(found, secondOpinionClasses(dec.DecisionReasons)...)
 		}
 		seen := map[string]bool{}
 		var out []string
-		for _, s := range append([]string{dec.Job.Sensitivity}, dec.Job.Sensitivities...) {
+		for _, s := range found {
 			if s != "" && s != "none" && !seen[s] {
 				seen[s] = true
 				out = append(out, s)
@@ -226,6 +234,31 @@ func remoteClassifier(base, key string) func(string) ([]string, error) {
 		}
 		return out, nil
 	}
+}
+
+// secondOpinionClasses reads the classes from the reason line
+// "second opinion (local model m): pii, health — may only make ...".
+func secondOpinionClasses(reasons []string) []string {
+	var out []string
+	for _, r := range reasons {
+		if !strings.HasPrefix(r, "second opinion (local model ") {
+			continue
+		}
+		i := strings.Index(r, "): ")
+		if i < 0 {
+			continue
+		}
+		list := r[i+3:]
+		if j := strings.Index(list, " — "); j >= 0 {
+			list = list[:j]
+		}
+		for _, c := range strings.Split(list, ",") {
+			if c = strings.TrimSpace(c); c != "" {
+				out = append(out, c)
+			}
+		}
+	}
+	return out
 }
 
 // ---- score ----
