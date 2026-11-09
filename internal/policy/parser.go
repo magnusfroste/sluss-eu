@@ -344,6 +344,17 @@ func parseRoute(node *yaml.Node, ctx string) (Route, error) {
 		key := node.Content[i].Value
 		val := node.Content[i+1]
 		switch key {
+		case "mask":
+			// mask: true, or mask: {} — no options in v1.
+			if val.Kind == yaml.MappingNode && len(val.Content) == 0 {
+				out.Mask = true
+				continue
+			}
+			on, err := decodeBool(val, ctx+".route.mask")
+			if err != nil {
+				return out, fmt.Errorf("%w: %s.route.mask must be true or {}", ErrInvalidPolicy, ctx)
+			}
+			out.Mask = on
 		case "block":
 			b, err := decodeBlock(val, ctx+".route.block")
 			if err != nil {

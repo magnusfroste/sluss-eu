@@ -182,6 +182,7 @@ func (e *Engine) Decide(
 		DecisionReasons:  buildReasons(job, eval, filterRes, scored, primary, fallbacks),
 		PolicyVersion:    eval.PolicyVersion,
 		EstimatedCostUSD: costUSD,
+		Mask:             eval.Route.Mask,
 	}, nil
 }
 

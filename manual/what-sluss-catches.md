@@ -22,12 +22,12 @@ The numbers come from a fixed set of 49 examples that lives in the code and runs
 | Keys and secrets | 8 | 7 of 8 | 7 of 8 | 8 of 8 |
 | Security-classified | 5 | 4 of 5 | 4 of 5 | 4 of 5 |
 | Health | 6 | 5 of 6 | 5 of 6 | 6 of 6 |
-| Financial | 5 | 2 of 5 | 3 of 5 | 5 of 5 |
+| Financial | 5 | 1 of 5 | 3 of 5 | 5 of 5 |
 | Legal | 3 | 2 of 3 | 2 of 3 | 3 of 3 |
 | Source code | 3 | 3 of 3 | 3 of 3 | 3 of 3 |
 | Harmless (must stay harmless) | 8 | 8 of 8 left alone | — | 7 of 8 left alone |
 
-*Classified as that kind* is the strict reading: the rules named the class a careful reader would. *Flagged as sensitive at all* is what matters for routing: any class keeps the question away from models your rules do not allow. Overall, 39 of 49 examples are classified as a careful reader would, and the rules flag 32 of the 41 sensitive ones.
+*Classified as that kind* is the strict reading: the rules named the class a careful reader would. *Flagged as sensitive at all* is what matters for routing: any class keeps the question away from models your rules do not allow. Overall, 38 of 49 examples are classified as a careful reader would (an IBAN counts as personal data, like a card number), and the rules flag 32 of the 41 sensitive ones.
 
 **With a local second opinion** (last column), 38 of the 41 sensitive examples are flagged. It caught a list of names and ages, a password with no label, an absence explained only as *what happened in the spring*, an acquisition and results in plain words, and a dispute in everyday words. It still missed a name alone, a review about an unnamed person, and an infrastructure plan with no marking. It also flagged one harmless question, a git commit message, as code: an over-flag in the safe direction, which only keeps that question on your own models. Measured on version 1.4 against the demo instance's local model (a 27B reasoning model with thinking turned off), 46 questions, median 0.6 seconds and at most 1.0 second per decision including the second opinion. A different model gives different numbers: run the same set against yours (see below).
 

@@ -154,6 +154,12 @@ type When struct {
 // Route holds v1 route semantics. Hints from the bakåtkompat surface are
 // preserved as raw values so the compiler in ISSUE-022 can map them.
 type Route struct {
+	// Mask, "mask and send" (ISSUE-151): when the decision goes to a cloud
+	// model, personal identifiers and secrets are replaced with placeholders
+	// first and restored in the answer. It never relaxes anything: a block or
+	// a constraint from any matched rule still applies, and a question that
+	// stays local is sent as it is.
+	Mask        bool
 	Block       *Block
 	Force       *Force
 	Constraints *Constraints
@@ -230,7 +236,7 @@ type Defaults struct {
 
 // HasAction reports whether the route specifies at least one action.
 func (r Route) HasAction() bool {
-	if r.Block != nil || r.Force != nil || r.Constraints != nil || r.Defaults != nil {
+	if r.Mask || r.Block != nil || r.Force != nil || r.Constraints != nil || r.Defaults != nil {
 		return true
 	}
 	h := r.Hints

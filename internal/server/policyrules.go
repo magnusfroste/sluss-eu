@@ -61,7 +61,7 @@ type ConsoleRule struct {
 	TaskType      string   `json:"task_type,omitempty"`
 	RiskLevel     string   `json:"risk_level,omitempty"`
 	ToolRisks     []string `json:"tool_risks,omitempty"` // when.tool_risk in [...] (agent capability)
-	Action        string   `json:"action"`               // "require_tags" | "block"
+	Action        string   `json:"action"`               // "require_tags" | "mask" | "block"
 	Tags          []string `json:"tags,omitempty"`       // for require_tags
 }
 
@@ -96,7 +96,7 @@ func (r ConsoleRule) Validate() error {
 				return fmt.Errorf("invalid tag %q (a-z, 0-9, - and _ only)", t)
 			}
 		}
-	case "block":
+	case "block", "mask":
 		// no extra fields
 	default:
 		return fmt.Errorf("unknown action %q", r.Action)
@@ -135,6 +135,9 @@ func (r ConsoleRule) WhenSummary() string {
 func (r ConsoleRule) ActionSummary() string {
 	if r.Action == "block" {
 		return "BLOCK (fail-closed)"
+	}
+	if r.Action == "mask" {
+		return "MASK and send (personal identifiers and secrets as placeholders; restored in the answer)"
 	}
 	return "require provider tags: " + strings.Join(r.Tags, ", ")
 }
@@ -224,6 +227,8 @@ func GenerateConsolePolicyYAML(version string, rules []ConsoleRule) string {
 			b.WriteString("      block:\n")
 			b.WriteString("        code: console_rule_block\n")
 			b.WriteString("        reason: blocked by console rule " + id + "\n")
+		} else if r.Action == "mask" {
+			b.WriteString("      mask: true\n")
 		} else {
 			b.WriteString("      constraints:\n")
 			b.WriteString("        require_provider_tags: [" + strings.Join(r.Tags, ", ") + "]\n")
@@ -356,9 +361,11 @@ func PolicyRuleAddHandler(o PolicyRulesOptions) http.HandlerFunc {
 		sort.Strings(rule.Sensitivities)
 		rule.ToolRisks = append(rule.ToolRisks, r.Form["tool_risk"]...)
 		sort.Strings(rule.ToolRisks)
-		for _, t := range strings.Split(r.FormValue("tags"), ",") {
-			if t = strings.ToLower(strings.TrimSpace(t)); t != "" {
-				rule.Tags = append(rule.Tags, t)
+		if rule.Action == "require_tags" {
+			for _, t := range strings.Split(r.FormValue("tags"), ",") {
+				if t = strings.ToLower(strings.TrimSpace(t)); t != "" {
+					rule.Tags = append(rule.Tags, t)
+				}
 			}
 		}
 		rules := LoadConsoleRules(o.History)

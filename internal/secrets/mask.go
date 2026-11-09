@@ -45,6 +45,9 @@ type rule struct {
 	kind    string
 	re      *regexp.Regexp
 	replace func(re *regexp.Regexp, match string) string
+	// group is the capture group that holds the secret value when only part
+	// of the match is the secret (a "Bearer " keyword, a DB user); 0 = all.
+	group int
 	// hints are lower-case substrings at least one of which must occur for
 	// the pattern to possibly match — a cheap check before the regex, so
 	// classifying a large prompt stays fast (ISSUE-157).
@@ -89,7 +92,7 @@ var rules = []rule{
 	// AWS access key IDs.
 	{kind: "aws_key", re: regexp.MustCompile(`AKIA[0-9A-Z]{16}`), replace: full("aws_key"), hints: []string{"akia"}},
 	// AWS secret access keys in their usual config form (ISSUE-157).
-	{kind: "aws_secret", re: regexp.MustCompile(`(?i)aws_secret_access_key["']?\s*[=:]\s*["']?([A-Za-z0-9/+=]{30,})`), replace: redactGroup("aws_secret", 1), hints: []string{"aws_secret_access_key"}},
+	{kind: "aws_secret", re: regexp.MustCompile(`(?i)aws_secret_access_key["']?\s*[=:]\s*["']?([A-Za-z0-9/+=]{30,})`), replace: redactGroup("aws_secret", 1), group: 1, hints: []string{"aws_secret_access_key"}},
 	// Private keys in PEM form.
 	{kind: "private_key", re: regexp.MustCompile(`-----BEGIN (?:[A-Z]+ )*PRIVATE KEY-----`), replace: full("private_key"), hints: []string{"private key-----"}},
 	// Slack tokens.
@@ -99,13 +102,13 @@ var rules = []rule{
 	// GitHub tokens (ghp_, gho_, ghu_, ghs_, ghr_).
 	{kind: "github_token", re: regexp.MustCompile(`gh[pousr]_[A-Za-z0-9]{30,}`), replace: full("github_token"), hints: []string{"gh"}},
 	// Bearer authorization values — keep the keyword, redact the token.
-	{kind: "token", re: regexp.MustCompile(`(?i)bearer\s+([A-Za-z0-9._~+/=-]{8,})`), replace: redactGroup("token", 1), hints: []string{"bearer"}},
+	{kind: "token", re: regexp.MustCompile(`(?i)bearer\s+([A-Za-z0-9._~+/=-]{8,})`), replace: redactGroup("token", 1), group: 1, hints: []string{"bearer"}},
 	// Database / broker connection URIs with inline credentials — keep the
 	// scheme and user, redact only the password.
-	{kind: "db_password", re: regexp.MustCompile(`(?i)[a-z][a-z0-9+.-]*://[^:@/\s]+:(` + valueClass + `)@`), replace: redactGroup("db_password", 1), hints: []string{"://"}},
+	{kind: "db_password", re: regexp.MustCompile(`(?i)[a-z][a-z0-9+.-]*://[^:@/\s]+:(` + valueClass + `)@`), replace: redactGroup("db_password", 1), group: 1, hints: []string{"://"}},
 	// Generic secret-named key/value pairs (incl. JSON "key":"value") — keep the
 	// key, redact the value.
-	{kind: "secret_kv", re: regexp.MustCompile(`(?i)\b(?:password|passwd|pwd|secret|api[_-]?key|apikey|access[_-]?token|auth[_-]?token|client[_-]?secret|token)\b["']?\s*[=:]\s*["']?(` + valueClass + `)`), replace: redactGroup("secret", 1), hints: []string{"password", "passwd", "pwd", "secret", "key", "token"}},
+	{kind: "secret_kv", re: regexp.MustCompile(`(?i)\b(?:password|passwd|pwd|secret|api[_-]?key|apikey|access[_-]?token|auth[_-]?token|client[_-]?secret|token)\b["']?\s*[=:]\s*["']?(` + valueClass + `)`), replace: redactGroup("secret", 1), group: 1, hints: []string{"password", "passwd", "pwd", "secret", "key", "token"}},
 }
 
 func (r rule) mayMatch(lower string) bool {
@@ -159,3 +162,38 @@ func Detect(s string) []string {
 
 // MaskString is a convenience wrapper returning only the masked text.
 func MaskString(s string) string { return Mask(s).Text }
+
+// MaskWith replaces every detected secret value in s with what fn returns for
+// it (ISSUE-151: a placeholder that is restored in the answer). Only the
+// secret part of a match is replaced: a "Bearer " keyword or a DB user stays.
+// It scans the whole string and returns the kinds it found.
+func MaskWith(s string, fn func(kind, value string) string) (string, []string) {
+	if s == "" {
+		return s, nil
+	}
+	var kinds []string
+	seen := map[string]bool{}
+	lower := strings.ToLower(s)
+	for _, r := range rules {
+		if !r.mayMatch(lower) {
+			continue
+		}
+		r := r
+		s = r.re.ReplaceAllStringFunc(s, func(match string) string {
+			start, end := 0, len(match)
+			if r.group > 0 {
+				loc := r.re.FindStringSubmatchIndex(match)
+				if loc != nil && 2*r.group+1 < len(loc) && loc[2*r.group] >= 0 {
+					start, end = loc[2*r.group], loc[2*r.group+1]
+				}
+			}
+			if !seen[r.kind] {
+				seen[r.kind] = true
+				kinds = append(kinds, r.kind)
+			}
+			return match[:start] + fn(r.kind, match[start:end]) + match[end:]
+		})
+		lower = strings.ToLower(s)
+	}
+	return s, kinds
+}

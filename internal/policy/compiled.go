@@ -542,6 +542,9 @@ func compileGlob(pattern string) (*regexp.Regexp, error) {
 
 func mergeRoute(dst *Route, src Route, ruleID string) []string {
 	var explanations []string
+	if src.Mask {
+		dst.Mask = true
+	}
 	if src.Block != nil {
 		dst.Block = cloneBlock(src.Block)
 	}
@@ -849,6 +852,7 @@ func mergeHints(existing, next RouteHints) RouteHints {
 
 func cloneRoute(route Route) Route {
 	return Route{
+		Mask:        route.Mask,
 		Block:       cloneBlock(route.Block),
 		Force:       cloneForce(route.Force),
 		Constraints: cloneConstraints(route.Constraints),

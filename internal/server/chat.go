@@ -23,6 +23,7 @@ import (
 	"github.com/magnusfroste/sluss/internal/eventlog"
 	"github.com/magnusfroste/sluss/internal/experiment"
 	"github.com/magnusfroste/sluss/internal/health"
+	"github.com/magnusfroste/sluss/internal/masking"
 	"github.com/magnusfroste/sluss/internal/middleware"
 	"github.com/magnusfroste/sluss/internal/openai"
 	"github.com/magnusfroste/sluss/internal/policy"
@@ -262,6 +263,13 @@ func ChatCompletionsHandler(p provider.Adapter, opts ...ChatOptions) http.Handle
 			setInspectorHeaders(w, job, dec)
 			setSensitivitySourceHeader(w, job, &req)
 
+			// Mask and send (ISSUE-151): before anything else touches the
+			// conversation (the context pipeline included), replace personal
+			// identifiers and secrets with placeholders when the answer will
+			// come from a model that is not local. The values stay in this
+			// request's memory and are put back in the answer.
+			masker := cfg.maskForCloud(r, job, dec, normalized, w)
+
 			if req.Stream {
 				candidates := buildStreamCandidates(dec, adapters)
 				// Reasoning-capable candidates get a per-candidate thinking
@@ -273,6 +281,7 @@ func ChatCompletionsHandler(p provider.Adapter, opts ...ChatOptions) http.Handle
 				if len(candidates) > 0 {
 					normalized.Model = candidates[0].providerModelID
 					streamWithFallback(w, r, candidates, normalized, cfg.Logger, cfg.HealthTracker, cfg.EventQueue, job.RequestID, attemptMeta{
+						masker:           masker,
 						tenantID:         job.TenantID,
 						projectID:        job.ProjectID,
 						taskType:         string(job.TaskType),
@@ -297,7 +306,7 @@ func ChatCompletionsHandler(p provider.Adapter, opts ...ChatOptions) http.Handle
 				// Council mode: high-risk task classes deliberate across a panel
 				// instead of trusting a single model. Non-streaming only; falls
 				// through to the single-model path if a panel can't be formed.
-				if cfg.councilEnabled(job, req.Stream) {
+				if masker == nil && cfg.councilEnabled(job, req.Stream) {
 					if cfg.runCouncil(w, r, dec, normalized, job) {
 						return
 					}
@@ -322,6 +331,9 @@ func ChatCompletionsHandler(p provider.Adapter, opts ...ChatOptions) http.Handle
 					start := time.Now()
 					resp, err := c.adapter.Complete(r.Context(), attemptReq)
 					durationMs := time.Since(start).Milliseconds()
+					if err == nil && masker != nil {
+						restoreResponse(masker, resp)
+					}
 					// Check the answer (ISSUE-152) before it is recorded, so
 					// the flags land on the same request-log row. Flag only.
 					var answerFlags []string
@@ -523,6 +535,21 @@ func streamWithFallback(
 		var usageIn, usageOut int // captured from the provider's final usage chunk
 		attemptCtx, cancelAttempt := context.WithCancel(r.Context())
 		var answer answercheck.Collector // the streamed text, checked once the stream ends (ISSUE-152)
+		var restorer *masking.Restorer
+		if meta.masker != nil {
+			restorer = meta.masker.NewRestorer()
+		}
+		out := func(data []byte) []byte { return restoreChunk(restorer, data) }
+		flushRestored := func() {
+			if restorer == nil {
+				return
+			}
+			if rest := restorer.Flush(); rest != "" {
+				chunk := restChunk(rest)
+				writeSSEData(w, chunk)
+				answer.Add(chunk)
+			}
+		}
 		finished := func() []string {
 			if meta.checkAnswer == nil {
 				return nil
@@ -603,6 +630,7 @@ func streamWithFallback(
 		}
 
 		if firstChunk.Done {
+			flushRestored()
 			writeSSEData(w, []byte("[DONE]"))
 			flusher.Flush()
 			recordStream(c, i, firstTokenMs, time.Since(attemptStart).Milliseconds(), usageIn, usageOut, nil)
@@ -610,9 +638,10 @@ func streamWithFallback(
 			return
 		}
 		if len(firstChunk.Data) > 0 {
-			writeSSEData(w, firstChunk.Data)
+			data := out(firstChunk.Data)
+			writeSSEData(w, data)
 			flusher.Flush()
-			answer.Add(firstChunk.Data)
+			answer.Add(data)
 		}
 
 		// Drain the rest.
@@ -629,6 +658,7 @@ func streamWithFallback(
 				return
 			}
 			if chunk.Done {
+				flushRestored()
 				writeSSEData(w, []byte("[DONE]"))
 				flusher.Flush()
 				logStreamResult(r, logger, c.providerID, c.modelID, true, time.Since(started).Milliseconds(), nil)
@@ -637,11 +667,13 @@ func streamWithFallback(
 				return
 			}
 			if len(chunk.Data) > 0 {
-				writeSSEData(w, chunk.Data)
+				data := out(chunk.Data)
+				writeSSEData(w, data)
 				flusher.Flush()
-				answer.Add(chunk.Data)
+				answer.Add(data)
 			}
 		}
+		flushRestored()
 		logStreamResult(r, logger, c.providerID, c.modelID, true, time.Since(started).Milliseconds(), nil)
 		recordStream(c, i, firstTokenMs, time.Since(attemptStart).Milliseconds(), usageIn, usageOut, nil, finished()...)
 		cancelAttempt()
@@ -1083,6 +1115,9 @@ type attemptMeta struct {
 	// holds that the question did not (ISSUE-152). It also records the audit
 	// entry. Called after the answer has been sent, never before.
 	checkAnswer func(answer string) []string
+	// masker, when set, restores masked values in the streamed answer
+	// (ISSUE-151).
+	masker *masking.Masker
 	// answerFlags carries the non-streaming path's flags into the attempt
 	// event.
 	answerFlags      []string
@@ -1612,3 +1647,109 @@ var answerFlagsTotal = promauto.NewCounterVec(prometheus.CounterOpts{
 	Name: "router_answer_flags_total",
 	Help: "Answers that held a key or a personal identifier the question did not (ISSUE-152), by class.",
 }, []string{"classes"})
+
+// ActionRequestMasked records that a question was sent with placeholders in
+// place of personal identifiers or secrets (ISSUE-151). Types and counts only.
+const ActionRequestMasked = audit.Action("request.masked")
+
+// maskForCloud applies "mask and send" when a matched rule asks for it and
+// the answer will come from a model that is not local. It masks normalized in
+// place, adds the instruction that keeps placeholders intact, sets the
+// header, writes the audit entry and returns the masker that restores the
+// answer; nil when nothing was masked.
+func (o *ChatOptions) maskForCloud(r *http.Request, job *router.JobDescriptor, dec engine.RouteDecision, normalized *provider.NormalizedModelRequest, w http.ResponseWriter) *masking.Masker {
+	if !dec.Mask || normalized == nil || o.egressForModel(dec.SelectedModel) == "local" {
+		return nil
+	}
+	m := masking.New()
+	masked := m.Messages(normalized.Messages)
+	if !m.Masked() {
+		return nil
+	}
+	normalized.Messages = append([]openai.Message{{Role: "system", Content: masking.Instruction}}, masked...)
+	summary := m.Summary()
+	w.Header().Set("X-Router-Masked", summary)
+	if o.Logger != nil {
+		o.Logger.InfoContext(r.Context(), "mask and send: values replaced before the cloud model",
+			"request_id", job.RequestID, "model", dec.SelectedModel, "masked", summary)
+	}
+	audit.Record(r.Context(), o.Auditor, audit.Entry{
+		Action:    ActionRequestMasked,
+		Actor:     AdminUserFromContext(r.Context()),
+		TenantID:  job.TenantID,
+		ProjectID: job.ProjectID,
+		RequestID: job.RequestID,
+		Target:    dec.SelectedModel,
+		Outcome:   "masked",
+		Reason:    "personal identifiers and secrets replaced with placeholders before a cloud model",
+		Detail:    map[string]string{"masked": summary},
+	})
+	maskedTotal.Inc()
+	return m
+}
+
+// maskPlan says, for the dry-run, what "mask and send" would replace.
+func (o *ChatOptions) maskPlan(dec engine.RouteDecision, messages []openai.Message) string {
+	if !dec.Mask || o.egressForModel(dec.SelectedModel) == "local" {
+		return ""
+	}
+	m := masking.New()
+	_ = m.Messages(messages)
+	return m.Summary()
+}
+
+// restoreResponse puts masked values back into a non-streamed answer.
+func restoreResponse(m *masking.Masker, resp *openai.ChatResponse) {
+	if m == nil || resp == nil {
+		return
+	}
+	for i := range resp.Choices {
+		resp.Choices[i].Message.Content = m.Restore(resp.Choices[i].Message.Content)
+	}
+}
+
+// restoreChunk restores placeholders in one SSE chunk's delta content. A
+// chunk it cannot read is passed on as it is (it can hold a placeholder,
+// never a value).
+func restoreChunk(r *masking.Restorer, data []byte) []byte {
+	if r == nil || len(data) == 0 {
+		return data
+	}
+	var obj map[string]any
+	if err := json.Unmarshal(data, &obj); err != nil {
+		return data
+	}
+	choices, _ := obj["choices"].([]any)
+	changed := false
+	for _, ch := range choices {
+		cm, _ := ch.(map[string]any)
+		delta, _ := cm["delta"].(map[string]any)
+		if delta == nil {
+			continue
+		}
+		if txt, ok := delta["content"].(string); ok {
+			delta["content"] = r.Add(txt)
+			changed = true
+		}
+	}
+	if !changed {
+		return data
+	}
+	b, err := json.Marshal(obj)
+	if err != nil {
+		return data
+	}
+	return b
+}
+
+// restChunk is the SSE chunk that carries text the restorer held back.
+func restChunk(text string) []byte {
+	b, _ := json.Marshal(map[string]any{"object": "chat.completion.chunk",
+		"choices": []any{map[string]any{"index": 0, "delta": map[string]any{"content": text}}}})
+	return b
+}
+
+var maskedTotal = promauto.NewCounter(prometheus.CounterOpts{
+	Name: "router_masked_requests_total",
+	Help: "Questions sent to a cloud model with personal identifiers or secrets replaced by placeholders (ISSUE-151).",
+})

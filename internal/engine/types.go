@@ -19,9 +19,12 @@ type RouteDecision struct {
 	MatchedRules     []string        `json:"matched_rules,omitempty"` // policy rule IDs that matched
 	EstimatedCostUSD float64         `json:"estimated_cost_usd"`
 	Blocked          bool            `json:"blocked,omitempty"`
-	BlockCode        string          `json:"block_code,omitempty"`
-	BlockReason      string          `json:"block_reason,omitempty"`
-	BlockStatus      int             `json:"block_status,omitempty"`
+	// Mask is set when a matched rule says "mask and send" (ISSUE-151). The
+	// chat path masks only when the answering model is not local.
+	Mask        bool   `json:"mask,omitempty"`
+	BlockCode   string `json:"block_code,omitempty"`
+	BlockReason string `json:"block_reason,omitempty"`
+	BlockStatus int    `json:"block_status,omitempty"`
 }
 
 // FallbackEntry is one entry in the ordered fallback chain.

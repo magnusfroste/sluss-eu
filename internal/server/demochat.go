@@ -880,6 +880,8 @@ function dataText(meta){
   if(meta.sensSrc==='conversation')t+='<div class="sub">found earlier in this chat — the whole chat is routed by it</div>';
   const also=(meta.classes||[]).filter(c=>c!==meta.sens);
   if(also.length)t+='<div class="sub">also found: '+also.map(c=>esc(human(c))).join(', ')+' — rules for these apply too</div>';
+  if(meta.masked){const mk={personnummer:'personal identity number',email:'e-mail address',phone:'phone number',iban:'IBAN',card:'card number',address:'address',secret:'key or token'};
+    t+='<div class="sub">masked before the cloud model saw it: '+meta.masked.split(',').map(x=>{const p=x.split(':');return esc((mk[p[0]]||p[0])+(p[1]&&p[1]!=='1'?' ×'+p[1]:''));}).join(', ')+' — placeholders went out, the values were put back in the answer</div>';}
   if((meta.second||[]).length)t+='<div class="sub">second opinion from the local model '+esc(meta.secondModel||'')+': '+meta.second.map(c=>esc(human(c))).join(', ')+' — it may only make the decision stricter</div>';
   return t;
 }
@@ -1080,7 +1082,7 @@ async function ask(text,opts){
       sens:H('x-router-sensitivity'),sensSrc:H('x-router-sensitivity-source'),reason:H('x-router-route-reason'),egress:H('x-router-egress'),
       tags:H('x-router-selected-tags'),provider:H('x-router-selected-provider'),policy:H('x-router-policy-version'),
       rules:H('x-router-policy-rules')?H('x-router-policy-rules').split(','):[],primary:H('x-router-primary-model'),fallback:!!H('x-router-fallback-index'),
-      classes:H('x-router-data-classes')?H('x-router-data-classes').split(','):[],second:H('x-router-second-opinion')?H('x-router-second-opinion').split(','):[],secondModel:H('x-router-second-opinion-model'),conf:parseFloat(H('x-router-task-confidence'))||0,promptTok:parseInt(H('x-router-prompt-tokens'),10)||0,ctxSaved:parseInt(H('x-router-context-savings'),10)||0});};
+      classes:H('x-router-data-classes')?H('x-router-data-classes').split(','):[],masked:H('x-router-masked')||'',second:H('x-router-second-opinion')?H('x-router-second-opinion').split(','):[],secondModel:H('x-router-second-opinion-model'),conf:parseFloat(H('x-router-task-confidence'))||0,promptTok:parseInt(H('x-router-prompt-tokens'),10)||0,ctxSaved:parseInt(H('x-router-context-savings'),10)||0});};
   try{
     const res=await fetch('/chat/send',{method:'POST',credentials:'same-origin',signal:streaming.signal,
       headers:{'Content-Type':'application/json'},body:JSON.stringify({model:pick,stream:true,messages:apiMsgs,search:searchOn})});

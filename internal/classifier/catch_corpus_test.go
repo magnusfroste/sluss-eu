@@ -76,7 +76,7 @@ var catchCorpus = []catchCase{
 
 	// ---- Financial ------------------------------------------------------------
 	{router.SensitivityFinancial, "Here is the balance sheet and P&L for Q3 before the earnings release; summarise.", true, "balance sheet, P&L, earnings"},
-	{router.SensitivityFinancial, "Betala fakturan till IBAN SE45 5000 0000 0583 9825 7466.", true, "an IBAN"},
+	{router.SensitivityFinancial, "Betala fakturan till IBAN SE45 5000 0000 0583 9825 7466.", false, "an IBAN is flagged as personal data (pii), like a card number: it still stays local"},
 	{router.SensitivityFinancial, "Kortnummer 4111 1111 1111 1111, utgång 12/27.", false, "a card number is flagged as personal data (pii), not financial: it still stays local"},
 	{router.SensitivityFinancial, "We will buy the company for about 40 million next month; keep it quiet. Draft the board memo.", false, "an acquisition in plain words"},
 	{router.SensitivityFinancial, "Revenue was 12.4 MSEK, up 8 %. Write the press release.", false, "numbers that are about to be public, no financial term the rules know"},
