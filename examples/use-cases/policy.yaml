@@ -1,0 +1,52 @@
+version: use-cases
+# The policy the use cases run against (make use-cases). It shows all three
+# outcomes a rule can have, side by side:
+#   keep on own hardware · mask and send · block
+# Run with ROUTER_PROVIDER_TAGS="anthropic=local,eu-resident;openai=cloud":
+# the "anthropic" test provider plays a model on your own hardware, "openai"
+# a cloud model. Everything is synthetic; no real personal data.
+metadata:
+  owner: use-cases
+  description: Three outcomes, one policy — the use cases in examples/use-cases.
+settings:
+  default_model_profile: balanced
+  conservative_unknowns: true
+  max_router_overhead_ms: 100
+  default_timeout_ms: 30000
+  default_retention: standard
+rules:
+  # Classified material never leaves, and is never answered by any model.
+  - id: classified_blocked
+    when:
+      sensitivity: security_classified
+    route:
+      block:
+        code: classified_blocked
+        reason: security-classified material is not sent to any model
+  # An agent that may delete things is kept off the cloud.
+  - id: destructive_agents_local
+    when:
+      tool_risk: destructive
+    route:
+      constraints:
+        require_provider_tags: [local]
+  # Health, legal, financial data and keys stay on your own hardware.
+  - id: sensitive_stays_local
+    when:
+      sensitivity: { in: [health, legal, financial, secrets_possible] }
+    route:
+      constraints:
+        require_provider_tags: [local]
+  # Personal data may use the cloud, with identifiers replaced by placeholders
+  # first and restored in the answer. A rule above still wins: a question that
+  # also holds health data stays local.
+  - id: personal_data_masked
+    when:
+      sensitivity: pii
+    route:
+      mask: true
+  - id: default
+    when: {}
+    route:
+      defaults:
+        model_profile: balanced

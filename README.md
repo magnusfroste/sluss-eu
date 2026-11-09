@@ -114,6 +114,12 @@ upgrades, backup, air-gapped installs:
 weeks, nothing blocks, and `GET /router/gap-report` tells you how many prompts
 with personal data went to the cloud — and what the policy would have done.
 
+## See it with real questions
+
+[`examples/use-cases`](examples/use-cases/README.md): fifteen people and agents — marketing, a developer who pastes a key, customer support, HR, finance, legal, a defence supplier, agents with read-only and destructive tools — ask real questions under one policy with all three rule outcomes. `make use-cases` runs them against a fresh instance in seconds, with no key, and checks every outcome.
+
+Evaluating Sluss for your organisation, or asking an agent to? [EVALUATE.md](EVALUATE.md) is the brief: the claims to test, what to run, what to try to break. We encourage it.
+
 ## Point your clients at it
 
 Three values — base URL, API key, `model: auto`:

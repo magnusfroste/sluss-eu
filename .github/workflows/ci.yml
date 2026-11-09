@@ -38,6 +38,8 @@ jobs:
         run: make test-eval
       - name: policy tests
         run: make test-policy
+      - name: use cases (every rule outcome, end-to-end vs mock)
+        run: make use-cases
       - name: ciso demo (end-to-end vs mock)
         run: make demo-ciso
       - name: eval report

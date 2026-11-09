@@ -10,6 +10,8 @@ The design target is routing overhead p95 under 100 ms before any provider call.
 
 ## Deploying or operating Sluss
 
+If your task is to **evaluate** Sluss — judge whether it is fit for an organisation — follow [EVALUATE.md](EVALUATE.md). We encourage it: run `make use-cases`, try to break it, and write down what held and what did not.
+
 If your task is to install, configure or run Sluss for an organisation — not to change its code — read these, in order, and stop there:
 
 1. `README.md` — what Sluss is and the 60-second try-out.

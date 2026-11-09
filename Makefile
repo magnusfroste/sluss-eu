@@ -1,4 +1,4 @@
-.PHONY: build dev test test-unit test-integration test-eval test-policy test-regression eval-report eval-recommend autopilot smoke demo-ciso smoke-live load lint fmt vet tidy clean run run-mock migrate seed
+.PHONY: use-cases build dev test test-unit test-integration test-eval test-policy test-regression eval-report eval-recommend autopilot smoke demo-ciso smoke-live load lint fmt vet tidy clean run run-mock migrate seed
 
 GO ?= go
 PSQL ?= psql
@@ -78,6 +78,13 @@ smoke:
 # — provisioning, cloud-when-safe, the visible cloud→local switch on PII,
 # fail-closed on a residency requirement, tamper-evident audit verify, control
 # report, and ROI. Synthetic data only. See examples/demo-ciso/README.md.
+
+# Use cases (examples/use-cases): people and agents asking real questions under
+# one policy with all three rule outcomes; every outcome checked. Hermetic.
+# MARKDOWN=1 prints the README table.
+use-cases:
+	./scripts/use-cases.sh
+
 demo-ciso:
 	./scripts/demo-ciso.sh
 
