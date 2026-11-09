@@ -188,21 +188,42 @@ func remoteClassifier(base, key string) func(string) ([]string, error) {
 			"model":    "auto",
 			"messages": []map[string]string{{"role": "user", "content": text}},
 		})
-		req, _ := http.NewRequest(http.MethodPost, base+"/router/decision", bytes.NewReader(body))
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("X-Router-Explain", "true")
-		if key != "" {
-			req.Header.Set("Authorization", "Bearer "+key)
+		// A dropped connection or a 5xx is retried, so one network hiccup
+		// does not end a run of several hundred questions.
+		var data []byte
+		var status int
+		var lastErr error
+		for attempt := 0; attempt < 4; attempt++ {
+			if attempt > 0 {
+				time.Sleep(time.Duration(attempt) * 2 * time.Second)
+			}
+			req, _ := http.NewRequest(http.MethodPost, base+"/router/decision", bytes.NewReader(body))
+			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("X-Router-Explain", "true")
+			if key != "" {
+				req.Header.Set("Authorization", "Bearer "+key)
+			}
+			resp, err := client.Do(req)
+			if err != nil {
+				lastErr = err
+				continue
+			}
+			data, _ = io.ReadAll(resp.Body)
+			resp.Body.Close()
+			status = resp.StatusCode
+			if status >= 500 {
+				lastErr = fmt.Errorf("HTTP %d: %s", status, strings.TrimSpace(string(data)))
+				continue
+			}
+			lastErr = nil
+			break
 		}
-		resp, err := client.Do(req)
-		if err != nil {
-			return nil, err
+		if lastErr != nil {
+			return nil, lastErr
 		}
-		defer resp.Body.Close()
-		data, _ := io.ReadAll(resp.Body)
 		// A block (403) still carries the job; any other error is a failure.
-		if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusForbidden {
-			return nil, fmt.Errorf("HTTP %d: %s", resp.StatusCode, strings.TrimSpace(string(data)))
+		if status != http.StatusOK && status != http.StatusForbidden {
+			return nil, fmt.Errorf("HTTP %d: %s", status, strings.TrimSpace(string(data)))
 		}
 		var dec struct {
 			Job *struct {

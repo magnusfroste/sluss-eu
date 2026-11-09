@@ -54,8 +54,13 @@ Ett brev som nämner en faktura eller ett mejl, utan värden, klassades förut
 som source_code respektive pii och hölls lokalt av sådana regler. Det kan nu
 gå till molnet. Står i CHANGELOG.
 
+## Andra åsikten på nya korpusen (demo, 2026-11-10)
+
+Känsliga flaggade 74 % → 92 %; *meaning only* 0 → 39 av 58; ofarliga
+flaggade 10 % → 13 %; samma svar båda körningarna; median 296 ms med nätverk.
+`benchmark run -url` gör nu omförsök vid nätverksfel och 5xx.
+
 ## Kvar
 
-- Andra åsikten mätt om på den nya korpusen (efter utrullning).
 - Fixturen *architecture prose* i `catch_corpus_test.go` flyttad till
   ofarliga; tabellen i *What Sluss catches* uppdaterad (31 av 40).

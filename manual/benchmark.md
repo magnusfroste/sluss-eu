@@ -31,30 +31,31 @@ Every AI gateway and DLP product says it finds sensitive data. Few say how often
 Version 1.8.1.
 
 - **Sluss, rules only**: measured in process (`make benchmark`), each question five times.
+- **Sluss, rules + second opinion**: the demo instance over the network, with its local model (a 27B reasoning model with thinking turned off) as the second opinion, through the dry-run, each question twice. The time includes the round trip to the instance.
 - **Presidio**: Microsoft's open-source PII detector (`presidio-analyzer` 2.2.366 with spaCy 3.8 and `en_core_web_lg`, its English setup out of the box, score threshold 0.5, dates and URLs ignored), run with `benchmark/presidio.py`. Any entity it finds counts as *flagged*; a Swedish model or custom recognisers would change its numbers, and the script is there to try.
 
-| | Sluss, rules only | Presidio |
-|---|---|---|
-| Sensitive questions flagged | 166 of 224 (74 %) | 139 of 224 (62 %) |
-| Harmless questions flagged | 22 of 220 (10 %) | 41 of 220 (19 %) |
-| — with an identifier or key | 104 of 104 (100 %) | 74 of 104 (71 %) |
-| — with a term or marking | 62 of 62 (100 %) | 27 of 62 (44 %) |
-| — with meaning only | 0 of 58 (0 %) | 38 of 58 (66 %) |
-| — look-alikes left alone | 88 of 110 (80 %) | 73 of 110 (66 %) |
-| — plain questions left alone | 110 of 110 (100 %) | 106 of 110 (96 %) |
-| Right class, exactly | 360 of 444 (81 %) | 251 of 444 (57 %) |
-| Same answer every run | yes (5 runs) | not measured |
-| Time per question (median / p95) | 0.09 ms / 0.14 ms | 5 ms / 8 ms |
+| | Sluss, rules only | Sluss, rules + second opinion | Presidio |
+|---|---|---|---|
+| Sensitive questions flagged | 166 of 224 (74 %) | 205 of 224 (92 %) | 139 of 224 (62 %) |
+| Harmless questions flagged | 22 of 220 (10 %) | 29 of 220 (13 %) | 41 of 220 (19 %) |
+| — with an identifier or key | 104 of 104 (100 %) | 104 of 104 (100 %) | 74 of 104 (71 %) |
+| — with a term or marking | 62 of 62 (100 %) | 62 of 62 (100 %) | 27 of 62 (44 %) |
+| — with meaning only | 0 of 58 (0 %) | 39 of 58 (67 %) | 38 of 58 (66 %) |
+| — look-alikes left alone | 88 of 110 (80 %) | 88 of 110 (80 %) | 73 of 110 (66 %) |
+| — plain questions left alone | 110 of 110 (100 %) | 103 of 110 (94 %) | 106 of 110 (96 %) |
+| Right class, exactly | 360 of 444 (81 %) | 354 of 444 (80 %) | 251 of 444 (57 %) |
+| Same answer every run | yes (5 runs) | yes (2 runs) | not measured |
+| Time per question (median / p95) | 0.09 ms / 0.14 ms | 296 ms / 342 ms | 5 ms / 8 ms |
 
-| Class | Sluss recall / precision | Presidio recall / precision |
-|---|---|---|
-| Personal data | 0.82 / 0.94 | 0.94 / 0.41 |
-| Keys and secrets | 0.75 / 0.71 | — |
-| Security-classified | 0.67 / 1.00 | — |
-| Health | 0.62 / 0.73 | — |
-| Financial | 0.62 / 0.84 | — |
-| Legal | 0.64 / 0.82 | — |
-| Source code | 1.00 / 1.00 | — |
+| Class | Rules only, recall / precision | Rules + second opinion | Presidio |
+|---|---|---|---|
+| Personal data | 0.82 / 0.94 | 0.92 / 0.77 | 0.94 / 0.41 |
+| Keys and secrets | 0.75 / 0.71 | 1.00 / 0.76 | — |
+| Security-classified | 0.67 / 1.00 | 0.71 / 1.00 | — |
+| Health | 0.62 / 0.73 | 0.92 / 0.75 | — |
+| Financial | 0.62 / 0.84 | 0.92 / 0.60 | — |
+| Legal | 0.64 / 0.82 | 0.91 / 0.69 | — |
+| Source code | 1.00 / 1.00 | 1.00 / 0.70 | — |
 
 *Recall* is the share of questions with that class in which the tool found it. *Precision* is the share of the tool's findings of that class that were right.
 
@@ -63,7 +64,7 @@ Version 1.8.1.
 - **Rules find everything there is to find.** Every identifier, key, term and marking in the set, in a tenth of a millisecond and the same way every time. Presidio has no notion of keys, security markings, health, finance, legal or code, which is most of what an organisation means by sensitive.
 - **Rules do not read meaning, at all.** 0 of 58 meaning-only questions: every miss in the set is of this kind. Presidio flags 38 of them, every one because it recognises a person's name (PERSON). The same habit makes it flag names in harmless questions (precision 0.41 on personal data), and its 27 *term* hits are a name or a place in the question, sometimes a Swedish word taken for one, never the term itself.
 - **Rules still over-flag on some words.** 10 % of harmless questions, all look-alikes: *password policy*, *how API keys should be rotated*, *what an IBAN is*, *patient*, *court cases*. A question about passwords is deliberately treated as possibly holding one. That costs no protection; such a question is kept on your own models instead of the cloud.
-- **The second opinion is what reads meaning.** With a model on your own hardware reading the question after the rules ([How Sluss decides](/manual/how-sluss-decides)), measured on version 1.8.0 against the demo instance's local model (a 27B reasoning model with thinking turned off), each question twice: *meaning only* went from 4 to 43 of 58 and sensitive questions flagged from 71 % to 93 %, with 11 more harmless questions flagged (a git commit message read as code, *the summer party* as personal data) and about a quarter of a second per question including the network. It gave the same answer both times for all 444 questions; that is an observation on this model, not a guarantee, and only the rules' part is the same by construction. What it still missed: a performance review of a named person, a backup site for critical infrastructure with no marking, and *has had it tough since the accident*. A different model gives different numbers; measure yours with the commands below.
+- **The second opinion is what reads meaning.** With a model on your own hardware reading the question after the rules ([How Sluss decides](/manual/how-sluss-decides)), *meaning only* goes from 0 to 39 of 58 and sensitive questions flagged from 74 % to 92 %. The price: 7 more harmless questions flagged (six git commit messages read as code, one post about the canteen), which keeps them on your own models, and about a third of a second per question including the network. It gave the same answer both times for all 444 questions; that is an observation on this model, not a guarantee, and only the rules' part is the same by construction. What it still missed: a letter to a named customer, protection of critical infrastructure with no marking, a bid described without a financial term. A different model gives different numbers; measure yours with the commands below.
 
 ## Before and after
 
