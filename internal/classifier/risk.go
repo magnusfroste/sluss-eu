@@ -104,7 +104,12 @@ func ClassifyRisk(features Features, taskType string, clientRiskHint string) Ris
 	for _, finding := range features.PIIFindings {
 		classifier.addReason("pii_detected:" + string(finding.Type))
 	}
-	if features.RequiresCode || hasSensitivity(features.SensitivityHints, SensitivitySourceCode, "auth", "payment", "security") {
+	// Words about code topics (auth, payment, security) mean source code only
+	// when the task is a code task: "implement the Stripe checkout flow" is,
+	// "invoice #4411 is attached, draft a reminder" is a letter (ISSUE-167).
+	codeTask := taskType == "security_review" || taskType == "database_migration" || taskType == "hard_code_debugging" || taskType == "simple_code_edit"
+	topicWords := hasSensitivity(features.SensitivityHints, "auth", "payment", "security")
+	if features.RequiresCode || hasSensitivity(features.SensitivityHints, SensitivitySourceCode) || (codeTask && topicWords) {
 		classifier.setSensitivity(SensitivitySourceCode, "sensitivity_source_code")
 	}
 

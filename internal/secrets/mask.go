@@ -108,7 +108,7 @@ var rules = []rule{
 	{kind: "db_password", re: regexp.MustCompile(`(?i)[a-z][a-z0-9+.-]*://[^:@/\s]+:(` + valueClass + `)@`), replace: redactGroup("db_password", 1), group: 1, hints: []string{"://"}},
 	// Generic secret-named key/value pairs (incl. JSON "key":"value") — keep the
 	// key, redact the value.
-	{kind: "secret_kv", re: regexp.MustCompile(`(?i)\b(?:password|passwd|pwd|secret|api[_-]?key|apikey|access[_-]?token|auth[_-]?token|client[_-]?secret|token)\b["']?\s*[=:]\s*["']?(` + valueClass + `)`), replace: redactGroup("secret", 1), group: 1, hints: []string{"password", "passwd", "pwd", "secret", "key", "token"}},
+	{kind: "secret_kv", re: regexp.MustCompile(`(?i)(?:\b|_)(?:password|passwd|pwd|secret|api[_-]?key|apikey|access[_-]?token|auth[_-]?token|client[_-]?secret|token)\b["']?\s*[=:]\s*["']?(` + valueClass + `)`), replace: redactGroup("secret", 1), group: 1, hints: []string{"password", "passwd", "pwd", "secret", "key", "token"}},
 }
 
 func (r rule) mayMatch(lower string) bool {

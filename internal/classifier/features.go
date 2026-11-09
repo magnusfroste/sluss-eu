@@ -118,7 +118,10 @@ var keywordRules = []keywordRule{
 	{keyword: "vision", terms: []string{"image", "screenshot", "photo", "diagram", "vision"}},
 	{keyword: "large_context", terms: []string{"large context", "long context", "entire codebase", "whole repository", "full repo"}},
 	{keyword: "source_code", terms: []string{"source code", "codebase", "repository", "repo"}},
-	{keyword: "pii", terms: []string{"ssn", "personnummer", "email", "phone", "address", "customer data"}},
+	// The words "email", "phone" and "address" are not here: a question about
+	// the summer-party email holds no personal data. The values themselves
+	// are found by the detectors in internal/pii (ISSUE-167).
+	{keyword: "pii", terms: []string{"ssn", "personnummer", "customer data"}},
 	{keyword: "secret", terms: []string{"api key", "api_key", "secret", "private key", "password", "token"}},
 	// Richer sensitivity classes (ISSUE-093): rule-based, EN + SV terms, chosen
 	// for precision (a false "financial" forces a local route; a false miss just
@@ -241,7 +244,8 @@ func ExtractFromMessages(messages []openai.Message, hints RequestHints) Features
 		// Code pasted without fences (ISSUE-162): two or more lines that
 		// only code has — a line ending in { or ;, a def/func/class/import
 		// line, an indented return. One such line is prose with a brace.
-		if len(codeBlocks) == 0 && countCodeLines(text) >= 2 {
+		// A complete SQL statement is code on one line (ISSUE-167).
+		if len(codeBlocks) == 0 && (countCodeLines(text) >= 2 || sqlStatementPattern.MatchString(text)) {
 			f.CodeBlockCount++
 		}
 
@@ -338,6 +342,12 @@ func ExtractFromMessages(messages []openai.Message, hints RequestHints) Features
 
 // codeLinePattern matches a line that reads as code rather than prose.
 var codeLinePattern = regexp.MustCompile(`(?m)^\s*(?:(?:func|def|class|import|package|return|var|const|let|if|for|while|switch)\b.*|.*[{};]\s*$|#include\b.*|\}\s*(?:else.*)?)$`)
+
+// sqlStatementPattern matches a line that is a SQL statement: the verb, its
+// object and the clause that only SQL has, so "select a date from the list"
+// in prose does not count (it has no table reference after FROM followed by
+// more SQL, and prose rarely starts a line with SELECT ... FROM ... WHERE).
+var sqlStatementPattern = regexp.MustCompile(`(?im)^\s*(?:select\s+[\w.*,()\s]+?\s+from\s+\w+(?:\s+\w+)?\s+(?:where|join|inner|left|right|group\s+by|order\s+by|limit)\b|select\s+[\w.*,()\s]+?\s+from\s+[\w.]+\s*;|insert\s+into\s+[\w.]+\s*(?:\(|values\b)|update\s+[\w.]+\s+set\s+\w+\s*=|delete\s+from\s+[\w.]+\s*(?:where\b|;)|(?:create|alter|drop)\s+(?:table|index)\s+\w)`)
 
 // countCodeLines counts lines that look like code. Capped at a few thousand
 // lines so a huge paste stays inside the fast-path budget.

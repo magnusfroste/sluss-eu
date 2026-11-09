@@ -14,7 +14,7 @@ They do not understand meaning. A text that is sensitive only because of what it
 
 ## Measured
 
-The numbers come from a fixed set of 49 examples that lives in the code and runs with every change (`internal/classifier/catch_corpus_test.go`). Each example states what a careful reader would call it; the test records what the rules do. When the rules change, the table changes with them, or the test fails. The table is as of version 1.3.
+The numbers come from a fixed set of 49 examples that lives in the code and runs with every change (`internal/classifier/catch_corpus_test.go`). Each example states what a careful reader would call it; the test records what the rules do. When the rules change, the table changes with them, or the test fails. The table is as of version 1.8.
 
 | Kind of data | Examples | Rules: classified as that kind | Rules: flagged as sensitive at all | Rules + local second opinion: flagged at all |
 |---|---|---|---|---|
@@ -24,21 +24,21 @@ The numbers come from a fixed set of 49 examples that lives in the code and runs
 | Health | 6 | 5 of 6 | 5 of 6 | 6 of 6 |
 | Financial | 5 | 1 of 5 | 3 of 5 | 5 of 5 |
 | Legal | 3 | 2 of 3 | 2 of 3 | 3 of 3 |
-| Source code | 3 | 3 of 3 | 3 of 3 | 3 of 3 |
-| Harmless (must stay harmless) | 8 | 8 of 8 left alone | — | 7 of 8 left alone |
+| Source code | 2 | 2 of 2 | 2 of 2 | 2 of 2 |
+| Harmless (must stay harmless) | 9 | 9 of 9 left alone | — | 8 of 9 left alone |
 
-*Classified as that kind* is the strict reading: the rules named the class a careful reader would. *Flagged as sensitive at all* is what matters for routing: any class keeps the question away from models your rules do not allow. Overall, 38 of 49 examples are classified as a careful reader would (an IBAN counts as personal data, like a card number), and the rules flag 32 of the 41 sensitive ones.
+*Classified as that kind* is the strict reading: the rules named the class a careful reader would. *Flagged as sensitive at all* is what matters for routing: any class keeps the question away from models your rules do not allow. Overall, 38 of 49 examples are classified as a careful reader would (an IBAN counts as personal data, like a card number), and the rules flag 31 of the 40 sensitive ones. For a larger set with look-alikes and false alarms measured, see the [benchmark](/manual/benchmark).
 
-**With a local second opinion** (last column), 38 of the 41 sensitive examples are flagged. It caught a list of names and ages, a password with no label, an absence explained only as *what happened in the spring*, an acquisition and results in plain words, and a dispute in everyday words. It still missed a name alone, a review about an unnamed person, and an infrastructure plan with no marking. It also flagged one harmless question, a git commit message, as code: an over-flag in the safe direction, which only keeps that question on your own models. Measured on version 1.4 against the demo instance's local model (a 27B reasoning model with thinking turned off), 46 questions, median 0.6 seconds and at most 1.0 second per decision including the second opinion. A different model gives different numbers: run the same set against yours (see below).
+**With a local second opinion** (last column), 37 of the 40 sensitive examples are flagged. It caught a list of names and ages, a password with no label, an absence explained only as *what happened in the spring*, an acquisition and results in plain words, and a dispute in everyday words. It still missed a name alone, a review about an unnamed person, and an infrastructure plan with no marking. It also flagged one harmless question, a git commit message, as code: an over-flag in the safe direction, which only keeps that question on your own models. Measured on version 1.4 against the demo instance's local model (a 27B reasoning model with thinking turned off), 46 questions, median 0.6 seconds and at most 1.0 second per decision including the second opinion. A different model gives different numbers: run the same set against yours (see below).
 
 ## What is caught
 
-- **Personal data:** a Swedish personal identity number in any of its forms (checksum-checked, so a random number does not count), an e-mail address, a phone number as people write it (`070-123 45 67`, `+46 70 …`, `0046 …`, `(555) 123-4567`, `555-123-4567`; a date, or a number labelled as an order, invoice, case or account number, does not count), a Swedish postal address (a street with a house number and a postcode), a card number, an IBAN.
-- **Keys and secrets:** OpenAI, AWS, GitHub and Slack keys and tokens, private keys, and the words *api key*, *secret*, *token* and *password* when a question is about one.
+- **Personal data:** a Swedish personal identity number in any of its forms (checksum-checked, so a random number does not count), an e-mail address, a phone number as people write it (`070-123 45 67`, `+46 70 …`, `0046 …`, `(555) 123-4567`, `555-123-4567`; a date, or a number labelled as an order, invoice, case or account number, does not count), a Swedish postal address (a street with a house number and a postcode, also in two words such as *Lilla torget 47*), a card number, an IBAN.
+- **Keys and secrets:** OpenAI, AWS, GitHub and Slack keys and tokens, private keys, labels such as `db_password=` in a config, and the words *api key*, *secret*, *token* and *password* when a question is about one.
 - **Security-classified material:** the Swedish protection levels and the law, stamps written in capitals, NATO and EU markings. Lower-case everyday words (*en hemlig önskelista*) are left alone.
 - **Health:** patient, record, diagnosis, prescription, sick leave, burnout, chemotherapy and their Swedish forms.
 - **Financial and legal:** the terms a finance or legal department uses: balance sheet, payroll, insider information, IBAN; NDA, lawsuit, settlement, breach of contract; and their Swedish forms.
-- **Code:** fenced code, inline code, stack traces, file paths, and code pasted without fences when two or more lines look like code.
+- **Code:** fenced code, inline code, stack traces, file paths, code pasted without fences when two or more lines look like code, and a complete SQL statement on one line. Words about a code topic (*invoice*, *checkout*, *login*) count as code only when the task is a code task.
 
 ## What is not caught
 

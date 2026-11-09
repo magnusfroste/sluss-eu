@@ -1,444 +1,444 @@
-{"id": "001", "text": "Kunden med personnummer 19630311-8670 vill avsluta sitt konto; skriv ett svar.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "002", "text": "Kunden med personnummer 19621116-9849 vill avsluta sitt konto; skriv ett svar.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "003", "text": "Write a short reply to Erik Holm (19950920-3551) about the late delivery.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "004", "text": "Kunden med personnummer 19591116-6246 vill avsluta sitt konto; skriv ett svar.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "005", "text": "Sammanfatta ärendet för 630824-9595 och föreslå nästa steg.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "006", "text": "Kunden med personnummer 19750613-7418 vill avsluta sitt konto; skriv ett svar.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "007", "text": "Sammanfatta ärendet för 411026-5271 och föreslå nästa steg.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "008", "text": "Write a short reply to Mehmet Nyström (580224-8517) about the late delivery.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "009", "text": "Kunden med personnummer 19631225-7006 vill avsluta sitt konto; skriv ett svar.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "010", "text": "Write a short reply to Anna Johansson (19660401-2853) about the late delivery.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "011", "text": "Sammanfatta ärendet för 500818+2213 och föreslå nästa steg.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "012", "text": "Kunden med personnummer 19761018-8505 vill avsluta sitt konto; skriv ett svar.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "013", "text": "Summarise the case for customer 571205-8626 at Fjällsoft.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "014", "text": "Kunden med personnummer 19930718-5299 vill avsluta sitt konto; skriv ett svar.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "015", "text": "Write a short reply to Anna Berg (600407-4925) about the late delivery.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "016", "text": "Sammanfatta ärendet för 710127-3915 och föreslå nästa steg.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "017", "text": "Forward the notes from Ekholm & Co to peter.nystrom@example.com with a short summary.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "018", "text": "Forward the notes from Nordkraft AB to ida.holm@example.com with a short summary.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "019", "text": "Forward the notes from Solvik Energi to oskar.berg@example.com with a short summary.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "020", "text": "Draft an email to emma.karlsson@example.com confirming the meeting on oktober 3.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "021", "text": "Draft an email to peter.bjork@example.com confirming the meeting on februari 16.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "022", "text": "Forward the notes from Västra Bygg to ali.holm@example.com with a short summary.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "023", "text": "Draft an email to mehmet.holm@example.com confirming the meeting on december 24.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "024", "text": "Draft an email to viktor.nilsson@example.com confirming the meeting on March 4.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "025", "text": "Mejla lars.lindqvist@example.com och påminn om fakturan från Fjällsoft.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "026", "text": "Mejla maria.oberg@example.com och påminn om fakturan från Bryggan Logistik.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "027", "text": "Mejla viktor.svensson@example.com och påminn om fakturan från Havsbris Foods.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "028", "text": "Draft an email to erik.hassan@example.com confirming the meeting on december 17.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "029", "text": "Confirm the callback number (555) 381-5442 in the summary for Västra Bygg.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "030", "text": "Ring Ali på 073-831 47 10 och boka ett möte.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "031", "text": "Confirm the callback number 0774951174 in the summary for Ekholm & Co.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "032", "text": "Confirm the callback number +46 74 119 29 73 in the summary for Ekholm & Co.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "033", "text": "Ring Peter på +46 75 247 24 60 och boka ett möte.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "034", "text": "Call Lena back on +46 74 639 34 52 about the order.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "035", "text": "Ring Anna på 071-378 86 23 och boka ett möte.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "036", "text": "Confirm the callback number +46 78 473 19 42 in the summary for Ekholm & Co.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "037", "text": "Call Nora back on 0046 74 485 91 97 about the order.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "038", "text": "Ring Ida på 0746818270 och boka ett möte.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "039", "text": "Ring Oskar på 075-698 38 63 och boka ett möte.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "040", "text": "Call Oskar back on 0046 79 888 43 78 about the order.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "041", "text": "Ring Ali på (555) 931-4559 och boka ett möte.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "042", "text": "Call Elin back on 0046 79 981 33 37 about the order.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "043", "text": "Emma Hassan, Parkvägen 54, 111 22 Stockholm, has complained about the delivery. Draft a reply.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "044", "text": "Ahmed Sjöberg, Parkvägen 61, 111 22 Stockholm, has complained about the delivery. Draft a reply.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "045", "text": "Skicka avtalet till Johan Larsson, Drottninggatan 35, 411 03 Göteborg.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "046", "text": "Skicka avtalet till Emma Karlsson, Lilla torget 47, 211 19 Malmö.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "047", "text": "Nora Berg, Storgatan 53, 111 22 Stockholm, has complained about the delivery. Draft a reply.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "048", "text": "Skicka avtalet till Peter Karlsson, Lilla torget 53, 753 20 Uppsala.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "049", "text": "Skicka avtalet till Fatima Björk, Sjövägen 8, 211 19 Malmö.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "050", "text": "Skicka avtalet till Anna Sjöberg, Ringvägen 62, 903 26 Umeå.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "051", "text": "Write a payment reminder for Bryggan Logistik; the money goes to SE83 5000 3441 8209 3862 9154.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "052", "text": "Write a payment reminder for Havsbris Foods; the money goes to SE72 5000 7845 3118 9132 5683.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "053", "text": "Betalningen ska till SE7050008629818831071081; skriv en påminnelse.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "054", "text": "Betalningen ska till SE96 5000 0010 9496 7322 6186; skriv en påminnelse.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "055", "text": "Betalningen ska till SE24 5000 1019 7522 3402 7482; skriv en påminnelse.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "056", "text": "Write a payment reminder for Granit Data; the money goes to SE57 5000 9693 0877 1846 1665.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "057", "text": "Betalningen ska till SE07 5000 5533 0380 7554 6711; skriv en påminnelse.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "058", "text": "Betalningen ska till SE0650003984761202054326; skriv en påminnelse.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "059", "text": "Kortnummer 4761 1774 2625 1788, utgång 07/29. Varför nekades köpet?", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "060", "text": "Kortnummer 4893 3740 2317 2928, utgång 09/26. Varför nekades köpet?", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "061", "text": "Kortnummer 4907 6062 0677 3046, utgång 06/27. Varför nekades köpet?", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "062", "text": "Kortnummer 4229 6634 1929 3073, utgång 11/26. Varför nekades köpet?", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "063", "text": "The customer paid with card 4196 4942 0799 9922; summarise the dispute.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "064", "text": "Kortnummer 4525 0772 8928 3703, utgång 09/29. Varför nekades köpet?", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
-{"id": "065", "text": "Here is the staff list: Hanna Holm (sales, 52), Lena Larsson (finance, 22). Who should lead the project?", "labels": ["pii"], "kind": "meaning", "lang": "mixed"}
-{"id": "066", "text": "Rewrite this performance review of Ahmed Holm: often late, argues with the team lead.", "labels": ["pii"], "kind": "meaning", "lang": "mixed"}
-{"id": "067", "text": "Skriv ett brev till vår kund Peter Nyström om den försenade leveransen.", "labels": ["pii"], "kind": "meaning", "lang": "mixed"}
-{"id": "068", "text": "Rewrite this performance review of Nora Nilsson: often late, argues with the team lead.", "labels": ["pii"], "kind": "meaning", "lang": "mixed"}
-{"id": "069", "text": "Write a letter to our customer Ahmed Larsson about the delayed refund.", "labels": ["pii"], "kind": "meaning", "lang": "mixed"}
-{"id": "070", "text": "Rewrite this performance review of Nora Sjöberg: often late, argues with the team lead.", "labels": ["pii"], "kind": "meaning", "lang": "mixed"}
-{"id": "071", "text": "Write a letter to our customer Maria Nyström about the delayed refund.", "labels": ["pii"], "kind": "meaning", "lang": "mixed"}
-{"id": "072", "text": "Maria Karlsson is 53, works in sales in Göteborg and is going through a divorce. How do we support them?", "labels": ["pii"], "kind": "meaning", "lang": "mixed"}
-{"id": "073", "text": "Here is the staff list: Ali Larsson (sales, 60), Maria Nyström (finance, 48). Who should lead the project?", "labels": ["pii"], "kind": "meaning", "lang": "mixed"}
-{"id": "074", "text": "Rewrite this performance review of Sara Lindqvist: often late, argues with the team lead.", "labels": ["pii"], "kind": "meaning", "lang": "mixed"}
-{"id": "075", "text": "Ida Andersson is 60, works in sales in Göteborg and is going through a divorce. How do we support them?", "labels": ["pii"], "kind": "meaning", "lang": "mixed"}
-{"id": "076", "text": "Rewrite this performance review of Sara Berg: often late, argues with the team lead.", "labels": ["pii"], "kind": "meaning", "lang": "mixed"}
-{"id": "077", "text": "Here is the staff list: Ahmed Andersson (sales, 48), Johan Karlsson (finance, 54). Who should lead the project?", "labels": ["pii"], "kind": "meaning", "lang": "mixed"}
-{"id": "078", "text": "Here is the staff list: Erik Johansson (sales, 24), Hanna Svensson (finance, 48). Who should lead the project?", "labels": ["pii"], "kind": "meaning", "lang": "mixed"}
-{"id": "079", "text": "Varför fungerar inte anslutningen? Konfigen:\nAWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
-{"id": "080", "text": "Why does this fail?\npostgres://app:hunter22@db.internal:5432/crm", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
-{"id": "081", "text": "Why does this fail?\nAuthorization: Bearer 0s1fcrjjk8uyyk4zni7l6ct3wx1nbmxo", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
-{"id": "082", "text": "Varför fungerar inte anslutningen? Konfigen:\ndb_password=s3cr3t!", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
-{"id": "083", "text": "Clean up this config before I share it with Solvik Energi:\npassword: Sommar2024!", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
-{"id": "084", "text": "Why does this fail?\nAuthorization: Bearer 9pyc102plpice1ma2vs7agziolj7tua2", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
-{"id": "085", "text": "Clean up this config before I share it with Västra Bygg:\napi_key = \"V8HTV9V9DL5SSAXTZXF6SJG6XUGE\"", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
-{"id": "086", "text": "Clean up this config before I share it with Ekholm & Co:\npostgres://app:hunter22@db.internal:5432/crm", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
-{"id": "087", "text": "Why does this fail?\nAuthorization: Bearer naaca41t1ln3xa1r9ixxl0o1o2z1z3wi", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
-{"id": "088", "text": "Clean up this config before I share it with Solvik Energi:\nAWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
-{"id": "089", "text": "Why does this fail?\nAWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
-{"id": "090", "text": "Clean up this config before I share it with Havsbris Foods:\nAuthorization: Bearer imymbp0vwu1m5pbz60a9nvrsjgkhvl1s", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
-{"id": "091", "text": "Varför fungerar inte anslutningen? Konfigen:\napi_key = \"NFU6CMZYBRZE2275R2W6EXFWAW64\"", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
-{"id": "092", "text": "Why does this fail?\napi_key = \"Y6ZYTUCF2BHGHLBKR75PHDRQU7Z4\"", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
-{"id": "093", "text": "Why does this fail?\naws_secret_access_key = wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
-{"id": "094", "text": "Varför fungerar inte anslutningen? Konfigen:\npostgres://app:Pa55w0rd@db.internal:5432/hr", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
-{"id": "095", "text": "Clean up this config before I share it with Västra Bygg:\npostgres://app:hunter22@db.internal:5432/crm", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
-{"id": "096", "text": "Clean up this config before I share it with Havsbris Foods:\ndb_password=Passw0rd99", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
-{"id": "097", "text": "Clean up this config before I share it with Ekholm & Co:\ndb_password=letmein42", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
-{"id": "098", "text": "Clean up this config before I share it with Havsbris Foods:\ndb_password=letmein42", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
-{"id": "099", "text": "Varför fungerar inte anslutningen? Konfigen:\ndb_password=letmein42", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
-{"id": "100", "text": "Clean up this config before I share it with Västra Bygg:\napi_key = \"DPVYSRJ3HCB7LJAQJJP2WDU287X8\"", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
-{"id": "101", "text": "Varför fungerar inte anslutningen? Konfigen:\napi_key = \"6ZR2K6P6PCM3ZVPMK97PVG6D88AT\"", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
+{"id": "001", "text": "Kunden med personnummer 19920511-2395 vill avsluta sitt konto; skriv ett svar.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "002", "text": "Write a short reply to Peter Lindqvist (19850826-2386) about the late delivery.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "003", "text": "Sammanfatta ärendet för 920512+2394 och föreslå nästa steg.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "004", "text": "Summarise the case for customer 990101-6403 at Havsbris Foods.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "005", "text": "Kunden med personnummer 19920429-2388 vill avsluta sitt konto; skriv ett svar.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "006", "text": "Sammanfatta ärendet för 920508-2390 och föreslå nästa steg.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "007", "text": "Kunden med personnummer 19990120-2391 vill avsluta sitt konto; skriv ett svar.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "008", "text": "Write a short reply to Anna Ek (920409-2390) about the late delivery.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "009", "text": "Summarise the case for customer 850913-2398 at Fjällsoft.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "010", "text": "Summarise the case for customer 850826-2386 at Bryggan Logistik.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "011", "text": "Sammanfatta ärendet för 920413-2394 och föreslå nästa steg.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "012", "text": "Kunden med personnummer 19850908-2387 vill avsluta sitt konto; skriv ett svar.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "013", "text": "Summarise the case for customer 920414-2385 at Solvik Energi.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "014", "text": "Kunden med personnummer 19850914-2389 vill avsluta sitt konto; skriv ett svar.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "015", "text": "Sammanfatta ärendet för 920422-2385 och föreslå nästa steg.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "016", "text": "Write a short reply to Peter Ek (920413-2394) about the late delivery.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "017", "text": "Draft an email to ahmed.bjork@example.com confirming the meeting on January 24.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "018", "text": "Draft an email to anna.johansson@example.com confirming the meeting on december 15.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "019", "text": "Draft an email to viktor.lindqvist@example.com confirming the meeting on oktober 26.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "020", "text": "Mejla viktor.holm@example.com och påminn om fakturan från Västra Bygg.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "021", "text": "Draft an email to ali.holm@example.com confirming the meeting on april 9.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "022", "text": "Draft an email to erik.ek@example.com confirming the meeting on april 24.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "023", "text": "Draft an email to emma.oberg@example.com confirming the meeting on May 26.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "024", "text": "Mejla ahmed.ek@example.com och påminn om fakturan från Granit Data.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "025", "text": "Mejla fatima.ek@example.com och påminn om fakturan från Västra Bygg.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "026", "text": "Mejla johan.oberg@example.com och påminn om fakturan från Granit Data.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "027", "text": "Mejla peter.oberg@example.com och påminn om fakturan från Fjällsoft.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "028", "text": "Forward the notes from Västra Bygg to ali.lindqvist@example.com with a short summary.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "029", "text": "Ring Peter på 070-174 06 18 och boka ett möte.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "030", "text": "Ring Lena på 070-174 06 09 och boka ett möte.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "031", "text": "Ring Nora på 555-599-3811 och boka ett möte.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "032", "text": "Confirm the callback number 0046 70 174 06 06 in the summary for Västra Bygg.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "033", "text": "Ring Mehmet på 0701740695 och boka ett möte.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "034", "text": "Confirm the callback number +46 70 174 06 38 in the summary for Solvik Energi.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "035", "text": "Confirm the callback number 070-174 06 07 in the summary for Nordkraft AB.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "036", "text": "Ring Fatima på 555-135-9144 och boka ett möte.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "037", "text": "Ring Lars på (555) 457-6178 och boka ett möte.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "038", "text": "Call Emma back on 0701740677 about the order.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "039", "text": "Call Maria back on 070-174 06 82 about the order.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "040", "text": "Confirm the callback number 070-174 06 52 in the summary for Solvik Energi.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "041", "text": "Ring Elin på 555-479-2301 och boka ett möte.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "042", "text": "Confirm the callback number 0701740651 in the summary for Västra Bygg.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "043", "text": "Skicka avtalet till Erik Karlsson, Kungsgatan 56, 753 20 Uppsala.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "044", "text": "Maria Berg, Industrivägen 11, 411 03 Göteborg, has complained about the delivery. Draft a reply.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "045", "text": "Mehmet Svensson, Parkvägen 63, 111 22 Stockholm, has complained about the delivery. Draft a reply.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "046", "text": "Skicka avtalet till Ida Björk, Kyrkogatan 49, 582 22 Linköping.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "047", "text": "Skicka avtalet till Emma Nilsson, Parkvägen 21, 211 19 Malmö.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "048", "text": "Lena Berg, Industrivägen 22, 753 20 Uppsala, has complained about the delivery. Draft a reply.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "049", "text": "Maria Andersson, Drottninggatan 12, 211 19 Malmö, has complained about the delivery. Draft a reply.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "050", "text": "Skicka avtalet till Fatima Nilsson, Drottninggatan 76, 411 03 Göteborg.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "051", "text": "Write a payment reminder for Västra Bygg; the money goes to SE48 5000 5444 2932 1487 6724.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "052", "text": "Write a payment reminder for Fjällsoft; the money goes to SE58 5000 4789 0710 5397 9874.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "053", "text": "Write a payment reminder for Granit Data; the money goes to SE82 5000 9341 2296 0291 7305.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "054", "text": "Write a payment reminder for Bryggan Logistik; the money goes to SE25 5000 9724 0519 1443 1694.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "055", "text": "Betalningen ska till SE6650001997777115624269; skriv en påminnelse.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "056", "text": "Write a payment reminder for Ekholm & Co; the money goes to SE21 5000 4429 6590 3046 3517.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "057", "text": "Write a payment reminder for Nordkraft AB; the money goes to SE67 5000 9735 5350 4833 6434.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "058", "text": "Betalningen ska till SE0650008324643960426055; skriv en påminnelse.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "059", "text": "Kortnummer 4000 0009 4109 2555, utgång 10/29. Varför nekades köpet?", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "060", "text": "Kortnummer 4000 0041 2775 7544, utgång 02/30. Varför nekades köpet?", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "061", "text": "Kortnummer 4000 0086 4375 2848, utgång 07/27. Varför nekades köpet?", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "062", "text": "The customer paid with card 4000 0042 6689 6848; summarise the dispute.", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "063", "text": "Kortnummer 4000 0030 9807 3063, utgång 06/26. Varför nekades köpet?", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "064", "text": "Kortnummer 4000 0026 5198 0227, utgång 04/28. Varför nekades köpet?", "labels": ["pii"], "kind": "identifier", "lang": "mixed"}
+{"id": "065", "text": "Rewrite this performance review of Oskar Nyström: often late, argues with the team lead.", "labels": ["pii"], "kind": "meaning", "lang": "mixed"}
+{"id": "066", "text": "Karl Larsson is 47, works in sales in Göteborg and is going through a divorce. How do we support them?", "labels": ["pii"], "kind": "meaning", "lang": "mixed"}
+{"id": "067", "text": "Write a letter to our customer Karl Öberg about the delayed refund.", "labels": ["pii"], "kind": "meaning", "lang": "mixed"}
+{"id": "068", "text": "Write a letter to our customer Ahmed Ek about the delayed refund.", "labels": ["pii"], "kind": "meaning", "lang": "mixed"}
+{"id": "069", "text": "Here is the staff list: Maria Berg (sales, 45), Fatima Ek (finance, 33). Who should lead the project?", "labels": ["pii"], "kind": "meaning", "lang": "mixed"}
+{"id": "070", "text": "Fatima Holm is 48, works in sales in Göteborg and is going through a divorce. How do we support them?", "labels": ["pii"], "kind": "meaning", "lang": "mixed"}
+{"id": "071", "text": "Skriv ett brev till vår kund Viktor Andersson om den försenade leveransen.", "labels": ["pii"], "kind": "meaning", "lang": "mixed"}
+{"id": "072", "text": "Write a letter to our customer Anna Larsson about the delayed refund.", "labels": ["pii"], "kind": "meaning", "lang": "mixed"}
+{"id": "073", "text": "Lars Öberg is 32, works in sales in Göteborg and is going through a divorce. How do we support them?", "labels": ["pii"], "kind": "meaning", "lang": "mixed"}
+{"id": "074", "text": "Skriv ett brev till vår kund Peter Lindqvist om den försenade leveransen.", "labels": ["pii"], "kind": "meaning", "lang": "mixed"}
+{"id": "075", "text": "Rewrite this performance review of Elin Holm: often late, argues with the team lead.", "labels": ["pii"], "kind": "meaning", "lang": "mixed"}
+{"id": "076", "text": "Write a letter to our customer Fatima Sjöberg about the delayed refund.", "labels": ["pii"], "kind": "meaning", "lang": "mixed"}
+{"id": "077", "text": "Here is the staff list: Nora Hassan (sales, 62), Karl Karlsson (finance, 23). Who should lead the project?", "labels": ["pii"], "kind": "meaning", "lang": "mixed"}
+{"id": "078", "text": "Skriv ett brev till vår kund Johan Sjöberg om den försenade leveransen.", "labels": ["pii"], "kind": "meaning", "lang": "mixed"}
+{"id": "079", "text": "Why does this fail?\nAuthorization: Bearer emq4dhrubgiig8yh5i5vvscsw8t9fcty", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
+{"id": "080", "text": "Varför fungerar inte anslutningen? Konfigen:\ndb_password=letmein42", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
+{"id": "081", "text": "Varför fungerar inte anslutningen? Konfigen:\nAuthorization: Bearer kofm25tgq1m4hkaxh4y19g21c17s0i2s", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
+{"id": "082", "text": "Clean up this config before I share it with Solvik Energi:\npassword: Sommar2024!", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
+{"id": "083", "text": "Why does this fail?\naws_secret_access_key = wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
+{"id": "084", "text": "Varför fungerar inte anslutningen? Konfigen:\nAWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
+{"id": "085", "text": "Varför fungerar inte anslutningen? Konfigen:\napi_key = \"62F5PWVUSN9QNN5MA53MM4CXZUD7\"", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
+{"id": "086", "text": "Clean up this config before I share it with Solvik Energi:\npassword: Tr0ub4dor", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
+{"id": "087", "text": "Why does this fail?\npassword: hunter2", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
+{"id": "088", "text": "Clean up this config before I share it with Västra Bygg:\npostgres://app:hunter22@db.internal:5432/sales", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
+{"id": "089", "text": "Why does this fail?\npassword: Sommar2024!", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
+{"id": "090", "text": "Varför fungerar inte anslutningen? Konfigen:\nAuthorization: Bearer mz5kwoxsgyn8lbz6dtyci2pcpt78nm65", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
+{"id": "091", "text": "Clean up this config before I share it with Havsbris Foods:\npassword: Sommar2024!", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
+{"id": "092", "text": "Varför fungerar inte anslutningen? Konfigen:\npassword: Vinter#88", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
+{"id": "093", "text": "Clean up this config before I share it with Västra Bygg:\nAuthorization: Bearer 8574chs2gapp9mlhydcncku2oh2lbl37", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
+{"id": "094", "text": "Varför fungerar inte anslutningen? Konfigen:\npostgres://app:Fj4ll!x@db.internal:5432/crm", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
+{"id": "095", "text": "Varför fungerar inte anslutningen? Konfigen:\npassword: Sommar2024!", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
+{"id": "096", "text": "Why does this fail?\nAWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
+{"id": "097", "text": "Why does this fail?\napi_key = \"VU24RN8DJMZZRER73X97RDMJDS3C\"", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
+{"id": "098", "text": "Clean up this config before I share it with Havsbris Foods:\npostgres://app:Pa55w0rd@db.internal:5432/crm", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
+{"id": "099", "text": "Clean up this config before I share it with Fjällsoft:\npassword: Sommar2024!", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
+{"id": "100", "text": "Varför fungerar inte anslutningen? Konfigen:\nAuthorization: Bearer mbbqzwdgj7jmno91w0ik6xkaywvthxxc", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
+{"id": "101", "text": "Varför fungerar inte anslutningen? Konfigen:\npostgres://app:s3cr3tpw@db.internal:5432/sales", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
 {"id": "102", "text": "Why does this fail?\ndb_password=Passw0rd99", "labels": ["secrets_possible"], "kind": "identifier", "lang": "mixed"}
-{"id": "103", "text": "Use this to log in: Gran!t-42 on the billing account.", "labels": ["secrets_possible"], "kind": "meaning", "lang": "mixed"}
-{"id": "104", "text": "Inloggningen till servern är admin och Solvik77, kan du sätta upp ett skript?", "labels": ["secrets_possible"], "kind": "meaning", "lang": "mixed"}
-{"id": "105", "text": "Use this to log in: Tr0ub4dor&3 on the backup account.", "labels": ["secrets_possible"], "kind": "meaning", "lang": "mixed"}
-{"id": "106", "text": "Use this to log in: Blue-Kettle-77 on the admin account.", "labels": ["secrets_possible"], "kind": "meaning", "lang": "mixed"}
-{"id": "107", "text": "Use this to log in: Tr0ub4dor&3 on the admin account.", "labels": ["secrets_possible"], "kind": "meaning", "lang": "mixed"}
-{"id": "108", "text": "Use this to log in: Sommar2024! on the billing account.", "labels": ["secrets_possible"], "kind": "meaning", "lang": "mixed"}
-{"id": "109", "text": "Inloggningen till routern är admin och Solvik77, kan du sätta upp ett skript?", "labels": ["secrets_possible"], "kind": "meaning", "lang": "mixed"}
-{"id": "110", "text": "Use this to log in: Sommar2024! on the backup account.", "labels": ["secrets_possible"], "kind": "meaning", "lang": "mixed"}
-{"id": "111", "text": "KONFIDENTIELL\nAnalysera beredskapsplanen för the data centre.", "labels": ["security_classified"], "kind": "term", "lang": "mixed"}
-{"id": "112", "text": "Summarise the attached on the port: RESTREINT UE/EU RESTRICTED.", "labels": ["security_classified"], "kind": "term", "lang": "mixed"}
-{"id": "113", "text": "KONFIDENTIELL\nAnalysera beredskapsplanen för the radar site.", "labels": ["security_classified"], "kind": "term", "lang": "mixed"}
-{"id": "114", "text": "HEMLIG enligt säkerhetsskyddslagen. Sammanfatta lägesbilden för the data centre.", "labels": ["security_classified"], "kind": "term", "lang": "mixed"}
-{"id": "115", "text": "KVALIFICERAT HEMLIG. Granska planeringsunderlaget för the data centre.", "labels": ["security_classified"], "kind": "term", "lang": "mixed"}
-{"id": "116", "text": "Summarise the attached on ledningscentralen: RESTREINT UE/EU RESTRICTED.", "labels": ["security_classified"], "kind": "term", "lang": "mixed"}
-{"id": "117", "text": "KVALIFICERAT HEMLIG. Granska planeringsunderlaget för kraftnätet.", "labels": ["security_classified"], "kind": "term", "lang": "mixed"}
-{"id": "118", "text": "Detta är säkerhetsskyddsklassificerade uppgifter om vattenverket; gör en sammanfattning.", "labels": ["security_classified"], "kind": "term", "lang": "mixed"}
-{"id": "119", "text": "HEMLIG enligt säkerhetsskyddslagen. Sammanfatta lägesbilden för the radar site.", "labels": ["security_classified"], "kind": "term", "lang": "mixed"}
-{"id": "120", "text": "HEMLIG enligt säkerhetsskyddslagen. Sammanfatta lägesbilden för the port.", "labels": ["security_classified"], "kind": "term", "lang": "mixed"}
-{"id": "121", "text": "Detta är säkerhetsskyddsklassificerade uppgifter om kraftnätet; gör en sammanfattning.", "labels": ["security_classified"], "kind": "term", "lang": "mixed"}
-{"id": "122", "text": "Summarise the attached on hamnen: RESTREINT UE/EU RESTRICTED.", "labels": ["security_classified"], "kind": "term", "lang": "mixed"}
-{"id": "123", "text": "Translate this classified document about kraftnätet, marked NATO RESTRICTED.", "labels": ["security_classified"], "kind": "term", "lang": "mixed"}
+{"id": "103", "text": "Use this to log in: Sommar2024! on the billing account.", "labels": ["secrets_possible"], "kind": "meaning", "lang": "mixed"}
+{"id": "104", "text": "Inloggningen till routern är admin och Solvik77, kan du sätta upp ett skript?", "labels": ["secrets_possible"], "kind": "meaning", "lang": "mixed"}
+{"id": "105", "text": "Inloggningen till servern är admin och kaffe#99, kan du sätta upp ett skript?", "labels": ["secrets_possible"], "kind": "meaning", "lang": "mixed"}
+{"id": "106", "text": "Inloggningen till kassasystemet är admin och Vinter2023, kan du sätta upp ett skript?", "labels": ["secrets_possible"], "kind": "meaning", "lang": "mixed"}
+{"id": "107", "text": "Inloggningen till routern är admin och kaffe#99, kan du sätta upp ett skript?", "labels": ["secrets_possible"], "kind": "meaning", "lang": "mixed"}
+{"id": "108", "text": "Inloggningen till kassasystemet är admin och Solvik77, kan du sätta upp ett skript?", "labels": ["secrets_possible"], "kind": "meaning", "lang": "mixed"}
+{"id": "109", "text": "Inloggningen till kassasystemet är admin och kaffe#99, kan du sätta upp ett skript?", "labels": ["secrets_possible"], "kind": "meaning", "lang": "mixed"}
+{"id": "110", "text": "Use this to log in: Blue-Kettle-77 on the billing account.", "labels": ["secrets_possible"], "kind": "meaning", "lang": "mixed"}
+{"id": "111", "text": "Detta är säkerhetsskyddsklassificerade uppgifter om the data centre; gör en sammanfattning.", "labels": ["security_classified"], "kind": "term", "lang": "mixed"}
+{"id": "112", "text": "KVALIFICERAT HEMLIG. Granska planeringsunderlaget för the data centre.", "labels": ["security_classified"], "kind": "term", "lang": "mixed"}
+{"id": "113", "text": "KVALIFICERAT HEMLIG. Granska planeringsunderlaget för the port.", "labels": ["security_classified"], "kind": "term", "lang": "mixed"}
+{"id": "114", "text": "KVALIFICERAT HEMLIG. Granska planeringsunderlaget för ledningscentralen.", "labels": ["security_classified"], "kind": "term", "lang": "mixed"}
+{"id": "115", "text": "HEMLIG enligt säkerhetsskyddslagen. Sammanfatta lägesbilden för the data centre.", "labels": ["security_classified"], "kind": "term", "lang": "mixed"}
+{"id": "116", "text": "Summarise the attached on vattenverket: RESTREINT UE/EU RESTRICTED.", "labels": ["security_classified"], "kind": "term", "lang": "mixed"}
+{"id": "117", "text": "HEMLIG enligt säkerhetsskyddslagen. Sammanfatta lägesbilden för the radar site.", "labels": ["security_classified"], "kind": "term", "lang": "mixed"}
+{"id": "118", "text": "KVALIFICERAT HEMLIG. Granska planeringsunderlaget för kraftnätet.", "labels": ["security_classified"], "kind": "term", "lang": "mixed"}
+{"id": "119", "text": "KONFIDENTIELL\nAnalysera beredskapsplanen för the port.", "labels": ["security_classified"], "kind": "term", "lang": "mixed"}
+{"id": "120", "text": "Begränsat hemlig — skriv en sammanfattning av rapporten om the port.", "labels": ["security_classified"], "kind": "term", "lang": "mixed"}
+{"id": "121", "text": "Summarise the attached on the radar site: RESTREINT UE/EU RESTRICTED.", "labels": ["security_classified"], "kind": "term", "lang": "mixed"}
+{"id": "122", "text": "Translate this classified document about the port, marked NATO RESTRICTED.", "labels": ["security_classified"], "kind": "term", "lang": "mixed"}
+{"id": "123", "text": "Begränsat hemlig — skriv en sammanfattning av rapporten om kraftnätet.", "labels": ["security_classified"], "kind": "term", "lang": "mixed"}
 {"id": "124", "text": "Summarise the attached on kraftnätet: RESTREINT UE/EU RESTRICTED.", "labels": ["security_classified"], "kind": "term", "lang": "mixed"}
-{"id": "125", "text": "KVALIFICERAT HEMLIG. Granska planeringsunderlaget för the port.", "labels": ["security_classified"], "kind": "term", "lang": "mixed"}
-{"id": "126", "text": "KVALIFICERAT HEMLIG. Granska planeringsunderlaget för the radar site.", "labels": ["security_classified"], "kind": "term", "lang": "mixed"}
-{"id": "127", "text": "Here is how we protect the grid's control systems against sabotage; suggest improvements.", "labels": ["security_classified"], "kind": "meaning", "lang": "mixed"}
-{"id": "128", "text": "Our backup site for vattenverket is in the old bank vault on Ringvägen; draft the access plan.", "labels": ["security_classified"], "kind": "meaning", "lang": "mixed"}
-{"id": "129", "text": "Our backup site for the emergency service is in the old bank vault on Ringvägen; draft the access plan.", "labels": ["security_classified"], "kind": "meaning", "lang": "mixed"}
-{"id": "130", "text": "Our backup site for the grid's control systems is in the old bank vault on Ringvägen; draft the access plan.", "labels": ["security_classified"], "kind": "meaning", "lang": "mixed"}
-{"id": "131", "text": "Our backup site for the radar site is in the old bank vault on Ringvägen; draft the access plan.", "labels": ["security_classified"], "kind": "meaning", "lang": "mixed"}
-{"id": "132", "text": "Our backup site for ledningscentralen is in the old bank vault on Ringvägen; draft the access plan.", "labels": ["security_classified"], "kind": "meaning", "lang": "mixed"}
-{"id": "133", "text": "Lista svagheterna i vårt skydd av the emergency service och föreslå åtgärder.", "labels": ["security_classified"], "kind": "meaning", "lang": "mixed"}
-{"id": "134", "text": "Here is how we protect the emergency service against sabotage; suggest improvements.", "labels": ["security_classified"], "kind": "meaning", "lang": "mixed"}
-{"id": "135", "text": "The patient was prescribed warfarin; write the referral.", "labels": ["health"], "kind": "term", "lang": "mixed"}
-{"id": "136", "text": "Write a note that Johan will be away for chemo on Fridays.", "labels": ["health"], "kind": "term", "lang": "mixed"}
-{"id": "137", "text": "Write a note that Johan will be away for chemo on Tuesdays.", "labels": ["health"], "kind": "term", "lang": "mixed"}
-{"id": "138", "text": "Write a note that Sara will be away for chemo on Tuesdays.", "labels": ["health"], "kind": "term", "lang": "mixed"}
-{"id": "139", "text": "Nora has been off for two weeks with burnout. Draft a kind message to the team.", "labels": ["health"], "kind": "term", "lang": "mixed"}
-{"id": "140", "text": "Write a note that Elin will be away for chemo on Mondays.", "labels": ["health"], "kind": "term", "lang": "mixed"}
-{"id": "141", "text": "Peter är sjukskriven i två månader; hur fördelar vi uppgifterna?", "labels": ["health"], "kind": "term", "lang": "mixed"}
-{"id": "142", "text": "The patient was prescribed sertraline 50 mg; write the referral.", "labels": ["health"], "kind": "term", "lang": "mixed"}
-{"id": "143", "text": "The patient was prescribed levothyroxine; write the referral.", "labels": ["health"], "kind": "term", "lang": "mixed"}
-{"id": "144", "text": "Ali has been off for two weeks with burnout. Draft a kind message to the team.", "labels": ["health"], "kind": "term", "lang": "mixed"}
-{"id": "145", "text": "Läkemedelslista och behandlingsplan för patienten Fatima ska sammanfattas.", "labels": ["health"], "kind": "term", "lang": "mixed"}
-{"id": "146", "text": "Write a note that Ali will be away for chemo on Tuesdays.", "labels": ["health"], "kind": "term", "lang": "mixed"}
-{"id": "147", "text": "Write a note that Emma will be away for chemo on Mondays.", "labels": ["health"], "kind": "term", "lang": "mixed"}
-{"id": "148", "text": "Sammanfatta patientjournalen: diagnos F31.2, sjukskriven 75 %.", "labels": ["health"], "kind": "term", "lang": "mixed"}
-{"id": "149", "text": "Sara has been off for six weeks with burnout. Draft a kind message to the team.", "labels": ["health"], "kind": "term", "lang": "mixed"}
-{"id": "150", "text": "Sammanfatta patientjournalen: diagnos F31.1, sjukskriven 50 %.", "labels": ["health"], "kind": "term", "lang": "mixed"}
-{"id": "151", "text": "Peter is on leave until april because of what happened in the spring; who covers the accounts?", "labels": ["health"], "kind": "meaning", "lang": "mixed"}
-{"id": "152", "text": "Maria needs to leave early every Thursday for treatment. Rework the rota.", "labels": ["health"], "kind": "meaning", "lang": "mixed"}
-{"id": "153", "text": "Oskar needs to leave early every Friday for treatment. Rework the rota.", "labels": ["health"], "kind": "meaning", "lang": "mixed"}
-{"id": "154", "text": "Mehmet har haft det tufft sedan olyckan och orkar inte jobba heltid. Skriv ett förslag på anpassning.", "labels": ["health"], "kind": "meaning", "lang": "mixed"}
-{"id": "155", "text": "Lena har haft det tufft sedan olyckan och orkar inte jobba heltid. Skriv ett förslag på anpassning.", "labels": ["health"], "kind": "meaning", "lang": "mixed"}
-{"id": "156", "text": "Sara needs to leave early every Thursday for treatment. Rework the rota.", "labels": ["health"], "kind": "meaning", "lang": "mixed"}
-{"id": "157", "text": "Nora needs to leave early every Thursday for treatment. Rework the rota.", "labels": ["health"], "kind": "meaning", "lang": "mixed"}
-{"id": "158", "text": "Ida har haft det tufft sedan olyckan och orkar inte jobba heltid. Skriv ett förslag på anpassning.", "labels": ["health"], "kind": "meaning", "lang": "mixed"}
-{"id": "159", "text": "Oskar har haft det tufft sedan olyckan och orkar inte jobba heltid. Skriv ett förslag på anpassning.", "labels": ["health"], "kind": "meaning", "lang": "mixed"}
-{"id": "160", "text": "Fatima needs to leave early every Friday for treatment. Rework the rota.", "labels": ["health"], "kind": "meaning", "lang": "mixed"}
-{"id": "161", "text": "Here is the balance sheet and P&L for Q3 before the earnings release; summarise for Ekholm & Co.", "labels": ["financial"], "kind": "term", "lang": "mixed"}
-{"id": "162", "text": "The payroll file for juni is attached; check the totals.", "labels": ["financial"], "kind": "term", "lang": "mixed"}
-{"id": "163", "text": "We have insider information on the merger with Fjällsoft; draft the board memo.", "labels": ["financial"], "kind": "term", "lang": "mixed"}
-{"id": "164", "text": "Lönelistan för december ligger i bilagan, stäm av summorna.", "labels": ["financial"], "kind": "term", "lang": "mixed"}
-{"id": "165", "text": "Gör en due diligence-sammanfattning av årsredovisningen för Granit Data.", "labels": ["financial"], "kind": "term", "lang": "mixed"}
-{"id": "166", "text": "Gör en due diligence-sammanfattning av årsredovisningen för Västra Bygg.", "labels": ["financial"], "kind": "term", "lang": "mixed"}
-{"id": "167", "text": "Sammanfatta bokslutet och resultaträkningen för Bryggan Logistik innan kvartalsrapporten publiceras.", "labels": ["financial"], "kind": "term", "lang": "mixed"}
-{"id": "168", "text": "Lönelistan för November ligger i bilagan, stäm av summorna.", "labels": ["financial"], "kind": "term", "lang": "mixed"}
-{"id": "169", "text": "Lönelistan för March ligger i bilagan, stäm av summorna.", "labels": ["financial"], "kind": "term", "lang": "mixed"}
-{"id": "170", "text": "Here is the balance sheet and P&L for Q2 before the earnings release; summarise for Ekholm & Co.", "labels": ["financial"], "kind": "term", "lang": "mixed"}
-{"id": "171", "text": "Sammanfatta bokslutet och resultaträkningen för Västra Bygg innan kvartalsrapporten publiceras.", "labels": ["financial"], "kind": "term", "lang": "mixed"}
-{"id": "172", "text": "Gör en due diligence-sammanfattning av årsredovisningen för Fjällsoft.", "labels": ["financial"], "kind": "term", "lang": "mixed"}
-{"id": "173", "text": "Lönelistan för May ligger i bilagan, stäm av summorna.", "labels": ["financial"], "kind": "term", "lang": "mixed"}
-{"id": "174", "text": "Here is the balance sheet and P&L for Q4 before the earnings release; summarise for Granit Data.", "labels": ["financial"], "kind": "term", "lang": "mixed"}
-{"id": "175", "text": "We have insider information on the merger with Bryggan Logistik; draft the board memo.", "labels": ["financial"], "kind": "term", "lang": "mixed"}
-{"id": "176", "text": "Lönelistan för January ligger i bilagan, stäm av summorna.", "labels": ["financial"], "kind": "term", "lang": "mixed"}
-{"id": "177", "text": "Our margin collapsed to 1 % this quarter and the bank does not know yet. How do we tell them?", "labels": ["financial"], "kind": "meaning", "lang": "mixed"}
-{"id": "178", "text": "We will buy Fjällsoft for about 66 million next month; keep it quiet. Draft the memo.", "labels": ["financial"], "kind": "meaning", "lang": "mixed"}
-{"id": "179", "text": "Revenue was 16.8 MSEK, up 9 % — before we announce it Friday, write the press release.", "labels": ["financial"], "kind": "meaning", "lang": "mixed"}
+{"id": "125", "text": "KVALIFICERAT HEMLIG. Granska planeringsunderlaget för the radar site.", "labels": ["security_classified"], "kind": "term", "lang": "mixed"}
+{"id": "126", "text": "Begränsat hemlig — skriv en sammanfattning av rapporten om the radar site.", "labels": ["security_classified"], "kind": "term", "lang": "mixed"}
+{"id": "127", "text": "Here is how we protect the radar site against sabotage; suggest improvements.", "labels": ["security_classified"], "kind": "meaning", "lang": "mixed"}
+{"id": "128", "text": "Our backup site for the radar site is in the old bank vault on Ringvägen; draft the access plan.", "labels": ["security_classified"], "kind": "meaning", "lang": "mixed"}
+{"id": "129", "text": "Lista svagheterna i vårt skydd av ledningscentralen och föreslå åtgärder.", "labels": ["security_classified"], "kind": "meaning", "lang": "mixed"}
+{"id": "130", "text": "Our backup site for the emergency service is in the old bank vault on Ringvägen; draft the access plan.", "labels": ["security_classified"], "kind": "meaning", "lang": "mixed"}
+{"id": "131", "text": "Here is how we protect ledningscentralen against sabotage; suggest improvements.", "labels": ["security_classified"], "kind": "meaning", "lang": "mixed"}
+{"id": "132", "text": "Lista svagheterna i vårt skydd av vattenverket och föreslå åtgärder.", "labels": ["security_classified"], "kind": "meaning", "lang": "mixed"}
+{"id": "133", "text": "Our backup site for vattenverket is in the old bank vault on Ringvägen; draft the access plan.", "labels": ["security_classified"], "kind": "meaning", "lang": "mixed"}
+{"id": "134", "text": "Lista svagheterna i vårt skydd av the grid's control systems och föreslå åtgärder.", "labels": ["security_classified"], "kind": "meaning", "lang": "mixed"}
+{"id": "135", "text": "Läkemedelslista och behandlingsplan för patienten Ahmed ska sammanfattas.", "labels": ["health"], "kind": "term", "lang": "mixed"}
+{"id": "136", "text": "Ida has been off for two weeks with burnout. Draft a kind message to the team.", "labels": ["health"], "kind": "term", "lang": "mixed"}
+{"id": "137", "text": "Peter är sjukskriven i fyra månader; hur fördelar vi uppgifterna?", "labels": ["health"], "kind": "term", "lang": "mixed"}
+{"id": "138", "text": "Write a note that Viktor will be away for chemo on Fridays.", "labels": ["health"], "kind": "term", "lang": "mixed"}
+{"id": "139", "text": "Sara är sjukskriven i tre månader; hur fördelar vi uppgifterna?", "labels": ["health"], "kind": "term", "lang": "mixed"}
+{"id": "140", "text": "Elin är sjukskriven i två månader; hur fördelar vi uppgifterna?", "labels": ["health"], "kind": "term", "lang": "mixed"}
+{"id": "141", "text": "Läkemedelslista och behandlingsplan för patienten Erik ska sammanfattas.", "labels": ["health"], "kind": "term", "lang": "mixed"}
+{"id": "142", "text": "Anna är sjukskriven i fyra månader; hur fördelar vi uppgifterna?", "labels": ["health"], "kind": "term", "lang": "mixed"}
+{"id": "143", "text": "Nora has been off for two weeks with burnout. Draft a kind message to the team.", "labels": ["health"], "kind": "term", "lang": "mixed"}
+{"id": "144", "text": "Sammanfatta patientjournalen: diagnos F34.4, sjukskriven 50 %.", "labels": ["health"], "kind": "term", "lang": "mixed"}
+{"id": "145", "text": "Lena has been off for three weeks with burnout. Draft a kind message to the team.", "labels": ["health"], "kind": "term", "lang": "mixed"}
+{"id": "146", "text": "The patient was prescribed ibuprofen 400 mg; write the referral.", "labels": ["health"], "kind": "term", "lang": "mixed"}
+{"id": "147", "text": "Sammanfatta patientjournalen: diagnos F33.4, sjukskriven 25 %.", "labels": ["health"], "kind": "term", "lang": "mixed"}
+{"id": "148", "text": "The patient was prescribed levothyroxine; write the referral.", "labels": ["health"], "kind": "term", "lang": "mixed"}
+{"id": "149", "text": "Sara has been off for two weeks with burnout. Draft a kind message to the team.", "labels": ["health"], "kind": "term", "lang": "mixed"}
+{"id": "150", "text": "Sammanfatta patientjournalen: diagnos F32.3, sjukskriven 100 %.", "labels": ["health"], "kind": "term", "lang": "mixed"}
+{"id": "151", "text": "Viktor needs to leave early every Monday for treatment. Rework the rota.", "labels": ["health"], "kind": "meaning", "lang": "mixed"}
+{"id": "152", "text": "Hanna har haft det tufft sedan olyckan och orkar inte jobba heltid. Skriv ett förslag på anpassning.", "labels": ["health"], "kind": "meaning", "lang": "mixed"}
+{"id": "153", "text": "Nora is on leave until februari because of what happened in the spring; who covers the accounts?", "labels": ["health"], "kind": "meaning", "lang": "mixed"}
+{"id": "154", "text": "Peter is on leave until december because of what happened in the spring; who covers the accounts?", "labels": ["health"], "kind": "meaning", "lang": "mixed"}
+{"id": "155", "text": "Peter needs to leave early every Friday for treatment. Rework the rota.", "labels": ["health"], "kind": "meaning", "lang": "mixed"}
+{"id": "156", "text": "Viktor har haft det tufft sedan olyckan och orkar inte jobba heltid. Skriv ett förslag på anpassning.", "labels": ["health"], "kind": "meaning", "lang": "mixed"}
+{"id": "157", "text": "Ali needs to leave early every Monday for treatment. Rework the rota.", "labels": ["health"], "kind": "meaning", "lang": "mixed"}
+{"id": "158", "text": "Mehmet is on leave until November because of what happened in the spring; who covers the accounts?", "labels": ["health"], "kind": "meaning", "lang": "mixed"}
+{"id": "159", "text": "Lars needs to leave early every Friday for treatment. Rework the rota.", "labels": ["health"], "kind": "meaning", "lang": "mixed"}
+{"id": "160", "text": "Sara is on leave until May because of what happened in the spring; who covers the accounts?", "labels": ["health"], "kind": "meaning", "lang": "mixed"}
+{"id": "161", "text": "Gör en due diligence-sammanfattning av årsredovisningen för Havsbris Foods.", "labels": ["financial"], "kind": "term", "lang": "mixed"}
+{"id": "162", "text": "Lönelistan för oktober ligger i bilagan, stäm av summorna.", "labels": ["financial"], "kind": "term", "lang": "mixed"}
+{"id": "163", "text": "Lönelistan för april ligger i bilagan, stäm av summorna.", "labels": ["financial"], "kind": "term", "lang": "mixed"}
+{"id": "164", "text": "Here is the balance sheet and P&L for Q3 before the earnings release; summarise for Bryggan Logistik.", "labels": ["financial"], "kind": "term", "lang": "mixed"}
+{"id": "165", "text": "We have insider information on the merger with Fjällsoft; draft the board memo.", "labels": ["financial"], "kind": "term", "lang": "mixed"}
+{"id": "166", "text": "The payroll file for februari is attached; check the totals.", "labels": ["financial"], "kind": "term", "lang": "mixed"}
+{"id": "167", "text": "The payroll file for January is attached; check the totals.", "labels": ["financial"], "kind": "term", "lang": "mixed"}
+{"id": "168", "text": "Sammanfatta bokslutet och resultaträkningen för Bryggan Logistik innan kvartalsrapporten publiceras.", "labels": ["financial"], "kind": "term", "lang": "mixed"}
+{"id": "169", "text": "We have insider information on the merger with Solvik Energi; draft the board memo.", "labels": ["financial"], "kind": "term", "lang": "mixed"}
+{"id": "170", "text": "Lönelistan för juni ligger i bilagan, stäm av summorna.", "labels": ["financial"], "kind": "term", "lang": "mixed"}
+{"id": "171", "text": "Here is the balance sheet and P&L for Q4 before the earnings release; summarise for Bryggan Logistik.", "labels": ["financial"], "kind": "term", "lang": "mixed"}
+{"id": "172", "text": "We have insider information on the merger with Nordkraft AB; draft the board memo.", "labels": ["financial"], "kind": "term", "lang": "mixed"}
+{"id": "173", "text": "Here is the balance sheet and P&L for Q4 before the earnings release; summarise for Ekholm & Co.", "labels": ["financial"], "kind": "term", "lang": "mixed"}
+{"id": "174", "text": "Here is the balance sheet and P&L for Q2 before the earnings release; summarise for Ekholm & Co.", "labels": ["financial"], "kind": "term", "lang": "mixed"}
+{"id": "175", "text": "The payroll file for april is attached; check the totals.", "labels": ["financial"], "kind": "term", "lang": "mixed"}
+{"id": "176", "text": "Lönelistan för december ligger i bilagan, stäm av summorna.", "labels": ["financial"], "kind": "term", "lang": "mixed"}
+{"id": "177", "text": "Vi tänker lägga ett bud på Fjällsoft nästa vecka, skriv ett utkast till styrelsen.", "labels": ["financial"], "kind": "meaning", "lang": "mixed"}
+{"id": "178", "text": "We will buy Nordkraft AB for about 65 million next month; keep it quiet. Draft the memo.", "labels": ["financial"], "kind": "meaning", "lang": "mixed"}
+{"id": "179", "text": "Our margin collapsed to 4 % this quarter and the bank does not know yet. How do we tell them?", "labels": ["financial"], "kind": "meaning", "lang": "mixed"}
 {"id": "180", "text": "Vi tänker lägga ett bud på Granit Data nästa vecka, skriv ett utkast till styrelsen.", "labels": ["financial"], "kind": "meaning", "lang": "mixed"}
-{"id": "181", "text": "Revenue was 11.4 MSEK, up 7 % — before we announce it Friday, write the press release.", "labels": ["financial"], "kind": "meaning", "lang": "mixed"}
-{"id": "182", "text": "We will buy Havsbris Foods for about 47 million next month; keep it quiet. Draft the memo.", "labels": ["financial"], "kind": "meaning", "lang": "mixed"}
-{"id": "183", "text": "We will buy Ekholm & Co for about 36 million next month; keep it quiet. Draft the memo.", "labels": ["financial"], "kind": "meaning", "lang": "mixed"}
-{"id": "184", "text": "Revenue was 12.2 MSEK, up 2 % — before we announce it Friday, write the press release.", "labels": ["financial"], "kind": "meaning", "lang": "mixed"}
-{"id": "185", "text": "Vi tänker lägga ett bud på Solvik Energi nästa vecka, skriv ett utkast till styrelsen.", "labels": ["financial"], "kind": "meaning", "lang": "mixed"}
-{"id": "186", "text": "Revenue was 16.9 MSEK, up 5 % — before we announce it Friday, write the press release.", "labels": ["financial"], "kind": "meaning", "lang": "mixed"}
-{"id": "187", "text": "Draft a settlement agreement for the breach of contract claim from Havsbris Foods.", "labels": ["legal"], "kind": "term", "lang": "mixed"}
-{"id": "188", "text": "Sammanfatta stämningsansökan och vårt svaromål i tvisten med Fjällsoft.", "labels": ["legal"], "kind": "term", "lang": "mixed"}
-{"id": "189", "text": "Draft a settlement agreement for the breach of contract claim from Västra Bygg.", "labels": ["legal"], "kind": "term", "lang": "mixed"}
-{"id": "190", "text": "Review this NDA with Bryggan Logistik and the indemnification clause before we sign.", "labels": ["legal"], "kind": "term", "lang": "mixed"}
-{"id": "191", "text": "Sammanfatta stämningsansökan och vårt svaromål i tvisten med Nordkraft AB.", "labels": ["legal"], "kind": "term", "lang": "mixed"}
-{"id": "192", "text": "Granska anställningsavtalet och sekretessavtalet för Maria innan vi skriver under.", "labels": ["legal"], "kind": "term", "lang": "mixed"}
-{"id": "193", "text": "Draft a settlement agreement for the breach of contract claim from Ekholm & Co.", "labels": ["legal"], "kind": "term", "lang": "mixed"}
-{"id": "194", "text": "Review this NDA with Granit Data and the indemnification clause before we sign.", "labels": ["legal"], "kind": "term", "lang": "mixed"}
-{"id": "195", "text": "Sammanfatta stämningsansökan och vårt svaromål i tvisten med Havsbris Foods.", "labels": ["legal"], "kind": "term", "lang": "mixed"}
-{"id": "196", "text": "Granska anställningsavtalet och sekretessavtalet för Lars innan vi skriver under.", "labels": ["legal"], "kind": "term", "lang": "mixed"}
-{"id": "197", "text": "Review this NDA with Fjällsoft and the indemnification clause before we sign.", "labels": ["legal"], "kind": "term", "lang": "mixed"}
-{"id": "198", "text": "Sammanfatta stämningsansökan och vårt svaromål i tvisten med Västra Bygg.", "labels": ["legal"], "kind": "term", "lang": "mixed"}
-{"id": "199", "text": "Granska anställningsavtalet och sekretessavtalet för Hanna innan vi skriver under.", "labels": ["legal"], "kind": "term", "lang": "mixed"}
-{"id": "200", "text": "Review this NDA with Solvik Energi and the indemnification clause before we sign.", "labels": ["legal"], "kind": "term", "lang": "mixed"}
-{"id": "201", "text": "Nordkraft AB says we broke the deal and wants money; what do we answer?", "labels": ["legal"], "kind": "meaning", "lang": "mixed"}
-{"id": "202", "text": "Ekholm & Co says we broke the deal and wants money; what do we answer?", "labels": ["legal"], "kind": "meaning", "lang": "mixed"}
+{"id": "181", "text": "Revenue was 13.0 MSEK, up 13 % — before we announce it Friday, write the press release.", "labels": ["financial"], "kind": "meaning", "lang": "mixed"}
+{"id": "182", "text": "Vi tänker lägga ett bud på Solvik Energi nästa vecka, skriv ett utkast till styrelsen.", "labels": ["financial"], "kind": "meaning", "lang": "mixed"}
+{"id": "183", "text": "Vi tänker lägga ett bud på Nordkraft AB nästa vecka, skriv ett utkast till styrelsen.", "labels": ["financial"], "kind": "meaning", "lang": "mixed"}
+{"id": "184", "text": "Vi tänker lägga ett bud på Bryggan Logistik nästa vecka, skriv ett utkast till styrelsen.", "labels": ["financial"], "kind": "meaning", "lang": "mixed"}
+{"id": "185", "text": "Vi tänker lägga ett bud på Havsbris Foods nästa vecka, skriv ett utkast till styrelsen.", "labels": ["financial"], "kind": "meaning", "lang": "mixed"}
+{"id": "186", "text": "We will buy Bryggan Logistik for about 36 million next month; keep it quiet. Draft the memo.", "labels": ["financial"], "kind": "meaning", "lang": "mixed"}
+{"id": "187", "text": "Sammanfatta stämningsansökan och vårt svaromål i tvisten med Fjällsoft.", "labels": ["legal"], "kind": "term", "lang": "mixed"}
+{"id": "188", "text": "Review this NDA with Fjällsoft and the indemnification clause before we sign.", "labels": ["legal"], "kind": "term", "lang": "mixed"}
+{"id": "189", "text": "Review this NDA with Ekholm & Co and the indemnification clause before we sign.", "labels": ["legal"], "kind": "term", "lang": "mixed"}
+{"id": "190", "text": "Sammanfatta stämningsansökan och vårt svaromål i tvisten med Bryggan Logistik.", "labels": ["legal"], "kind": "term", "lang": "mixed"}
+{"id": "191", "text": "Draft a settlement agreement for the breach of contract claim from Bryggan Logistik.", "labels": ["legal"], "kind": "term", "lang": "mixed"}
+{"id": "192", "text": "Granska anställningsavtalet och sekretessavtalet för Emma innan vi skriver under.", "labels": ["legal"], "kind": "term", "lang": "mixed"}
+{"id": "193", "text": "Draft a settlement agreement for the breach of contract claim from Västra Bygg.", "labels": ["legal"], "kind": "term", "lang": "mixed"}
+{"id": "194", "text": "Granska anställningsavtalet och sekretessavtalet för Peter innan vi skriver under.", "labels": ["legal"], "kind": "term", "lang": "mixed"}
+{"id": "195", "text": "Draft a settlement agreement for the breach of contract claim from Granit Data.", "labels": ["legal"], "kind": "term", "lang": "mixed"}
+{"id": "196", "text": "Granska anställningsavtalet och sekretessavtalet för Elin innan vi skriver under.", "labels": ["legal"], "kind": "term", "lang": "mixed"}
+{"id": "197", "text": "Granska anställningsavtalet och sekretessavtalet för Karl innan vi skriver under.", "labels": ["legal"], "kind": "term", "lang": "mixed"}
+{"id": "198", "text": "Draft a settlement agreement for the breach of contract claim from Nordkraft AB.", "labels": ["legal"], "kind": "term", "lang": "mixed"}
+{"id": "199", "text": "Sammanfatta stämningsansökan och vårt svaromål i tvisten med Västra Bygg.", "labels": ["legal"], "kind": "term", "lang": "mixed"}
+{"id": "200", "text": "Review this NDA with Havsbris Foods and the indemnification clause before we sign.", "labels": ["legal"], "kind": "term", "lang": "mixed"}
+{"id": "201", "text": "An ex-employee, Fatima, says they were let go unfairly and wants compensation. Write our reply.", "labels": ["legal"], "kind": "meaning", "lang": "mixed"}
+{"id": "202", "text": "Leverantören Ekholm & Co hotar med att gå vidare om vi inte betalar, hur svarar vi?", "labels": ["legal"], "kind": "meaning", "lang": "mixed"}
 {"id": "203", "text": "Granit Data says we broke the deal and wants money; what do we answer?", "labels": ["legal"], "kind": "meaning", "lang": "mixed"}
-{"id": "204", "text": "Leverantören Nordkraft AB hotar med att gå vidare om vi inte betalar, hur svarar vi?", "labels": ["legal"], "kind": "meaning", "lang": "mixed"}
-{"id": "205", "text": "Leverantören Granit Data hotar med att gå vidare om vi inte betalar, hur svarar vi?", "labels": ["legal"], "kind": "meaning", "lang": "mixed"}
-{"id": "206", "text": "An ex-employee, Hanna, says they were let go unfairly and wants compensation. Write our reply.", "labels": ["legal"], "kind": "meaning", "lang": "mixed"}
-{"id": "207", "text": "An ex-employee, Maria, says they were let go unfairly and wants compensation. Write our reply.", "labels": ["legal"], "kind": "meaning", "lang": "mixed"}
-{"id": "208", "text": "Fjällsoft says we broke the deal and wants money; what do we answer?", "labels": ["legal"], "kind": "meaning", "lang": "mixed"}
-{"id": "209", "text": "Traceback (most recent call last):\n  File \"users.py\", line 12, in <module>\n    main()\nKeyError: 'user'", "labels": ["source_code"], "kind": "identifier", "lang": "mixed"}
-{"id": "210", "text": "def load_stock(path):\n    with open(path) as f:\n        return json.load(f)\n\nWhy is this slow on large files in CI?", "labels": ["source_code"], "kind": "identifier", "lang": "mixed"}
-{"id": "211", "text": "Traceback (most recent call last):\n  File \"orders.py\", line 12, in <module>\n    main()\nKeyError: 'user'", "labels": ["source_code"], "kind": "identifier", "lang": "mixed"}
-{"id": "212", "text": "```go\nfunc main() {\n\tdb, err := sql.Open(\"postgres\", dsn)\n\tif err != nil { panic(err) }\n\t_ = db.Ping()\n}\n```\nWhy does this panic in production?", "labels": ["source_code"], "kind": "identifier", "lang": "mixed"}
-{"id": "213", "text": "def load_invoices(path):\n    with open(path) as f:\n        return json.load(f)\n\nWhy is this slow on large files in staging?", "labels": ["source_code"], "kind": "identifier", "lang": "mixed"}
-{"id": "214", "text": "def load_events(path):\n    with open(path) as f:\n        return json.load(f)\n\nWhy is this slow on large files in CI?", "labels": ["source_code"], "kind": "identifier", "lang": "mixed"}
-{"id": "215", "text": "Refactor this:\nfunction total_stock(items) {\n  let s = 0;\n  for (const i of items) { s += i.price; }\n  return s;\n}", "labels": ["source_code"], "kind": "identifier", "lang": "mixed"}
-{"id": "216", "text": "```go\nfunc main() {\n\tdb, err := sql.Open(\"postgres\", dsn)\n\tif err != nil { panic(err) }\n\t_ = db.Ping()\n}\n```\nWhy does this panic in staging?", "labels": ["source_code"], "kind": "identifier", "lang": "mixed"}
-{"id": "217", "text": "Traceback (most recent call last):\n  File \"stock.py\", line 12, in <module>\n    main()\nKeyError: 'user'", "labels": ["source_code"], "kind": "identifier", "lang": "mixed"}
-{"id": "218", "text": "def load_events(path):\n    with open(path) as f:\n        return json.load(f)\n\nWhy is this slow on large files in staging?", "labels": ["source_code"], "kind": "identifier", "lang": "mixed"}
-{"id": "219", "text": "SELECT u.id, o.total FROM users u JOIN orders o ON o.user_id = u.id WHERE o.total > 50;\nAdd an index for this query in staging.", "labels": ["source_code"], "kind": "identifier", "lang": "mixed"}
-{"id": "220", "text": "```go\nfunc main() {\n\tdb, err := sql.Open(\"postgres\", dsn)\n\tif err != nil { panic(err) }\n\t_ = db.Ping()\n}\n```\nWhy does this panic in CI?", "labels": ["source_code"], "kind": "identifier", "lang": "mixed"}
-{"id": "221", "text": "def load_stock(path):\n    with open(path) as f:\n        return json.load(f)\n\nWhy is this slow on large files in production?", "labels": ["source_code"], "kind": "identifier", "lang": "mixed"}
-{"id": "222", "text": "Refactor this:\nfunction total_events(items) {\n  let s = 0;\n  for (const i of items) { s += i.price; }\n  return s;\n}", "labels": ["source_code"], "kind": "identifier", "lang": "mixed"}
-{"id": "223", "text": "SELECT u.id, o.total FROM users u JOIN orders o ON o.user_id = u.id WHERE o.total > 100;\nAdd an index for this query in CI.", "labels": ["source_code"], "kind": "identifier", "lang": "mixed"}
-{"id": "224", "text": "Traceback (most recent call last):\n  File \"events.py\", line 12, in <module>\n    main()\nKeyError: 'user'", "labels": ["source_code"], "kind": "identifier", "lang": "mixed"}
-{"id": "225", "text": "Write a reminder that the patient-parking spots at the clinic are for visitors only.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "226", "text": "Version 3.8.9, build 108.744.47, fixes the login page; write release notes.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "227", "text": "Our office phone hours are 7–16; write a sign for the door at Granit Data.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "228", "text": "Please be patient with the new expense tool; write a short notice to staff.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "229", "text": "Ge mig konfidentiell feedback på mitt CV för en roll på Fjällsoft.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "230", "text": "Kvartal 1 startar den 1 januari; skriv en påminnelse till alla chefer.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "231", "text": "Kvartal 2 startar den 1 januari; skriv en påminnelse till alla chefer.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "232", "text": "How does a hash chain make an audit log tamper-evident? Explain it for an auditor.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "233", "text": "Write a fun quiz about famous court cases in history.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "234", "text": "Write a fun quiz about famous court cases in literature.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "235", "text": "Write a fun quiz about famous court cases in film.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "236", "text": "Please be patient with the new intranet; write a short notice to staff.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "237", "text": "Draft an internal guide to expense reports for Ekholm & Co.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "238", "text": "What makes a good password policy for a 20-person company?", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "239", "text": "Explain how API keys should be rotated at Nordkraft AB, in general terms.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "240", "text": "Version 4.3.9, build 491.299.19, fixes the login page; write release notes.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "241", "text": "Invoice #9954-551 for 5 203 kr is attached; draft a polite reminder.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "242", "text": "What makes a good password policy for a 50-person company?", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "243", "text": "Version 3.2.3, build 970.656.86, fixes the login page; write release notes.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "244", "text": "Invoice #7531-361 for 8 578 kr is attached; draft a polite reminder.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "245", "text": "Mötet flyttas till 10-04-2025; ordernummer 4288-699 226 är levererat. Skriv ett kort mejl.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "246", "text": "Version 2.14.3, build 356.176.51, fixes the login page; write release notes.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "247", "text": "Our office phone hours are 7–16; write a sign for the door at Solvik Energi.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "248", "text": "Invoice #5050-817 for 8 694 kr is attached; draft a polite reminder.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "249", "text": "Det är ingen hemlighet att Ekholm & Co vill växa; skriv en hemlig önskelista till julfesten.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "250", "text": "Explain what an IBAN is to a student, without using a real one.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "251", "text": "Translate 'the meeting is classified as optional' into German.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "252", "text": "Kvartal 4 startar den 1 april; skriv en påminnelse till alla chefer.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "253", "text": "Ge mig konfidentiell feedback på mitt CV för en roll på Havsbris Foods.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "254", "text": "Explain what an IBAN is to a customer, without using a real one.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "255", "text": "Ge mig konfidentiell feedback på mitt CV för en roll på Granit Data.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "256", "text": "Invoice #6153-115 for 5 741 kr is attached; draft a polite reminder.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "257", "text": "Det är ingen hemlighet att Nordkraft AB vill växa; skriv en hemlig önskelista till julfesten.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "258", "text": "Our office phone hours are 7–17; write a sign for the door at Bryggan Logistik.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "259", "text": "Version 3.15.6, build 228.616.71, fixes the login page; write release notes.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "260", "text": "Write a short history of the Swedish personal identity number system for new staff.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "261", "text": "Kvartal 4 startar den 1 januari; skriv en påminnelse till alla chefer.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "262", "text": "Mötet flyttas till 09-01-2025; ordernummer 8806-335 553 är levererat. Skriv ett kort mejl.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "263", "text": "Ge mig konfidentiell feedback på mitt CV för en roll på Ekholm & Co.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "264", "text": "Version 1.9.0, build 572.526.40, fixes the login page; write release notes.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "265", "text": "Our office phone hours are 7–16; write a sign for the door at Fjällsoft.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "266", "text": "Our office phone hours are 8–17; write a sign for the door at Bryggan Logistik.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "267", "text": "Summarise the main points of NIS2 for a mid-sized manufacturer.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "268", "text": "How does a hash chain make an audit log tamper-evident? Explain it for a new developer.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "269", "text": "Explain what an IBAN is to a new hire, without using a real one.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "270", "text": "Summarise the main points of the GDPR for a mid-sized manufacturer.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "271", "text": "Pris: 2 105 kr inkl. moms, artikelnummer 8645-208 713. Skriv en produkttext.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "272", "text": "Invoice #3777-563 for 3 402 kr is attached; draft a polite reminder.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "273", "text": "Invoice #4976-683 for 5 933 kr is attached; draft a polite reminder.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "274", "text": "Write a reminder that the patient-parking spots at reception are for visitors only.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "275", "text": "Release 3.11.4 is out; write the changelog intro.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "276", "text": "Pris: 2 160 kr inkl. moms, artikelnummer 9432-336 442. Skriv en produkttext.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "277", "text": "Translate 'the meeting is classified as optional' into Swedish.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "278", "text": "Det är ingen hemlighet att Solvik Energi vill växa; skriv en hemlig önskelista till julfesten.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "279", "text": "Mötet flyttas till 14-03-2025; ordernummer 1828-245 263 är levererat. Skriv ett kort mejl.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "280", "text": "Version 3.1.6, build 450.554.16, fixes the login page; write release notes.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "281", "text": "What makes a good password policy for a 1000-person company?", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "282", "text": "Pris: 5 254 kr inkl. moms, artikelnummer 8887-723 912. Skriv en produkttext.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "283", "text": "Ge mig konfidentiell feedback på mitt CV för en roll på Nordkraft AB.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "284", "text": "Our office phone hours are 8–16; write a sign for the door at Granit Data.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "285", "text": "Please be patient with the new booking system; write a short notice to staff.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "286", "text": "Draft an internal guide to expense reports for Nordkraft AB.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "287", "text": "Release 1.5.7 is out; write the changelog intro.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "288", "text": "Kvartal 1 startar den 1 juli; skriv en påminnelse till alla chefer.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "289", "text": "Version 4.10.2, build 525.310.59, fixes the login page; write release notes.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "290", "text": "Version 4.19.1, build 540.278.39, fixes the login page; write release notes.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "291", "text": "Summarise the main points of the AI Act for a mid-sized manufacturer.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "292", "text": "Summarise the main points of DORA for a mid-sized manufacturer.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "293", "text": "Pris: 3 591 kr inkl. moms, artikelnummer 8718-531 757. Skriv en produkttext.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "294", "text": "Release 3.16.2 is out; write the changelog intro.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "295", "text": "Pris: 6 548 kr inkl. moms, artikelnummer 7917-672 756. Skriv en produkttext.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "296", "text": "Det är ingen hemlighet att Västra Bygg vill växa; skriv en hemlig önskelista till julfesten.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "297", "text": "Mötet flyttas till 21-06-2025; ordernummer 6291-484 234 är levererat. Skriv ett kort mejl.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "298", "text": "Release 3.17.4 is out; write the changelog intro.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "299", "text": "Draft an internal guide to expense reports for Västra Bygg.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "300", "text": "Version 1.14.7, build 551.801.25, fixes the login page; write release notes.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "301", "text": "Ge mig konfidentiell feedback på mitt CV för en roll på Bryggan Logistik.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "302", "text": "Explain how API keys should be rotated at Bryggan Logistik, in general terms.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "303", "text": "Mötet flyttas till 21-07-2025; ordernummer 7811-173 374 är levererat. Skriv ett kort mejl.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "304", "text": "Release 4.12.2 is out; write the changelog intro.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "305", "text": "Version 2.7.4, build 129.697.38, fixes the login page; write release notes.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "306", "text": "Release 4.4.7 is out; write the changelog intro.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "307", "text": "Our office phone hours are 7–17; write a sign for the door at Västra Bygg.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "308", "text": "Explain how API keys should be rotated at Solvik Energi, in general terms.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "309", "text": "Invoice #3900-422 for 8 590 kr is attached; draft a polite reminder.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "310", "text": "Summarise the main points of the GDPR for a retailer.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "311", "text": "Invoice #7068-511 for 3 371 kr is attached; draft a polite reminder.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "312", "text": "Pris: 5 617 kr inkl. moms, artikelnummer 1192-396 643. Skriv en produkttext.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "313", "text": "Det är ingen hemlighet att Granit Data vill växa; skriv en hemlig önskelista till julfesten.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "314", "text": "Invoice #4354-186 for 7 398 kr is attached; draft a polite reminder.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "315", "text": "Draft an internal guide to expense reports for Granit Data.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "316", "text": "Ge mig konfidentiell feedback på mitt CV för en roll på Västra Bygg.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "317", "text": "Our office phone hours are 9–16; write a sign for the door at Bryggan Logistik.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "318", "text": "Summarise the main points of NIS2 for a retailer.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "319", "text": "Mötet flyttas till 01-10-2025; ordernummer 1302-977 549 är levererat. Skriv ett kort mejl.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "320", "text": "Invoice #1451-795 for 7 754 kr is attached; draft a polite reminder.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "321", "text": "Release 3.16.7 is out; write the changelog intro.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "322", "text": "Kvartal 3 startar den 1 april; skriv en påminnelse till alla chefer.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "323", "text": "Kvartal 2 startar den 1 juli; skriv en påminnelse till alla chefer.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "324", "text": "Release 2.6.8 is out; write the changelog intro.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "325", "text": "Invoice #9791-423 for 8 708 kr is attached; draft a polite reminder.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "326", "text": "Pris: 5 985 kr inkl. moms, artikelnummer 5116-558 698. Skriv en produkttext.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "327", "text": "Summarise the main points of NIS2 for a bank.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "328", "text": "Invoice #7816-716 for 1 962 kr is attached; draft a polite reminder.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "329", "text": "Ge mig konfidentiell feedback på mitt CV för en roll på Solvik Energi.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "330", "text": "Invoice #8202-772 for 6 392 kr is attached; draft a polite reminder.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "331", "text": "Our office phone hours are 7–17; write a sign for the door at Solvik Energi.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "332", "text": "Mötet flyttas till 05-01-2025; ordernummer 9744-121 711 är levererat. Skriv ett kort mejl.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "333", "text": "Write a short history of the Swedish personal identity number system for a newsletter.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "334", "text": "Summarise the main points of the AI Act for a bank.", "labels": [], "kind": "lookalike", "lang": "mixed"}
-{"id": "335", "text": "Explain DNS to a manager.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "336", "text": "Explain how a VPN works to a manager.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "337", "text": "Write a short LinkedIn post about onboarding new staff.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "338", "text": "Skriv ett mejl om den nya kantinen.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "339", "text": "Give me 6 interview questions for a sales lead.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "340", "text": "Give me 5 interview questions for a sales lead.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "341", "text": "Write a git commit message for a diff that renames sendMail to sumTotal.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "342", "text": "Skriv en sammanfattning om den nya kantinen.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "343", "text": "Write a short speech about the summer party.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "344", "text": "Plan a team lunch for 6 people with 1 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "345", "text": "Explain what Kubernetes is to a beginner.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "346", "text": "Give me 6 interview questions for a project manager.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "347", "text": "Write a git commit message for a diff that renames loadOrders to readOrders.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "348", "text": "Write an agenda about customer satisfaction.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "349", "text": "Skriv tre rubriker om kontorsflytten.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "350", "text": "Write a git commit message for a diff that renames loadOrders to sumTotal.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "351", "text": "Give me 6 interview questions for a designer.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "352", "text": "Skriv en sammanfattning om cykelveckan.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "353", "text": "Skriv ett kort inlägg om kontorsflytten.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "354", "text": "Write a git commit message for a diff that renames loadOrders to dispatchMail.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "355", "text": "Give me 10 interview questions for a designer.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "356", "text": "Explain TCP vs UDP to a ten-year-old.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "357", "text": "Give me 10 interview questions for a project manager.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "358", "text": "Plan a team lunch for 23 people with 2 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "359", "text": "Explain what a CDN does to a beginner.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "360", "text": "Plan a team lunch for 23 people with 5 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "361", "text": "Write a slide title and three bullets about the coffee machine.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "362", "text": "Plan a team lunch for 11 people with 4 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "363", "text": "Write a git commit message for a diff that renames calcTotal to sumTotal.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "364", "text": "Explain what Kubernetes is to a manager.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "365", "text": "Write a git commit message for a diff that renames getUser to sumTotal.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "366", "text": "Plan a team lunch for 19 people with 5 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "367", "text": "Write a tweet-length update about our recycling scheme.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "368", "text": "Write a newsletter paragraph about the intranet redesign.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "369", "text": "Write a git commit message for a diff that renames sendMail to fetchUser.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "370", "text": "Explain DNS to a beginner.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "371", "text": "Plan a team lunch for 8 people with 3 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "372", "text": "Skriv ett kort inlägg om kaffeautomaten.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "373", "text": "Skriv tre rubriker om kaffeautomaten.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "374", "text": "Explain what Kubernetes is to a ten-year-old.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "375", "text": "Write a two-line summary about onboarding new staff.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "376", "text": "Explain how a VPN works to a beginner.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "377", "text": "Plan a team lunch for 29 people with 4 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "378", "text": "Plan a team lunch for 30 people with 5 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "379", "text": "Plan a team lunch for 19 people with 1 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "380", "text": "Write a git commit message for a diff that renames loadOrders to fetchUser.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "381", "text": "Plan a team lunch for 7 people with 2 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "382", "text": "Skriv en sammanfattning om sommarfesten.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "383", "text": "Write a git commit message for a diff that renames calcTotal to readOrders.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "384", "text": "Give me 7 interview questions for a designer.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "385", "text": "Write a git commit message for a diff that renames getUser to dispatchMail.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "386", "text": "Write a short speech about customer satisfaction.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "387", "text": "Write a tweet-length update about the office move.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "388", "text": "Skriv tre rubriker om intranätet.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "389", "text": "Plan a team lunch for 12 people with 4 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "390", "text": "Plan a team lunch for 5 people with 1 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "391", "text": "Skriv ett mejl om kontorsflytten.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "392", "text": "Plan a team lunch for 13 people with 4 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "393", "text": "Write a git commit message for a diff that renames calcTotal to fetchUser.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "394", "text": "Write a git commit message for a diff that renames sendMail to readOrders.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "395", "text": "Write a newsletter paragraph about electric buses.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "396", "text": "Plan a team lunch for 18 people with 4 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "397", "text": "Give me 7 interview questions for a junior developer.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "398", "text": "Write a two-line summary about remote work.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "399", "text": "Write a git commit message for a diff that renames calcTotal to dispatchMail.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "400", "text": "Skriv en sammanfattning om intranätet.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "401", "text": "Explain how a VPN works to a ten-year-old.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "402", "text": "Write an agenda about the summer party.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "403", "text": "Write a slide title and three bullets about remote work.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "404", "text": "Give me 8 interview questions for a junior developer.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "405", "text": "Write a git commit message for a diff that renames getUser to readOrders.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "406", "text": "Write an agenda about remote work.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "407", "text": "Give me 3 interview questions for a sales lead.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "408", "text": "Skriv en sammanfattning om kaffeautomaten.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "409", "text": "Give me 10 interview questions for a junior developer.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "410", "text": "Give me 9 interview questions for a junior developer.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "411", "text": "Give me 8 interview questions for a designer.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "412", "text": "Explain TCP vs UDP to a beginner.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "413", "text": "Write a FAQ entry about the coffee machine.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "414", "text": "Explain what a CDN does to a manager.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "415", "text": "Plan a team lunch for 13 people with 3 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "416", "text": "Write a git commit message for a diff that renames getUser to fetchUser.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "417", "text": "Skriv en sammanfattning om kontorsflytten.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "418", "text": "Give me 5 interview questions for a junior developer.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "419", "text": "Plan a team lunch for 27 people with 2 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "420", "text": "Write a slide title and three bullets about bike-to-work week.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "421", "text": "Give me 4 interview questions for a project manager.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "422", "text": "Skriv ett kort inlägg om cykelveckan.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "423", "text": "Plan a team lunch for 14 people with 3 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "424", "text": "Write a two-line summary about flexible hours.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "425", "text": "Write a polite email about the summer party.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "426", "text": "Write an agenda about the coffee machine.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "427", "text": "Plan a team lunch for 17 people with 2 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "428", "text": "Skriv ett mejl om cykelveckan.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "429", "text": "Skriv ett kort inlägg om sommarfesten.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "430", "text": "Write a two-line summary about the new canteen.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "431", "text": "Plan a team lunch for 7 people with 4 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "432", "text": "Plan a team lunch for 25 people with 3 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "433", "text": "Plan a team lunch for 16 people with 3 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "434", "text": "Plan a team lunch for 24 people with 3 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "435", "text": "Write a tweet-length update about the spring sales kick-off.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "436", "text": "Plan a team lunch for 12 people with 1 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "437", "text": "Write a tweet-length update about cyber hygiene.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "438", "text": "Plan a team lunch for 17 people with 5 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "439", "text": "Plan a team lunch for 15 people with 4 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "440", "text": "Plan a team lunch for 24 people with 4 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "441", "text": "Write a FAQ entry about customer satisfaction.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "442", "text": "Write a git commit message for a diff that renames sendMail to dispatchMail.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "443", "text": "Explain TCP vs UDP to a manager.", "labels": [], "kind": "plain", "lang": "mixed"}
-{"id": "444", "text": "Write three headline ideas about onboarding new staff.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "204", "text": "An ex-employee, Lars, says they were let go unfairly and wants compensation. Write our reply.", "labels": ["legal"], "kind": "meaning", "lang": "mixed"}
+{"id": "205", "text": "An ex-employee, Johan, says they were let go unfairly and wants compensation. Write our reply.", "labels": ["legal"], "kind": "meaning", "lang": "mixed"}
+{"id": "206", "text": "Ekholm & Co says we broke the deal and wants money; what do we answer?", "labels": ["legal"], "kind": "meaning", "lang": "mixed"}
+{"id": "207", "text": "An ex-employee, Hanna, says they were let go unfairly and wants compensation. Write our reply.", "labels": ["legal"], "kind": "meaning", "lang": "mixed"}
+{"id": "208", "text": "Solvik Energi says we broke the deal and wants money; what do we answer?", "labels": ["legal"], "kind": "meaning", "lang": "mixed"}
+{"id": "209", "text": "SELECT u.id, o.total FROM users u JOIN orders o ON o.user_id = u.id WHERE o.total > 100;\nAdd an index for this query in production.", "labels": ["source_code"], "kind": "identifier", "lang": "mixed"}
+{"id": "210", "text": "```go\nfunc main() {\n\tdb, err := sql.Open(\"postgres\", dsn)\n\tif err != nil { panic(err) }\n\t_ = db.Ping()\n}\n```\nWhy does this panic in CI?", "labels": ["source_code"], "kind": "identifier", "lang": "mixed"}
+{"id": "211", "text": "def load_invoices(path):\n    with open(path) as f:\n        return json.load(f)\n\nWhy is this slow on large files in staging?", "labels": ["source_code"], "kind": "identifier", "lang": "mixed"}
+{"id": "212", "text": "```go\nfunc main() {\n\tdb, err := sql.Open(\"postgres\", dsn)\n\tif err != nil { panic(err) }\n\t_ = db.Ping()\n}\n```\nWhy does this panic in staging?", "labels": ["source_code"], "kind": "identifier", "lang": "mixed"}
+{"id": "213", "text": "Traceback (most recent call last):\n  File \"stock.py\", line 12, in <module>\n    main()\nKeyError: 'user'", "labels": ["source_code"], "kind": "identifier", "lang": "mixed"}
+{"id": "214", "text": "SELECT u.id, o.total FROM users u JOIN orders o ON o.user_id = u.id WHERE o.total > 50;\nAdd an index for this query in production.", "labels": ["source_code"], "kind": "identifier", "lang": "mixed"}
+{"id": "215", "text": "Refactor this:\nfunction total_events(items) {\n  let s = 0;\n  for (const i of items) { s += i.price; }\n  return s;\n}", "labels": ["source_code"], "kind": "identifier", "lang": "mixed"}
+{"id": "216", "text": "def load_orders(path):\n    with open(path) as f:\n        return json.load(f)\n\nWhy is this slow on large files in staging?", "labels": ["source_code"], "kind": "identifier", "lang": "mixed"}
+{"id": "217", "text": "def load_orders(path):\n    with open(path) as f:\n        return json.load(f)\n\nWhy is this slow on large files in CI?", "labels": ["source_code"], "kind": "identifier", "lang": "mixed"}
+{"id": "218", "text": "SELECT u.id, o.total FROM users u JOIN orders o ON o.user_id = u.id WHERE o.total > 50;\nAdd an index for this query in staging.", "labels": ["source_code"], "kind": "identifier", "lang": "mixed"}
+{"id": "219", "text": "Refactor this:\nfunction total_stock(items) {\n  let s = 0;\n  for (const i of items) { s += i.price; }\n  return s;\n}", "labels": ["source_code"], "kind": "identifier", "lang": "mixed"}
+{"id": "220", "text": "def load_invoices(path):\n    with open(path) as f:\n        return json.load(f)\n\nWhy is this slow on large files in CI?", "labels": ["source_code"], "kind": "identifier", "lang": "mixed"}
+{"id": "221", "text": "```go\nfunc main() {\n\tdb, err := sql.Open(\"postgres\", dsn)\n\tif err != nil { panic(err) }\n\t_ = db.Ping()\n}\n```\nWhy does this panic in production?", "labels": ["source_code"], "kind": "identifier", "lang": "mixed"}
+{"id": "222", "text": "Refactor this:\nfunction total_users(items) {\n  let s = 0;\n  for (const i of items) { s += i.price; }\n  return s;\n}", "labels": ["source_code"], "kind": "identifier", "lang": "mixed"}
+{"id": "223", "text": "SELECT u.id, o.total FROM users u JOIN orders o ON o.user_id = u.id WHERE o.total > 100;\nAdd an index for this query in staging.", "labels": ["source_code"], "kind": "identifier", "lang": "mixed"}
+{"id": "224", "text": "Refactor this:\nfunction total_invoices(items) {\n  let s = 0;\n  for (const i of items) { s += i.price; }\n  return s;\n}", "labels": ["source_code"], "kind": "identifier", "lang": "mixed"}
+{"id": "225", "text": "Write a fun quiz about famous court cases in literature.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "226", "text": "Mötet flyttas till 21-03-2025; ordernummer 8268-689 946 är levererat. Skriv ett kort mejl.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "227", "text": "Write a reminder that the patient-parking spots at reception are for visitors only.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "228", "text": "Ge mig konfidentiell feedback på mitt CV för en roll på Havsbris Foods.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "229", "text": "Pris: 5 697 kr inkl. moms, artikelnummer 9947-624 476. Skriv en produkttext.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "230", "text": "How does a hash chain make an audit log tamper-evident? Explain it for a new developer.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "231", "text": "Pris: 4 434 kr inkl. moms, artikelnummer 4068-424 744. Skriv en produkttext.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "232", "text": "Det är ingen hemlighet att Fjällsoft vill växa; skriv en hemlig önskelista till julfesten.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "233", "text": "Pris: 8 222 kr inkl. moms, artikelnummer 7284-182 152. Skriv en produkttext.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "234", "text": "Our office phone hours are 8–15; write a sign for the door at Solvik Energi.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "235", "text": "What makes a good password policy for a 50-person company?", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "236", "text": "Explain how API keys should be rotated at Bryggan Logistik, in general terms.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "237", "text": "Release 4.7.4 is out; write the changelog intro.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "238", "text": "Explain what an IBAN is to a customer, without using a real one.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "239", "text": "Draft an internal guide to expense reports for Granit Data.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "240", "text": "Write a reminder that the patient-parking spots at the clinic are for visitors only.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "241", "text": "Explain how API keys should be rotated at Fjällsoft, in general terms.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "242", "text": "Ge mig konfidentiell feedback på mitt CV för en roll på Nordkraft AB.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "243", "text": "Translate 'the meeting is classified as optional' into German.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "244", "text": "Release 4.3.9 is out; write the changelog intro.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "245", "text": "Pris: 7 805 kr inkl. moms, artikelnummer 3622-263 414. Skriv en produkttext.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "246", "text": "Translate 'the meeting is classified as optional' into Swedish.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "247", "text": "How does a hash chain make an audit log tamper-evident? Explain it for a CFO.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "248", "text": "Ge mig konfidentiell feedback på mitt CV för en roll på Bryggan Logistik.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "249", "text": "Version 1.2.0, build 426.129.96, fixes the login page; write release notes.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "250", "text": "Please be patient with the new expense tool; write a short notice to staff.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "251", "text": "What makes a good password policy for a 1000-person company?", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "252", "text": "Our office phone hours are 8–17; write a sign for the door at Granit Data.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "253", "text": "Det är ingen hemlighet att Bryggan Logistik vill växa; skriv en hemlig önskelista till julfesten.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "254", "text": "Release 3.12.7 is out; write the changelog intro.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "255", "text": "Draft an internal guide to expense reports for Nordkraft AB.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "256", "text": "Version 1.17.1, build 678.881.54, fixes the login page; write release notes.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "257", "text": "Release 3.1.4 is out; write the changelog intro.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "258", "text": "Explain what an IBAN is to a new hire, without using a real one.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "259", "text": "Summarise the main points of DORA for a mid-sized manufacturer.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "260", "text": "Invoice #3584-878 for 6 355 kr is attached; draft a polite reminder.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "261", "text": "Draft an internal guide to expense reports for Havsbris Foods.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "262", "text": "Invoice #6048-649 for 3 983 kr is attached; draft a polite reminder.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "263", "text": "Write a fun quiz about famous court cases in history.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "264", "text": "Pris: 9 210 kr inkl. moms, artikelnummer 6488-295 744. Skriv en produkttext.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "265", "text": "Invoice #8983-773 for 6 630 kr is attached; draft a polite reminder.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "266", "text": "Invoice #4811-354 for 8 685 kr is attached; draft a polite reminder.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "267", "text": "Pris: 7 146 kr inkl. moms, artikelnummer 1924-314 426. Skriv en produkttext.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "268", "text": "What makes a good password policy for a 20-person company?", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "269", "text": "Explain what an IBAN is to a student, without using a real one.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "270", "text": "Mötet flyttas till 28-10-2025; ordernummer 9779-419 927 är levererat. Skriv ett kort mejl.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "271", "text": "Draft an internal guide to expense reports for Västra Bygg.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "272", "text": "Write a short history of the Swedish personal identity number system for a school.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "273", "text": "Mötet flyttas till 28-01-2025; ordernummer 5684-425 376 är levererat. Skriv ett kort mejl.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "274", "text": "Mötet flyttas till 28-10-2025; ordernummer 1462-578 218 är levererat. Skriv ett kort mejl.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "275", "text": "Pris: 6 579 kr inkl. moms, artikelnummer 1388-848 404. Skriv en produkttext.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "276", "text": "Draft an internal guide to expense reports for Ekholm & Co.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "277", "text": "Release 3.8.8 is out; write the changelog intro.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "278", "text": "Kvartal 1 startar den 1 oktober; skriv en påminnelse till alla chefer.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "279", "text": "Explain how API keys should be rotated at Västra Bygg, in general terms.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "280", "text": "Please be patient with the new intranet; write a short notice to staff.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "281", "text": "How does a hash chain make an audit log tamper-evident? Explain it for an auditor.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "282", "text": "Kvartal 3 startar den 1 januari; skriv en påminnelse till alla chefer.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "283", "text": "Ge mig konfidentiell feedback på mitt CV för en roll på Fjällsoft.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "284", "text": "Release 3.18.7 is out; write the changelog intro.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "285", "text": "Write a short history of the Swedish personal identity number system for a newsletter.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "286", "text": "Version 3.9.2, build 907.390.74, fixes the login page; write release notes.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "287", "text": "Release 1.11.4 is out; write the changelog intro.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "288", "text": "Explain how API keys should be rotated at Ekholm & Co, in general terms.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "289", "text": "Please be patient with the new phone system; write a short notice to staff.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "290", "text": "Mötet flyttas till 12-07-2025; ordernummer 2686-721 505 är levererat. Skriv ett kort mejl.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "291", "text": "Summarise the main points of DORA for a municipality.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "292", "text": "Explain how API keys should be rotated at Solvik Energi, in general terms.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "293", "text": "Pris: 3 521 kr inkl. moms, artikelnummer 2906-946 804. Skriv en produkttext.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "294", "text": "Kvartal 4 startar den 1 januari; skriv en påminnelse till alla chefer.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "295", "text": "Det är ingen hemlighet att Solvik Energi vill växa; skriv en hemlig önskelista till julfesten.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "296", "text": "Invoice #6330-264 for 2 437 kr is attached; draft a polite reminder.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "297", "text": "Release 1.4.6 is out; write the changelog intro.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "298", "text": "Please be patient with the new booking system; write a short notice to staff.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "299", "text": "Ge mig konfidentiell feedback på mitt CV för en roll på Granit Data.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "300", "text": "Invoice #4435-703 for 5 832 kr is attached; draft a polite reminder.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "301", "text": "Version 4.19.4, build 577.639.12, fixes the login page; write release notes.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "302", "text": "Invoice #1272-862 for 2 100 kr is attached; draft a polite reminder.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "303", "text": "Release 1.4.9 is out; write the changelog intro.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "304", "text": "Write a fun quiz about famous court cases in film.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "305", "text": "Kvartal 3 startar den 1 april; skriv en påminnelse till alla chefer.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "306", "text": "Explain how API keys should be rotated at Havsbris Foods, in general terms.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "307", "text": "Invoice #4814-601 for 9 729 kr is attached; draft a polite reminder.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "308", "text": "Mötet flyttas till 24-01-2025; ordernummer 6650-326 512 är levererat. Skriv ett kort mejl.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "309", "text": "Mötet flyttas till 21-09-2025; ordernummer 8835-952 280 är levererat. Skriv ett kort mejl.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "310", "text": "Summarise the main points of the GDPR for a mid-sized manufacturer.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "311", "text": "Kvartal 4 startar den 1 juli; skriv en påminnelse till alla chefer.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "312", "text": "Summarise the main points of the GDPR for a bank.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "313", "text": "Det är ingen hemlighet att Nordkraft AB vill växa; skriv en hemlig önskelista till julfesten.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "314", "text": "Draft an internal guide to expense reports for Solvik Energi.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "315", "text": "Pris: 8 256 kr inkl. moms, artikelnummer 8410-264 178. Skriv en produkttext.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "316", "text": "Mötet flyttas till 11-09-2025; ordernummer 3466-213 794 är levererat. Skriv ett kort mejl.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "317", "text": "Kvartal 4 startar den 1 april; skriv en påminnelse till alla chefer.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "318", "text": "Summarise the main points of the AI Act for a retailer.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "319", "text": "Invoice #8005-416 for 6 588 kr is attached; draft a polite reminder.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "320", "text": "Invoice #5450-592 for 6 477 kr is attached; draft a polite reminder.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "321", "text": "Mötet flyttas till 02-06-2025; ordernummer 1642-467 744 är levererat. Skriv ett kort mejl.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "322", "text": "Kvartal 1 startar den 1 juli; skriv en påminnelse till alla chefer.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "323", "text": "Mötet flyttas till 13-01-2025; ordernummer 9319-872 174 är levererat. Skriv ett kort mejl.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "324", "text": "Our office phone hours are 9–17; write a sign for the door at Nordkraft AB.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "325", "text": "What makes a good password policy for a 200-person company?", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "326", "text": "Our office phone hours are 7–17; write a sign for the door at Solvik Energi.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "327", "text": "Summarise the main points of DORA for a bank.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "328", "text": "Kvartal 1 startar den 1 april; skriv en påminnelse till alla chefer.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "329", "text": "Translate 'the meeting is classified as optional' into Finnish.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "330", "text": "Pris: 8 781 kr inkl. moms, artikelnummer 2831-756 174. Skriv en produkttext.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "331", "text": "Mötet flyttas till 25-06-2025; ordernummer 5218-335 567 är levererat. Skriv ett kort mejl.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "332", "text": "Release 2.13.4 is out; write the changelog intro.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "333", "text": "Version 1.15.3, build 286.645.95, fixes the login page; write release notes.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "334", "text": "Kvartal 1 startar den 1 januari; skriv en påminnelse till alla chefer.", "labels": [], "kind": "lookalike", "lang": "mixed"}
+{"id": "335", "text": "Write a git commit message for a diff that renames loadOrders to fetchUser.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "336", "text": "Plan a team lunch for 9 people with 2 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "337", "text": "Plan a team lunch for 11 people with 1 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "338", "text": "Write a FAQ entry about the summer party.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "339", "text": "Explain DNS to a manager.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "340", "text": "Skriv en sammanfattning om sommarfesten.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "341", "text": "Plan a team lunch for 14 people with 3 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "342", "text": "Give me 7 interview questions for a designer.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "343", "text": "Give me 7 interview questions for a project manager.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "344", "text": "Explain TCP vs UDP to a manager.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "345", "text": "Skriv tre rubriker om kontorsflytten.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "346", "text": "Write a git commit message for a diff that renames loadOrders to dispatchMail.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "347", "text": "Explain how a VPN works to a ten-year-old.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "348", "text": "Write an agenda about the new canteen.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "349", "text": "Give me 10 interview questions for a junior developer.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "350", "text": "Skriv ett kort inlägg om den nya kantinen.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "351", "text": "Write a git commit message for a diff that renames calcTotal to readOrders.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "352", "text": "Plan a team lunch for 28 people with 4 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "353", "text": "Write a polite email about electric buses.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "354", "text": "Plan a team lunch for 15 people with 5 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "355", "text": "Skriv ett kort inlägg om intranätet.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "356", "text": "Plan a team lunch for 5 people with 2 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "357", "text": "Write a FAQ entry about bike-to-work week.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "358", "text": "Write a two-line summary about the new canteen.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "359", "text": "Write a FAQ entry about the office move.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "360", "text": "Give me 9 interview questions for a sales lead.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "361", "text": "Plan a team lunch for 8 people with 5 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "362", "text": "Explain TCP vs UDP to a beginner.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "363", "text": "Explain what a CDN does to a ten-year-old.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "364", "text": "Explain what Kubernetes is to a ten-year-old.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "365", "text": "Write a two-line summary about flexible hours.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "366", "text": "Plan a team lunch for 15 people with 2 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "367", "text": "Explain what a CDN does to a manager.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "368", "text": "Write a git commit message for a diff that renames sendMail to fetchUser.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "369", "text": "Give me 6 interview questions for a junior developer.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "370", "text": "Write a short LinkedIn post about our recycling scheme.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "371", "text": "Write a git commit message for a diff that renames sendMail to dispatchMail.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "372", "text": "Write a git commit message for a diff that renames getUser to readOrders.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "373", "text": "Give me 8 interview questions for a designer.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "374", "text": "Give me 9 interview questions for a project manager.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "375", "text": "Plan a team lunch for 26 people with 4 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "376", "text": "Plan a team lunch for 6 people with 5 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "377", "text": "Skriv en sammanfattning om cykelveckan.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "378", "text": "Give me 9 interview questions for a designer.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "379", "text": "Skriv ett mejl om kaffeautomaten.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "380", "text": "Write a newsletter paragraph about the intranet redesign.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "381", "text": "Skriv tre rubriker om intranätet.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "382", "text": "Write a git commit message for a diff that renames getUser to dispatchMail.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "383", "text": "Plan a team lunch for 27 people with 4 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "384", "text": "Explain DNS to a beginner.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "385", "text": "Write a git commit message for a diff that renames getUser to sumTotal.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "386", "text": "Write a tweet-length update about our volunteering day.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "387", "text": "Write a FAQ entry about remote work.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "388", "text": "Plan a team lunch for 21 people with 4 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "389", "text": "Write a git commit message for a diff that renames getUser to fetchUser.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "390", "text": "Give me 10 interview questions for a sales lead.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "391", "text": "Explain what Kubernetes is to a manager.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "392", "text": "Give me 7 interview questions for a sales lead.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "393", "text": "Give me 5 interview questions for a designer.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "394", "text": "Write a two-line summary about our volunteering day.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "395", "text": "Write a git commit message for a diff that renames calcTotal to sumTotal.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "396", "text": "Plan a team lunch for 10 people with 1 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "397", "text": "Give me 9 interview questions for a junior developer.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "398", "text": "Give me 5 interview questions for a junior developer.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "399", "text": "Skriv en sammanfattning om den nya kantinen.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "400", "text": "Plan a team lunch for 5 people with 1 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "401", "text": "Explain what a CDN does to a beginner.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "402", "text": "Skriv tre rubriker om cykelveckan.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "403", "text": "Explain what Kubernetes is to a beginner.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "404", "text": "Write a slide title and three bullets about energy prices.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "405", "text": "Give me 5 interview questions for a sales lead.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "406", "text": "Plan a team lunch for 12 people with 2 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "407", "text": "Skriv tre rubriker om kaffeautomaten.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "408", "text": "Give me 10 interview questions for a project manager.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "409", "text": "Write a slide title and three bullets about electric buses.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "410", "text": "Write an agenda about onboarding new staff.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "411", "text": "Skriv ett mejl om intranätet.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "412", "text": "Plan a team lunch for 6 people with 3 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "413", "text": "Give me 3 interview questions for a project manager.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "414", "text": "Plan a team lunch for 23 people with 2 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "415", "text": "Explain how a VPN works to a beginner.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "416", "text": "Write three headline ideas about the spring sales kick-off.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "417", "text": "Plan a team lunch for 25 people with 4 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "418", "text": "Write a git commit message for a diff that renames sendMail to readOrders.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "419", "text": "Plan a team lunch for 19 people with 1 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "420", "text": "Write a tweet-length update about energy prices.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "421", "text": "Skriv en sammanfattning om kaffeautomaten.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "422", "text": "Give me 10 interview questions for a designer.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "423", "text": "Give me 6 interview questions for a sales lead.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "424", "text": "Skriv ett mejl om kontorsflytten.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "425", "text": "Write a git commit message for a diff that renames sendMail to sumTotal.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "426", "text": "Explain TCP vs UDP to a ten-year-old.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "427", "text": "Plan a team lunch for 16 people with 1 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "428", "text": "Plan a team lunch for 21 people with 5 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "429", "text": "Plan a team lunch for 11 people with 4 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "430", "text": "Skriv en sammanfattning om intranätet.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "431", "text": "Plan a team lunch for 16 people with 2 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "432", "text": "Write a polite email about energy prices.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "433", "text": "Give me 3 interview questions for a junior developer.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "434", "text": "Skriv ett mejl om den nya kantinen.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "435", "text": "Write a tweet-length update about bike-to-work week.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "436", "text": "Write a short LinkedIn post about the new canteen.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "437", "text": "Write a slide title and three bullets about the coffee machine.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "438", "text": "Write a polite email about bike-to-work week.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "439", "text": "Write a git commit message for a diff that renames calcTotal to dispatchMail.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "440", "text": "Give me 8 interview questions for a junior developer.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "441", "text": "Plan a team lunch for 30 people with 4 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "442", "text": "Skriv ett mejl om sommarfesten.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "443", "text": "Plan a team lunch for 29 people with 4 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}
+{"id": "444", "text": "Plan a team lunch for 7 people with 1 vegetarians.", "labels": [], "kind": "plain", "lang": "mixed"}

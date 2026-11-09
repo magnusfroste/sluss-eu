@@ -10,6 +10,15 @@ ghcr.io/magnusfroste/sluss-eu:1.8      # the newest 1.8.x
 ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 ```
 
+## Unreleased
+
+### Protection
+- **Five faults the benchmark found, fixed.** A password label behind an underscore (`db_password=…`) is now seen as a secret. An address with the street in two words (*Lilla torget 47*) is found. One complete SQL statement without a code fence is code. The words *email*, *phone* and *address* alone no longer make a question personal data; the values still do. A word about a code topic (*invoice*, *subscription*, *checkout*) makes a question source code only when the task is a code task, so an invoice reminder is a letter. On the benchmark: harmless questions flagged 18 % → 10 %, identifiers and keys found 90 % → 100 %.
+- This changes routing for some questions: a letter that mentions an invoice or an e-mail, with no values in it, was kept on your own models by a rule on *source code* or *personal data* and may now go to the cloud. Check with the dry-run if you relied on it.
+
+### Evidence
+- The benchmark set is regenerated with a new seed after the fixes, and each fix is tested on examples that are not in the set. Nothing in the set belongs to anyone: personal identity numbers come from Skatteverket's list of test numbers and phone numbers from the range reserved for fiction. The manual page shows before and after.
+
 ## v1.8.0 — 2026-11-09
 
 A benchmark anyone can run: what Sluss catches, what it flags by mistake, what a local model adds, and how to score any other gateway on the same questions.
