@@ -24,6 +24,7 @@ If Sluss is new, do these in order. Each one works on its own, so you can stop a
 - [How Sluss picks a model](/manual/choosing-models): the three steps, what a model's level means, and why a question went where it went.
 - [Rules only, or a second opinion](/manual/how-sluss-decides): the two ways Sluss can decide, which fits you, and how to show which one was in use.
 - [What Sluss catches, and what it does not](/manual/what-sluss-catches): the rules, measured on a fixed set of examples, and how to close the gap.
+- [Benchmark](/manual/benchmark): 444 labelled questions, Sluss beside an open-source PII detector, and how to put your current gateway through the same questions.
 - [Where each setting lives](/manual/where-settings-live): what is changed in the console and what is changed by whoever runs the server, and why a new key needs a restart while a new model does not.
 - [Words used in this manual](/manual/glossary): short explanations of IdP, MDM, OIDC, DNS filter and the rest.
 - [When something does not work](/manual/troubleshooting): the errors people actually hit, and what to do.

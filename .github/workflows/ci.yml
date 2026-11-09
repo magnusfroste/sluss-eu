@@ -40,6 +40,8 @@ jobs:
         run: make test-policy
       - name: use cases (every rule outcome, end-to-end vs mock)
         run: make use-cases
+      - name: benchmark (444 labelled questions, rules only)
+        run: make benchmark
       - name: ciso demo (end-to-end vs mock)
         run: make demo-ciso
       - name: eval report

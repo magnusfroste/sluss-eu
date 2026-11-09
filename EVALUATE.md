@@ -8,6 +8,7 @@ Everything below runs on a laptop with Go, in minutes, with no key and no networ
 
 - [README.md](README.md): what Sluss does, and why rules rather than another AI.
 - [What Sluss catches, and what it does not](manual/what-sluss-catches.md): the measured numbers and the documented misses.
+- [Benchmark](manual/benchmark.md): 444 labelled questions, and how to score another tool on them.
 - [How Sluss picks a model](manual/choosing-models.md): the three outcomes a rule can have and how rules combine.
 
 Write down the claims you will test. The ones that matter most to a security officer:
@@ -27,6 +28,7 @@ git clone https://github.com/magnusfroste/sluss-eu.git && cd sluss-eu
 make use-cases     # 15 people and agents, one policy, every outcome checked
 make demo-ciso     # end to end: block, cloud to local, audit, report
 go test ./internal/classifier -run TestCatchCorpus -v   # the measured catch rate
+make benchmark     # 444 labelled questions: caught, false alarms, per kind and class
 make test          # the full suite
 ```
 

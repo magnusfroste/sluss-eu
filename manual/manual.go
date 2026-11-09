@@ -23,6 +23,7 @@ var Pages = []Page{
 	{"choosing-models", "How Sluss picks a model"},
 	{"how-sluss-decides", "Rules only, or a second opinion"},
 	{"what-sluss-catches", "What Sluss catches"},
+	{"benchmark", "Benchmark"},
 	{"stop-chatgpt", "Stop ChatGPT, offer the company chat"},
 	{"developer-tools", "Developer tools through Sluss"},
 	{"prove-it", "Show that it works"},

@@ -1,4 +1,4 @@
-.PHONY: use-cases build dev test test-unit test-integration test-eval test-policy test-regression eval-report eval-recommend autopilot smoke demo-ciso smoke-live load lint fmt vet tidy clean run run-mock migrate seed
+.PHONY: benchmark use-cases build dev test test-unit test-integration test-eval test-policy test-regression eval-report eval-recommend autopilot smoke demo-ciso smoke-live load lint fmt vet tidy clean run run-mock migrate seed
 
 GO ?= go
 PSQL ?= psql
@@ -87,6 +87,15 @@ use-cases:
 
 demo-ciso:
 	./scripts/demo-ciso.sh
+
+# Benchmark (benchmark/): 444 labelled synthetic questions, rules only, in
+# process. Fails if the corpus no longer matches its generator, or if the
+# share caught or the share of harmless questions flagged gets worse than
+# the floor below. See manual/benchmark.md.
+benchmark:
+	python3 benchmark/generate.py | cmp -s - benchmark/corpus.jsonl || { echo "benchmark/corpus.jsonl is not what benchmark/generate.py writes"; exit 1; }
+	go run ./cmd/benchmark run -repeat 3 -out bin/benchmark-rules.jsonl
+	go run ./cmd/benchmark score -min-recall 0.71 -max-fpr 0.19 bin/benchmark-rules.jsonl
 
 # Live smoke against OpenRouter (periodic real-provider validation). Skips when
 # OPENROUTER_API_KEY is unset.
