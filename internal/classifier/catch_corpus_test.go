@@ -89,10 +89,10 @@ var catchCorpus = []catchCase{
 	// ---- Source code ----------------------------------------------------------
 	{router.SensitivitySourceCode, "func main() {\n\tdb := sql.Open(\"postgres\", dsn)\n\trows, _ := db.Query(\"select * from users\")\n}", true, "code"},
 	{router.SensitivitySourceCode, "Traceback (most recent call last):\n  File \"app.py\", line 12, in <module>\n    main()\nKeyError: 'user'", true, "a stack trace"},
-	{router.SensitivitySourceCode, "Our checkout service calls the pricing service twice per cart; is that a design smell?", true, "architecture prose counts as code: an over-flag, in the safe direction"},
 
 	// ---- Harmless (none): must stay none ------------------------------------
 	{router.SensitivityNone, "Write a git commit message for this diff: renamed a variable.", true, "harmless"},
+	{router.SensitivityNone, "Our checkout service calls the pricing service twice per cart; is that a design smell?", true, "architecture in prose is not code (ISSUE-167; it was over-flagged before)"},
 	{router.SensitivityNone, "Write a haiku about routers.", true, "harmless"},
 	{router.SensitivityNone, "Mötet flyttas till 08-11-2024; ordernummer 0812-345 678 är levererat.", true, "a date and an order number are not phone numbers"},
 	{router.SensitivityNone, "Sammanfatta den här artikeln om Zscaler och Netskope.", true, "harmless, mentions security vendors"},

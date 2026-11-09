@@ -23,7 +23,7 @@ import json
 import random
 import sys
 
-rng = random.Random(20261109)
+rng = random.Random(20261110)
 
 FIRST = ["Anna", "Erik", "Maria", "Johan", "Sara", "Lars", "Emma", "Karl", "Elin", "Oskar",
          "Fatima", "Ahmed", "Nora", "Viktor", "Ida", "Mehmet", "Lena", "Peter", "Hanna", "Ali"]
