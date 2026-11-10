@@ -12,84 +12,85 @@ Every AI gateway and DLP product says it finds sensitive data. Few say how often
 
 ## The questions
 
-444 synthetic questions in Swedish and English (`benchmark/corpus.jsonl`), written by a generator with a fixed seed (`benchmark/generate.py`), so anyone gets exactly the same set. Nothing in it belongs to anyone: personal identity numbers come from Skatteverket's open list of test numbers, Swedish phone numbers from the range the telecom authority reserves for fiction, card numbers use a test prefix, and names, companies and amounts are made up. Card numbers and IBANs have valid check digits. Each question has the data classes a careful reader would give it, and a *kind*:
+444 synthetic questions in Swedish and English (`benchmark/corpus.jsonl`), written by a generator with a fixed seed (`benchmark/generate.py`), so anyone gets exactly the same set. Nothing in it belongs to anyone: Swedish personal identity numbers come from Skatteverket's open list of test numbers, Finnish and Norwegian ones use the forms those countries reserve for tests, Swedish phone numbers come from the range the telecom authority reserves for fiction, card numbers use a test prefix, and names, companies and amounts are made up. Each question has the data classes a careful reader would give it, and a *kind*:
 
 | Kind | Questions | What it tests |
 |---|---|---|
-| Identifier or key | 104 | A personal identity number, e-mail, phone number, address, card, IBAN, key or password, or pasted code |
-| Term or marking | 62 | *HEMLIG*, a diagnosis, a balance sheet, an NDA, in words a department would use |
+| Identifier or key | 104 | A personal identity number (Swedish, Finnish, Norwegian, US), e-mail, phone number, address, card, IBAN, passport, registration number, date of birth, key or password, or pasted code |
+| Term or marking | 70 | *HEMLIG*, a diagnosis, a balance sheet, an NDA, a list of trade union members, in words a department would use |
 | Meaning only | 58 | Sensitive only because of what it says: a name with a story, an illness in plain words, a deal or a dispute without a financial or legal term |
-| Look-alike | 110 | Looks sensitive and is not: dates, order and invoice numbers, versions, prices, *please be patient*, a question about password policy |
-| Plain | 110 | Everyday work questions |
+| Look-alike | 110 | Looks sensitive and is not: dates, order and invoice numbers, versions, prices, *please be patient*, a question about password policy, *what is an IPO?*, a school essay about Astrid Lindgren, a poster for diabetes awareness week |
+| Plain | 102 | Everyday work questions |
 
-224 are sensitive and 220 are harmless.
+232 are sensitive and 212 are harmless.
 
-**How the set is kept honest.** The first run of this benchmark (version 1.8.0) found five faults in the rules. They were fixed in 1.8.1, each tested on new examples that are not in the set (`internal/classifier/benchmark_fixes_test.go`), and the set was then regenerated with a new seed. The questions follow the same patterns as before with other names, numbers and combinations, so the numbers below do show the fixes. That is the point of publishing both: the table under *Before and after* is the same rules measured before they had seen any of it.
+**How the set is kept honest.** The set has changed twice, and both times the numbers are shown before and after (below). In 1.8.1 five faults it had found were fixed and it was regenerated with a new seed. In 1.9 the rules were made much broader (names, more identity numbers, more key formats, larger word lists), and the set got harder at the same time: new sensitive questions for what is new, and new look-alikes written to trip the new rules, such as famous people and general questions that use the new words. Every rule change is also tested on examples that are not in the set (`internal/classifier/benchmark_fixes_test.go`, `broader_test.go`). The people who write the rules also write the set; that is why the questions, the generator and the scoring are published, and why you are invited to add your own.
 
 ## Results
 
-Version 1.8.1.
+Version 1.9.
 
 - **Sluss, rules only**: measured in process (`make benchmark`), each question five times.
-- **Sluss, rules + second opinion**: the demo instance over the network, with its local model (a 27B reasoning model with thinking turned off) as the second opinion, through the dry-run, each question twice. The time includes the round trip to the instance.
 - **Presidio**: Microsoft's open-source PII detector (`presidio-analyzer` 2.2.366 with spaCy 3.8 and `en_core_web_lg`, its English setup out of the box, score threshold 0.5, dates and URLs ignored), run with `benchmark/presidio.py`. Any entity it finds counts as *flagged*; a Swedish model or custom recognisers would change its numbers, and the script is there to try.
 
-| | Sluss, rules only | Sluss, rules + second opinion | Presidio |
-|---|---|---|---|
-| Sensitive questions flagged | 166 of 224 (74 %) | 205 of 224 (92 %) | 139 of 224 (62 %) |
-| Harmless questions flagged | 22 of 220 (10 %) | 29 of 220 (13 %) | 41 of 220 (19 %) |
-| — with an identifier or key | 104 of 104 (100 %) | 104 of 104 (100 %) | 74 of 104 (71 %) |
-| — with a term or marking | 62 of 62 (100 %) | 62 of 62 (100 %) | 27 of 62 (44 %) |
-| — with meaning only | 0 of 58 (0 %) | 39 of 58 (67 %) | 38 of 58 (66 %) |
-| — look-alikes left alone | 88 of 110 (80 %) | 88 of 110 (80 %) | 73 of 110 (66 %) |
-| — plain questions left alone | 110 of 110 (100 %) | 103 of 110 (94 %) | 106 of 110 (96 %) |
-| Right class, exactly | 360 of 444 (81 %) | 354 of 444 (80 %) | 251 of 444 (57 %) |
-| Same answer every run | yes (5 runs) | yes (2 runs) | not measured |
-| Time per question (median / p95) | 0.09 ms / 0.14 ms | 296 ms / 342 ms | 5 ms / 8 ms |
+| | Sluss, rules only | Presidio |
+|---|---|---|
+| Sensitive questions flagged | 188 of 232 (81 %) | 159 of 232 (69 %) |
+| Harmless questions flagged | 30 of 212 (14 %) | 51 of 212 (24 %) |
+| — with an identifier or key | 104 of 104 (100 %) | 72 of 104 (69 %) |
+| — with a term or marking | 70 of 70 (100 %) | 48 of 70 (69 %) |
+| — with meaning only | 14 of 58 (24 %) | 39 of 58 (67 %) |
+| — look-alikes left alone | 80 of 110 (73 %) | 63 of 110 (57 %) |
+| — plain questions left alone | 102 of 102 (100 %) | 98 of 102 (96 %) |
+| Right class, exactly | 365 of 444 (82 %) | 236 of 444 (53 %) |
+| Same answer every run | yes (5 runs) | not measured |
+| Time per question (median / p95) | 0.14 ms / 0.20 ms | 5 ms / 8 ms |
 
-| Class | Rules only, recall / precision | Rules + second opinion | Presidio |
-|---|---|---|---|
-| Personal data | 0.82 / 0.94 | 0.92 / 0.77 | 0.94 / 0.41 |
-| Keys and secrets | 0.75 / 0.71 | 1.00 / 0.76 | — |
-| Security-classified | 0.67 / 1.00 | 0.71 / 1.00 | — |
-| Health | 0.62 / 0.73 | 0.92 / 0.75 | — |
-| Financial | 0.62 / 0.84 | 0.92 / 0.60 | — |
-| Legal | 0.64 / 0.82 | 0.91 / 0.69 | — |
-| Source code | 1.00 / 1.00 | 1.00 / 0.70 | — |
+| Class | Sluss recall / precision | Presidio recall / precision |
+|---|---|---|
+| Personal data | 1.00 / 0.83 | 0.88 / 0.36 |
+| Keys and secrets | 0.75 / 1.00 | — |
+| Security-classified | 0.67 / 1.00 | — |
+| Health | 0.62 / 0.55 | — |
+| Financial | 0.62 / 0.94 | — |
+| Legal | 0.64 / 0.78 | — |
+| Source code | 1.00 / 1.00 | — |
 
 *Recall* is the share of questions with that class in which the tool found it. *Precision* is the share of the tool's findings of that class that were right.
 
 ## What the numbers say
 
-- **Rules find everything there is to find.** Every identifier, key, term and marking in the set, in a tenth of a millisecond and the same way every time. Presidio has no notion of keys, security markings, health, finance, legal or code, which is most of what an organisation means by sensitive.
-- **Rules do not read meaning, at all.** 0 of 58 meaning-only questions: every miss in the set is of this kind. Presidio flags 38 of them, every one because it recognises a person's name (PERSON). The same habit makes it flag names in harmless questions (precision 0.41 on personal data), and its 27 *term* hits are a name or a place in the question, sometimes a Swedish word taken for one, never the term itself.
-- **Rules still over-flag on some words.** 10 % of harmless questions, all look-alikes: *password policy*, *how API keys should be rotated*, *what an IBAN is*, *patient*, *court cases*. A question about passwords is deliberately treated as possibly holding one. That costs no protection; such a question is kept on your own models instead of the cloud.
-- **The second opinion is what reads meaning.** With a model on your own hardware reading the question after the rules ([How Sluss decides](/manual/how-sluss-decides)), *meaning only* goes from 0 to 39 of 58 and sensitive questions flagged from 74 % to 92 %. The price: 7 more harmless questions flagged (six git commit messages read as code, one post about the canteen), which keeps them on your own models, and about a third of a second per question including the network. It gave the same answer both times for all 444 questions; that is an observation on this model, not a guarantee, and only the rules' part is the same by construction. What it still missed: a letter to a named customer, protection of critical infrastructure with no marking, a bid described without a financial term. A different model gives different numbers; measure yours with the commands below.
+- **Rules find everything there is to find.** Every identifier, key, term and marking in the set, and now every full name, in a fraction of a millisecond and the same way every time. Presidio has no notion of keys, security markings, health, finance, legal or code; what it flags among those questions is a name or a place in them.
+- **Names are found, and that has a price.** A given name followed by a family name is personal data: 14 of the meaning-only questions are caught that way. The rule cannot tell a customer from an author, so 11 questions about Astrid Lindgren, Olof Palme and Marie Curie are flagged too. They are kept on your own models; if that is wrong for you, `ROUTER_NAME_DETECTION=off` turns the rule off.
+- **A general question is not data.** *What is an IBAN?*, *how should API keys be rotated?*, *what does a district court do?* use the words without holding anything: the rules now let them pass. A poster for diabetes awareness week does not pass: it is not a question, and *diabetes* is a health word. That is most of the remaining 14 %.
+- **Rules still do not read meaning.** 44 of 58 meaning-only questions are missed: a password with no label, an illness never called one, a deal or a dispute in everyday words, a plan to protect a waterworks with no marking. No word list fixes that.
+- **The second opinion is what reads meaning.** A model on your own hardware reading the question after the rules ([How Sluss decides](/manual/how-sluss-decides)). On version 1.8.1 and that version's questions it took sensitive questions flagged from 74 % to 92 %, with 13 % of harmless questions flagged and about a third of a second per question. It is measured again on this set after each release; run the commands below against your own model.
 
 ## Before and after
 
-The same rules, before the benchmark had been run on them (version 1.8.0, the first set of questions) and after the five fixes (version 1.8.1, the regenerated set):
+Rules only, as the rules and the set have changed:
 
-| | 1.8.0 | 1.8.1 |
-|---|---|---|
-| Sensitive questions flagged | 71 % | 74 % |
-| Harmless questions flagged | 18 % | 10 % |
-| — with an identifier or key | 90 % | 100 % |
-| — with meaning only | 7 % | 0 % |
-| — look-alikes left alone | 65 % | 80 % |
-| Right class, exactly | 75 % | 81 % |
+| | 1.8.0 | 1.8.1 | 1.9 |
+|---|---|---|---|
+| The set | first | new seed | broader and harder |
+| Sensitive questions flagged | 71 % | 74 % | 81 % |
+| Harmless questions flagged | 18 % | 10 % | 14 % |
+| — with an identifier or key | 90 % | 100 % | 100 % |
+| — with meaning only | 7 % | 0 % | 24 % |
+| — look-alikes left alone | 65 % | 80 % | 73 % |
+| Right class, exactly | 75 % | 81 % | 82 % |
 
-*Meaning only* went down because the four hits in 1.8.0 were accidents: a word such as *email* in a sentence that happened to be sensitive for another reason.
+**1.8.1** fixed five faults the first run found: `db_password=…` and other labels behind an underscore; an address with the street in two words (*Lilla torget 47*); one complete SQL statement without a code fence; the words *email*, *phone* and *address* alone are no longer personal data; and a word about a code topic (*invoice*, *checkout*) is source code only when the task is a code task.
 
-What was fixed:
+**1.9** made the rules broader, the way a DLP product's dictionaries are broad:
 
-- `db_password=…` and other labels behind an underscore are seen as a password.
-- An address with the street in two words (*Lilla torget 47*, *Stora gatan 12*).
-- One complete SQL statement without a code fence is code.
-- The words *email*, *phone* and *address* alone are no longer personal data; the values still are.
-- A word about a code topic (*invoice*, *subscription*, *checkout*) is source code only when the task is a code task. An invoice reminder is a letter.
+- **Names** in free text, and later mentions of the same given or family name.
+- **More identity numbers:** Finnish and Norwegian (check digits), US and UK (format rules), Danish next to the word; a passport number, a vehicle registration and a date of birth next to the word that says what it is.
+- **More key formats:** Stripe, GitLab, npm, Hugging Face, SendGrid, Twilio, DigitalOcean, Shopify, Azure storage keys, Slack, Discord and Teams webhook addresses; and the Swedish words for a password.
+- **Larger word lists:** conditions, care and the papers around them; deals, credit and tax; courts and the documents a lawyer handles; registers of people, records an employer keeps, and the special categories of the GDPR; critical infrastructure and total defence.
+- **A general question** does not get a class from a word alone.
 
-What was left as it is: the word *password*, *token* or *api key* still flags a question as possibly holding a secret. A miss there is a leaked password; a false alarm is a question answered by your own model.
+The harmless share went up from 10 % to 14 % because the set now asks harder questions of broader rules: on the 1.8.1 set, these rules flag 80 % of the sensitive questions and 4 % of the harmless ones. That 4 % flatters: the rule for general questions was written by people who had seen those look-alikes.
 
 `go run ./cmd/benchmark score -misses <predictions>` lists every question behind every number.
 

@@ -70,7 +70,7 @@ A useful evaluation, whoever writes it, has five parts:
 1. **What was tested**: version (`GET /version`), policy, and the commands run.
 2. **Claims that held**, each with the command or request that shows it.
 3. **Claims that did not hold, or held only partly**, each with a reproducible request. A miss is more useful to us than a pass.
-4. **Misses that matter for this organisation**: which of the documented limits (meaning without identifiers, names in free text) are acceptable, and what would close them (own rules, *keep on own hardware* as the default, the second opinion).
+4. **Misses that matter for this organisation**: which of the documented limits (meaning without identifiers, a given name alone, famous people flagged as names) are acceptable, and what would close them (own rules, *keep on own hardware* as the default, the second opinion).
 5. **A verdict**: fit, fit with conditions (name them), or not fit.
 
 If you find something Sluss gets wrong, please open an issue with the request that shows it. It will become a case in [`examples/use-cases`](examples/use-cases/cases.yaml) or the [classifier corpus](internal/classifier/catch_corpus_test.go), so it stays fixed.

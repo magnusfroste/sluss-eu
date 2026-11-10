@@ -104,3 +104,19 @@ func TestFindMatchesDetect(t *testing.T) {
 		}
 	}
 }
+
+// ISSUE-168: a name is masked, later mentions of its parts too, and put back.
+func TestMasksNamesAndRestoresThem(t *testing.T) {
+	m := New()
+	const q = "Skriv ett brev till vår kund Birgitta Åkesson. Birgitta väntar på svar sedan i maj."
+	masked := m.Text(q)
+	if strings.Contains(masked, "Birgitta") || strings.Contains(masked, "Åkesson") {
+		t.Fatalf("name left in %q", masked)
+	}
+	if !strings.Contains(masked, "[NAME_1]") {
+		t.Fatalf("no placeholder in %q", masked)
+	}
+	if back := m.Restore(masked); back != q {
+		t.Fatalf("restore: %q", back)
+	}
+}

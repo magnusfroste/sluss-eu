@@ -60,6 +60,12 @@ func Check(question []openai.Message, answer string) []string {
 		add("secret:" + k)
 	}
 	for _, f := range pii.Detect(answer) {
+		// A name in an answer is ordinary: every answer about a book, a
+		// law or a company has one. Names are for classifying and masking
+		// the question, not for flagging the answer.
+		if f.Type == pii.TypeName {
+			continue
+		}
 		add("pii:" + string(f.Type))
 	}
 	sort.Strings(flags)

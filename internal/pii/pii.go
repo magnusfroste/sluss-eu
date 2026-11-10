@@ -32,6 +32,20 @@ const (
 	// set of Swedish street words, so an invoice total next to a year does
 	// not count.
 	TypeAddress Type = "address"
+	// TypeName is a person's name in free text: a given name from a fixed
+	// list followed by a family name (names.go, ISSUE-168).
+	TypeName Type = "name"
+	// TypeNationalID is another country's personal identity number: Finnish
+	// henkilötunnus and Norwegian fødselsnummer (check digits), a US social
+	// security number and a UK national insurance number (format rules), a
+	// Danish CPR number next to the word.
+	TypeNationalID Type = "national_id"
+	// TypeBirthdate is a date next to words that make it a date of birth.
+	TypeBirthdate Type = "birthdate"
+	// TypePassport is a passport number next to the word.
+	TypePassport Type = "passport"
+	// TypeVehicle is a vehicle registration number next to the word.
+	TypeVehicle Type = "vehicle"
 )
 
 // Finding is one detected PII category with its occurrence count. It never
@@ -160,6 +174,10 @@ func scan(text string, emit func(t Type, start, end int)) {
 		if digitBounded(text, loc[0], loc[1]) && validCard(text[loc[0]:loc[1]]) {
 			emit(TypeCard, loc[0], loc[1])
 		}
+	}
+	scanMore(text, emit)
+	for _, loc := range findNames(text) {
+		emit(TypeName, loc[0], loc[1])
 	}
 }
 
