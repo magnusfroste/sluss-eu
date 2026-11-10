@@ -11,7 +11,7 @@
 #   - build from this repo (default below), or
 #   - pull the published image (uncomment `image:` + comment out `build:`):
 #     ghcr.io/magnusfroste/sluss-eu, public, pushed on every merge to main.
-#     Pin a tag in production instead of latest, e.g. IMAGE_TAG=v1.9.0.
+#     Pin a tag in production instead of latest, e.g. IMAGE_TAG=v1.9.1.
 #
 services:
   router:
