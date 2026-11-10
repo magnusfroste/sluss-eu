@@ -5,12 +5,14 @@ All notable changes to Sluss. Versions follow [semantic versioning](https://semv
 Releases are published from this file by the `release` workflow (Actions → release → Run workflow). Every release is a container image you can pin:
 
 ```
-ghcr.io/magnusfroste/sluss-eu:v1.8.0   # this release
+ghcr.io/magnusfroste/sluss-eu:v1.8.1   # this release
 ghcr.io/magnusfroste/sluss-eu:1.8      # the newest 1.8.x
 ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 ```
 
-## Unreleased
+## v1.8.1 — 2026-11-10
+
+The benchmark's first findings, fixed: fewer false alarms, every identifier found.
 
 ### Protection
 - **Five faults the benchmark found, fixed.** A password label behind an underscore (`db_password=…`) is now seen as a secret. An address with the street in two words (*Lilla torget 47*) is found. One complete SQL statement without a code fence is code. The words *email*, *phone* and *address* alone no longer make a question personal data; the values still do. A word about a code topic (*invoice*, *subscription*, *checkout*) makes a question source code only when the task is a code task, so an invoice reminder is a letter. On the benchmark: harmless questions flagged 18 % → 10 %, identifiers and keys found 90 % → 100 %.
