@@ -45,9 +45,9 @@ var catchCorpus = []catchCase{
 	{router.SensitivityPII, "Call our customer Jane on (555) 123-4567 about the refund.", true, "a phone number in parentheses (North-American)"},
 	{router.SensitivityPII, "Kunden nås på +44 20 7946 0958 eller 0046 70 123 45 67.", true, "international numbers with + and with 00"},
 	{router.SensitivityPII, "Anna Svensson, Storgatan 12, 111 22 Stockholm, har klagat på leveransen.", true, "a postal address with a postcode"},
-	{router.SensitivityPII, "Skriv ett brev till vår kund Anna Svensson om den försenade leveransen.", false, "a name alone: no identifier, no term"},
+	{router.SensitivityPII, "Skriv ett brev till vår kund Anna Svensson om den försenade leveransen.", true, "a full name (ISSUE-168)"},
 	{router.SensitivityPII, "Here is the employee list: Anna (sales, 34), Erik (finance, 51), Maria (HR, 29). Who should get the award?", false, "names and ages, no identifier"},
-	{router.SensitivityPII, "Rewrite this performance review: he is often late and argues with the team lead.", false, "a review about a person, no identifier"},
+	{router.SensitivityPII, "Rewrite this performance review: he is often late and argues with the team lead.", true, "a performance review is a record about a person (ISSUE-168)"},
 
 	// ---- Keys and secrets (secrets_possible) ----------------------------------
 	{router.SensitivitySecretsPossible, "Why does this fail? OPENAI_API_KEY=sk-proj-abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJ", true, "an OpenAI-style key"},

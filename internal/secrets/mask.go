@@ -89,6 +89,19 @@ var rules = []rule{
 	{kind: "jwt", re: regexp.MustCompile(`eyJ[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{6,}`), replace: full("jwt"), hints: []string{"eyj"}},
 	// Anthropic / OpenAI-style keys (sk-, sk-ant-, sk-proj-...).
 	{kind: "api_key", re: regexp.MustCompile(`sk-(?:ant-|proj-)?[A-Za-z0-9_-]{16,}`), replace: full("api_key"), hints: []string{"sk-"}},
+	// More vendor formats (ISSUE-168): Stripe, GitLab, npm, Hugging Face,
+	// SendGrid, Twilio, DigitalOcean, Shopify, Azure storage, and webhook
+	// URLs whose path is the secret.
+	{kind: "stripe_key", re: regexp.MustCompile(`(?:sk|rk|pk)_(?:live|test)_[A-Za-z0-9]{16,}`), replace: full("stripe_key"), hints: []string{"_live_", "_test_"}},
+	{kind: "gitlab_token", re: regexp.MustCompile(`glpat-[A-Za-z0-9_-]{20,}`), replace: full("gitlab_token"), hints: []string{"glpat-"}},
+	{kind: "npm_token", re: regexp.MustCompile(`npm_[A-Za-z0-9]{36}`), replace: full("npm_token"), hints: []string{"npm_"}},
+	{kind: "hf_token", re: regexp.MustCompile(`hf_[A-Za-z0-9]{30,}`), replace: full("hf_token"), hints: []string{"hf_"}},
+	{kind: "sendgrid_key", re: regexp.MustCompile(`SG\.[A-Za-z0-9_-]{16,}\.[A-Za-z0-9_-]{16,}`), replace: full("sendgrid_key"), hints: []string{"sg."}},
+	{kind: "twilio_key", re: regexp.MustCompile(`\bSK[0-9a-f]{32}\b`), replace: full("twilio_key"), hints: []string{"sk"}},
+	{kind: "do_token", re: regexp.MustCompile(`dop_v1_[a-f0-9]{64}`), replace: full("do_token"), hints: []string{"dop_v1_"}},
+	{kind: "shopify_token", re: regexp.MustCompile(`shp(?:at|ca|pa|ss)_[a-fA-F0-9]{32}`), replace: full("shopify_token"), hints: []string{"shp"}},
+	{kind: "azure_key", re: regexp.MustCompile(`(?i)(?:AccountKey|SharedAccessKey)=([A-Za-z0-9+/]{40,}={0,2})`), replace: redactGroup("azure_key", 1), group: 1, hints: []string{"accountkey=", "sharedaccesskey="}},
+	{kind: "webhook_url", re: regexp.MustCompile(`https://hooks\.slack\.com/services/[A-Za-z0-9/]{20,}|https://discord(?:app)?\.com/api/webhooks/\d+/[A-Za-z0-9_-]{20,}|https://[a-z0-9-]+\.webhook\.office\.com/webhookb2/[A-Za-z0-9@/-]{20,}`), replace: full("webhook_url"), hints: []string{"hooks.slack.com", "/api/webhooks/", "webhook.office.com"}},
 	// AWS access key IDs.
 	{kind: "aws_key", re: regexp.MustCompile(`AKIA[0-9A-Z]{16}`), replace: full("aws_key"), hints: []string{"akia"}},
 	// AWS secret access keys in their usual config form (ISSUE-157).

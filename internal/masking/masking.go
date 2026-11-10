@@ -35,10 +35,15 @@ var labels = map[pii.Type]string{
 	pii.TypeIBAN:         "IBAN",
 	pii.TypeCard:         "CARD",
 	pii.TypeAddress:      "ADDRESS",
+	pii.TypeName:         "NAME",
+	pii.TypeNationalID:   "ID",
+	pii.TypeBirthdate:    "BIRTHDATE",
+	pii.TypePassport:     "PASSPORT",
+	pii.TypeVehicle:      "VEHICLE",
 }
 
 // rePlaceholder finds the placeholders this package writes.
-var rePlaceholder = regexp.MustCompile(`\[(?:PERSONNUMMER|EMAIL|PHONE|IBAN|CARD|ADDRESS|SECRET)_\d+\]`)
+var rePlaceholder = regexp.MustCompile(`\[(?:PERSONNUMMER|EMAIL|PHONE|IBAN|CARD|ADDRESS|NAME|ID|BIRTHDATE|PASSPORT|VEHICLE|SECRET)_\d+\]`)
 
 // maxPlaceholder is the longest placeholder, for the stream restorer's hold-back.
 const maxPlaceholder = len("[PERSONNUMMER_9999]")

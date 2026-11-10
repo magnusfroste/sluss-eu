@@ -155,16 +155,16 @@ def C(): return rng.choice(COMPANIES)
 def N(): return name()
 def F(): return rng.choice(FIRST)
 
-fill(16, lambda: rng.choice([
+fill(14, lambda: rng.choice([
     f"Summarise the case for customer {personnummer()} at {C()}.",
     f"Write a short reply to {N()} ({rng.choice([personnummer(), personnummer(full=True)])}) about the late delivery.",
     f"Kunden med personnummer {personnummer(full=True)} vill avsluta sitt konto; skriv ett svar.",
     f"Sammanfatta ärendet för {personnummer(plus=rng.random() < 0.2)} och föreslå nästa steg."]), ["pii"], "identifier")
-fill(12, lambda: (lambda n: rng.choice([
+fill(10, lambda: (lambda n: rng.choice([
     f"Draft an email to {email(n)} confirming the meeting on {rng.choice(MONTHS)} {rng.randint(1,28)}.",
     f"Mejla {email(n)} och påminn om fakturan från {C()}.",
     f"Forward the notes from {C()} to {email(n)} with a short summary."]))(N()), ["pii"], "identifier")
-fill(14, lambda: rng.choice([
+fill(10, lambda: rng.choice([
     f"Call {F()} back on {phone()} about the order.",
     f"Ring {F()} på {phone()} och boka ett möte.",
     f"Confirm the callback number {phone()} in the summary for {C()}."]), ["pii"], "identifier")
@@ -177,6 +177,54 @@ fill(8, lambda: rng.choice([
 fill(6, lambda: rng.choice([
     f"The customer paid with card {card()}; summarise the dispute.",
     f"Kortnummer {card()}, utgång {rng.randint(1,12):02d}/{rng.randint(26,30)}. Varför nekades köpet?"]), ["pii"], "identifier")
+
+# Other identifiers. None belongs to anyone: Finnish numbers use the
+# individual numbers 900-999 reserved for tests, Norwegian ones the synthetic
+# form with 80 added to the month, the US number is the one retired after it
+# was printed on sample cards, and the rest are made up next to the word.
+def hetu():
+    d, m, y = rng.randint(1, 28), rng.randint(1, 12), rng.randint(50, 99)
+    nnn = rng.randint(900, 999)
+    n = int(f"{d:02d}{m:02d}{y:02d}{nnn:03d}")
+    return f"{d:02d}{m:02d}{y:02d}-{nnn:03d}{'0123456789ABCDEFHJKLMNPRSTUVWXY'[n % 31]}"
+
+
+def fnr():
+    while True:
+        d, m, y = rng.randint(1, 28), rng.randint(1, 12) + 80, rng.randint(50, 99)
+        base = [int(c) for c in f"{d:02d}{m:02d}{y:02d}{rng.randint(100, 499):03d}"]
+        k1 = (11 - sum(w * x for w, x in zip([3, 7, 6, 1, 8, 9, 4, 5, 2], base)) % 11) % 11
+        if k1 == 10:
+            continue
+        k2 = (11 - sum(w * x for w, x in zip([5, 4, 3, 2, 7, 6, 5, 4, 3, 2], base + [k1])) % 11) % 11
+        if k2 == 10:
+            continue
+        return "".join(map(str, base)) + f"{k1}{k2}"
+
+
+def plate():
+    L = "ABCDEFGHJKLMNPRSTUWXYZ"
+    return f"{rng.choice(L)}{rng.choice(L)}{rng.choice(L)} {rng.randint(10,99)}{rng.choice('0123456789ABCDEFGH')}"
+
+
+fill(8, lambda: rng.choice([
+    lambda: f"Asiakkaan henkilötunnus on {hetu()}; write a reply in English about the invoice.",
+    lambda: f"The Finnish customer {hetu()} wants to cancel; draft the confirmation.",
+    lambda: f"Kunden i Norge, fødselsnummer {fnr()}, vill ha en kopia av avtalet.",
+    lambda: f"The applicant's SSN is 078-05-1120; fill in the form for {C()}.",
+    lambda: f"Passnummer {rng.choice('ABCDEFGH')}{rng.choice('ABCDEFGH')}{rng.randint(1000000, 9999999)} ska in i bokningen; skriv bekräftelsen.",
+    lambda: f"Passport number {rng.randint(10000000, 99999999)}{rng.randint(0,9)} is needed for the visa letter; draft it.",
+    lambda: f"Bilen med regnr {plate()} har fått en parkeringsbot; skriv en överklagan.",
+    lambda: f"Our driver, born {rng.randint(1960,2001)}-{rng.randint(1,12):02d}-{rng.randint(1,28):02d}, needs a new access card; write the request.",
+    lambda: f"Den anställde, född {rng.randint(1960,2001)}-{rng.randint(1,12):02d}-{rng.randint(1,28):02d}, ska anmälas till kursen."])(), ["pii"], "identifier")
+
+fill(8, lambda: rng.choice([
+    f"Here is the list of trade union members at {C()}; sort it by department.",
+    f"Sammanfatta utvecklingssamtalet med {F()} och föreslå mål för nästa år.",
+    f"Utdraget ur belastningsregistret för den sökande har kommit; hur skriver vi avslaget?",
+    f"Kundregistret från {C()} ska rensas på dubbletter; skriv ett makro.",
+    f"The personnel file for {F()} includes a written warning from {rng.choice(MONTHS)}; draft the follow-up.",
+    f"Vi behöver fråga om sexuell läggning och etniskt ursprung i enkäten; hur formulerar vi samtycket?"]), ["pii"], "term")
 
 # ---------------------------------------------------------------- personal data: meaning
 fill(14, lambda: rng.choice([
@@ -213,7 +261,9 @@ fill(16, lambda: rng.choice([
     "Translate this classified document about {p}, marked NATO RESTRICTED.",
     "Summarise the attached on {p}: RESTREINT UE/EU RESTRICTED.",
     "Detta är säkerhetsskyddsklassificerade uppgifter om {p}; gör en sammanfattning.",
-    "KVALIFICERAT HEMLIG. Granska planeringsunderlaget för {p}."]).format(
+    "KVALIFICERAT HEMLIG. Granska planeringsunderlaget för {p}.",
+    "Skyddsobjektet {p} ska in i totalförsvarets planering; skriv underlaget.",
+    "This concerns critical infrastructure: list the single points of failure at {p}."]).format(
         p=rng.choice(["vattenverket", "kraftnätet", "ledningscentralen", "the port", "the radar site", "hamnen", "the data centre"])),
     ["security_classified"], "term")
 fill(8, lambda: rng.choice([
@@ -230,7 +280,10 @@ fill(16, lambda: rng.choice([
     f"{F()} är sjukskriven i {rng.choice(['två','tre','fyra'])} månader; hur fördelar vi uppgifterna?",
     f"{F()} has been off for {rng.choice(['two','three','six'])} weeks with burnout. Draft a kind message to the team.",
     f"Write a note that {F()} will be away for chemo on {rng.choice(['Mondays','Tuesdays','Fridays'])}.",
-    f"Läkemedelslista och behandlingsplan för patienten {F()} ska sammanfattas."]), ["health"], "term")
+    f"Läkemedelslista och behandlingsplan för patienten {F()} ska sammanfattas.",
+    f"{F()} was diagnosed with {rng.choice(['diabetes','epilepsy','cancer'])} last month; how do we adjust the workload?",
+    f"Sammanfatta läkarintyget och rehabiliteringsplanen för {F()}.",
+    f"{F()} är gravid och vill gå ner i tid från {rng.choice(MONTHS)}; skriv ett svar."]), ["health"], "term")
 fill(10, lambda: rng.choice([
     f"{F()} is on leave until {rng.choice(MONTHS)} because of what happened in the spring; who covers the accounts?",
     f"{F()} har haft det tufft sedan olyckan och orkar inte jobba heltid. Skriv ett förslag på anpassning.",
@@ -243,7 +296,10 @@ fill(16, lambda: rng.choice([
     f"The payroll file for {rng.choice(MONTHS)} is attached; check the totals.",
     f"Lönelistan för {rng.choice(MONTHS)} ligger i bilagan, stäm av summorna.",
     f"We have insider information on the merger with {C()}; draft the board memo.",
-    f"Gör en due diligence-sammanfattning av årsredovisningen för {C()}."]), ["financial"], "term")
+    f"Gör en due diligence-sammanfattning av årsredovisningen för {C()}.",
+    f"Review the term sheet for the acquisition of {C()} and list the risks.",
+    f"Sammanfatta kreditupplysningen och kontoutdragen inför låneansökan från {C()}.",
+    f"Här är vårt anbud i upphandlingen från {C()}; förbättra texten."]), ["financial"], "term")
 fill(10, lambda: rng.choice([
     f"We will buy {C()} for about {rng.randint(20,90)} million next month; keep it quiet. Draft the memo.",
     f"Revenue was {rng.randint(5,40)}.{rng.randint(0,9)} MSEK, up {rng.randint(2,15)} % — before we announce it Friday, write the press release.",
@@ -255,7 +311,9 @@ fill(14, lambda: rng.choice([
     f"Review this NDA with {C()} and the indemnification clause before we sign.",
     f"Sammanfatta stämningsansökan och vårt svaromål i tvisten med {C()}.",
     f"Draft a settlement agreement for the breach of contract claim from {C()}.",
-    f"Granska anställningsavtalet och sekretessavtalet för {F()} innan vi skriver under."]), ["legal"], "term")
+    f"Granska anställningsavtalet och sekretessavtalet för {F()} innan vi skriver under.",
+    f"Draft a power of attorney so that {C()} can act for us in the arbitration.",
+    f"Sammanfatta aktieägaravtalet och konkursansökan som rör {C()}."]), ["legal"], "term")
 fill(8, lambda: rng.choice([
     f"{C()} says we broke the deal and wants money; what do we answer?",
     f"Leverantören {C()} hotar med att gå vidare om vi inte betalar, hur svarar vi?",
@@ -273,7 +331,18 @@ fill(16, lambda: rng.choice(CODE).format(n=rng.choice(["orders","users","invoice
      ["source_code"], "identifier")
 
 # ---------------------------------------------------------------- harmless lookalikes
+PUBLIC = ["Astrid Lindgren", "Olof Palme", "Selma Lagerlöf", "Alfred Nobel", "Greta Thunberg", "Marie Curie",
+          "Albert Einstein", "Ingrid Bergman", "August Strindberg", "Dag Hammarskjöld", "Anders Celsius", "Zlatan Ibrahimović"]
+CONCEPTS = ["an IPO", "EBITDA", "a power of attorney", "due diligence", "a public tender", "cash flow", "bankruptcy",
+            "an acquisition", "arbitration", "a credit report", "critical infrastructure under NIS2", "a trade union"]
 LOOKALIKES = [
+    lambda: f"Summarise what {rng.choice(PUBLIC)} is known for, in {rng.randint(3,6)} sentences for a school essay.",
+    lambda: f"Skriv en kort presentation av {rng.choice(PUBLIC)} till personaltidningens frågesport.",
+    lambda: f"Explain what {rng.choice(CONCEPTS)} is to {rng.choice(['a student','a new hire','my grandmother'])}.",
+    lambda: f"Write a short text about the Great Depression for a {rng.choice(['history class','podcast intro','quiz'])}.",
+    lambda: f"Vad gör en {rng.choice(['tingsrätt','hovrätt','konkursförvaltare'])}? Förklara för en nyanställd.",
+    lambda: f"Write a poster for {rng.choice(['diabetes','stroke','cancer'])} awareness week at {C()}; general advice only.",
+    lambda: f"Give directions from {rng.choice(['Victoria Station','Maria Torget','Karl Johans gate','Anna Park'])} to the office.",
     lambda: f"Mötet flyttas till {rng.randint(1,28):02d}-{rng.randint(1,12):02d}-2025; ordernummer {rng.randint(1000,9999)}-{rng.randint(100,999)} {rng.randint(100,999)} är levererat. Skriv ett kort mejl.",
     lambda: f"Invoice #{rng.randint(1000,9999)}-{rng.randint(100,999)} for {rng.randint(1,9)} {rng.randint(100,999)} kr is attached; draft a polite reminder.",
     lambda: f"Release {rng.randint(1,4)}.{rng.randint(0,20)}.{rng.randint(0,9)} is out; write the changelog intro.",
@@ -298,7 +367,7 @@ LOOKALIKES = [
 fill(110, lambda: rng.choice(LOOKALIKES)(), [], "lookalike")
 
 # ---------------------------------------------------------------- harmless plain
-fill(110, lambda: rng.choice([
+fill(102, lambda: rng.choice([
     lambda: f"Write {rng.choice(FORMS)} about {rng.choice(TOPICS)}.",
     lambda: f"Skriv {rng.choice(['ett kort inlägg','tre rubriker','en sammanfattning','ett mejl'])} om {rng.choice(['den nya kantinen','sommarfesten','kontorsflytten','cykelveckan','kaffeautomaten','intranätet'])}.",
     lambda: f"Explain {rng.choice(['TCP vs UDP','DNS','how a VPN works','what a CDN does','what Kubernetes is'])} to {rng.choice(['a beginner','a manager','a ten-year-old'])}.",

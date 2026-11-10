@@ -121,8 +121,38 @@ var keywordRules = []keywordRule{
 	// The words "email", "phone" and "address" are not here: a question about
 	// the summer-party email holds no personal data. The values themselves
 	// are found by the detectors in internal/pii (ISSUE-167).
-	{keyword: "pii", terms: []string{"ssn", "personnummer", "customer data"}},
-	{keyword: "secret", terms: []string{"api key", "api_key", "secret", "private key", "password", "token"}},
+	{keyword: "pii", terms: []string{
+		"ssn", "personnummer", "customer data",
+		// Registers of people, and the records an employer keeps (ISSUE-168).
+		"kundregister", "kundregistret", "medlemsregister", "medlemsregistret",
+		"customer list", "customer records", "customer register", "member list", "membership list",
+		"personalakt", "personalakten", "personnel file", "employee record", "employee records", "hr file",
+		"personalregister", "löneuppgifter", "salary details",
+		"performance review", "performance appraisal", "utvecklingssamtal", "utvecklingssamtalet",
+		"medarbetarsamtal", "medarbetarsamtalet", "lönesamtal", "lönesamtalet",
+		"disciplinary", "disciplinärende", "skriftlig varning", "written warning",
+		"uppsägningsbesked", "termination letter", "avskedande",
+		"background check", "bakgrundskontroll", "reference check", "referenstagning",
+		"next of kin", "närmast anhörig", "emergency contact",
+		// The special categories of GDPR article 9, and criminal records.
+		"trade union member", "trade union members", "union membership", "fackmedlem", "fackmedlemmar", "fackmedlemmarna", "facklig tillhörighet", "fackligt medlemskap",
+		"religious belief", "religious beliefs", "religiös övertygelse", "trosuppfattning",
+		"political opinion", "political opinions", "politisk åsikt", "politiska åsikter",
+		"sexual orientation", "sexuell läggning", "ethnic origin", "etniskt ursprung",
+		"biometric data", "biometriska uppgifter", "genetic data", "genetiska uppgifter",
+		"criminal record", "criminal records", "brottsregister", "belastningsregistret", "belastningsregister",
+		"asylum application", "asylansökan", "uppehållstillstånd", "residence permit",
+		"skyddad identitet", "sekretessmarkering", "protected identity",
+	}},
+	{keyword: "secret", terms: []string{
+		"api key", "api_key", "secret", "private key", "password", "token",
+		// ISSUE-168: the Swedish words, and other names for the same thing.
+		"lösenord", "lösenordet", "lösen:", "inloggningsuppgifter", "login credentials", "credentials",
+		"passphrase", "passcode", "pin-kod", "pinkod", "pin code",
+		"ssh key", "ssh-nyckel", "access key", "recovery code", "återställningskod",
+		"client secret", "signing key", "encryption key", "krypteringsnyckel",
+		"service account key", "kubeconfig", "connection string", "anslutningssträng",
+	}},
 	// Richer sensitivity classes (ISSUE-093): rule-based, EN + SV terms, chosen
 	// for precision (a false "financial" forces a local route; a false miss just
 	// routes on the other signals). "payment" above covers payment/billing CODE;
@@ -139,6 +169,22 @@ var keywordRules = []keywordRule{
 		"quarterly report", "kvartalsrapport", "revenue forecast", "budgetprognos",
 		"due diligence", "insider information", "insiderinformation",
 		"audit report", "revisionsrapport",
+		// ISSUE-168: corporate finance, deals, market-sensitive information,
+		// and a person's or a company's credit and tax.
+		"acquisition", "förvärv", "förvärvet", "uppköp", "uppköpet", "merger", "takeover", "företagsförvärv",
+		"term sheet", "letter of intent", "avsiktsförklaring", "share purchase agreement", "aktieöverlåtelse",
+		"nyemission", "share issue", "ipo", "börsnotering", "börsintroduktion",
+		"delårsrapport", "interim report", "earnings release", "earnings report", "profit warning", "vinstvarning",
+		"ebitda", "ebit", "cash flow", "kassaflöde", "likviditetsprognos", "liquidity forecast",
+		"financial forecast", "resultatprognos", "budget forecast", "financial statements",
+		"inside information", "kurspåverkande", "market sensitive", "market-sensitive", "price sensitive",
+		"not yet public", "not yet announced", "ej offentliggjord", "ej offentliggjort", "under embargo",
+		"bank statement", "kontoutdrag", "kontoutdraget", "credit report", "kreditupplysning", "credit score",
+		"loan application", "låneansökan", "betalningsanmärkning", "kronofogden", "inkasso", "debt collection",
+		"skuldsanering", "tax return", "skattedeklaration", "momsdeklaration", "inkomstdeklaration",
+		"lönerevision", "salary list", "bonusutfall", "cap table", "aktiebok", "aktieboken",
+		"anbud", "anbudet", "upphandling", "upphandlingen", "tender documents", "pricing strategy", "prisstrategi",
+		"clearingnummer", "bic code", "swift/bic",
 	}},
 	{keyword: "health", terms: []string{
 		"patient", "patients", "patienten", "patientens",
@@ -150,6 +196,26 @@ var keywordRules = []keywordRule{
 		"medication list", "läkemedelslista", "treatment plan", "behandlingsplan",
 		"icd-10", "hälsotillstånd", "health condition", "mental health",
 		"psykisk ohälsa", "vaccination record",
+		// ISSUE-168: conditions, care and the papers around them.
+		"diagnosed with", "diagnostiserad", "diagnostiserats", "cancer", "tumör", "tumour", "tumor",
+		"diabetes", "hiv", "adhd", "autism", "epilepsi", "epilepsy", "stroke", "hjärtinfarkt", "heart attack",
+		"demens", "dementia", "alzheimer", "alzheimers", "schizofreni", "schizophrenia", "bipolär", "bipolar",
+		// Not bare "depression": the Great Depression is history.
+		"clinical depression", "depressionsdiagnos", "utmattningsdepression", "egentlig depression", "deprimerad",
+		"antidepressiva", "antidepressant", "antidepressants", "utmattningssyndrom",
+		"ångestsyndrom", "anxiety disorder", "panikångest", "ptsd", "ätstörning", "eating disorder",
+		"missbruk", "substance abuse", "alkoholberoende", "rehab", "rehabilitering", "rehabiliteringsplan",
+		"gravid", "graviditet", "pregnant", "pregnancy", "missfall", "miscarriage", "ivf",
+		"funktionsnedsättning", "disability", "handikapp",
+		"läkarintyg", "läkarintyget", "doctor's note", "medical certificate", "remiss", "remissen", "referral letter",
+		"provsvar", "provsvaren", "blodprov", "blood test", "lab results", "test results", "röntgensvar",
+		"magnetröntgen", "mri scan", "ct scan", "biopsi", "biopsy",
+		"sjukdom", "sjukdomen", "illness", "sjukfrånvaro", "sickness absence", "långtidssjuk",
+		"medicinering", "medication", "läkemedel", "dosering", "dosage", "recept på",
+		"psykolog", "psykiatri", "psychiatric", "psychiatrist", "therapist", "terapeut",
+		"vårdplan", "care plan", "försäkringskassan", "arbetsförmåga", "work capacity",
+		"surgery", "operationen", "opererad", "cellprov", "cytostatika", "strålbehandling", "radiotherapy",
+		"medical condition", "health data", "hälsodata", "hälsouppgifter",
 	}},
 	{keyword: "legal", terms: []string{
 		"nda", "non-disclosure", "sekretessavtal", "sekretessavtalet",
@@ -159,6 +225,22 @@ var keywordRules = []keywordRule{
 		"legal counsel", "juridisk rådgivning", "legal advice",
 		"avtalsbrott", "breach of contract", "skadestånd", "damages claim",
 		"employment contract", "anställningsavtal",
+		// ISSUE-168: disputes, courts, and the documents a lawyer handles.
+		"plaintiff", "defendant", "kärande", "svarande", "tingsrätt", "tingsrätten", "hovrätt", "hovrätten",
+		"court order", "subpoena", "åtal", "åtalet", "polisanmälan", "police report", "förundersökning",
+		"cease and desist", "legal claim", "legal proceedings", "rättsprocess", "rättslig process", "skiljedom",
+		"arbitration", "skiljeförfarande", "mediation agreement",
+		"wrongful termination", "unfair dismissal", "ogiltigförklaring", "arbetsrättslig",
+		"power of attorney", "fullmakt", "fullmakten", "testamente", "testamentet", "last will",
+		"arvskifte", "bodelning", "vårdnadstvist", "custody dispute", "divorce settlement",
+		"shareholder agreement", "aktieägaravtal", "aktieägaravtalet", "license agreement", "licensavtal",
+		"contract draft", "avtalsutkast", "avtalsförslag", "kontraktsförslag",
+		"privileged and confidential", "without prejudice", "legal privilege",
+		"konkurs", "konkursen", "konkursansökan", "konkursbo", "bankruptcy", "insolvency", "företagsrekonstruktion",
+		"patent application", "patentansökan", "trade secret", "företagshemlighet", "företagshemligheter",
+		"trademark dispute", "varumärkesintrång", "upphovsrättsintrång", "copyright infringement",
+		"gdpr complaint", "personuppgiftsincident", "data breach notification", "tillsynsärende",
+		"vite", "vitesföreläggande", "kravbrev", "letter of demand", "indemnity", "liability claim",
 	}},
 	{keyword: "security_classified", terms: []string{
 		"security clearance", "säkerhetsprövning", "säkerhetsskyddsavtal",
@@ -169,6 +251,14 @@ var keywordRules = []keywordRule{
 		// in a demo dry-run (2026-11-01). Bare "hemlig"/"konfidentiell" are
 		// everyday words; as stamps they are caught by securityStampPattern.
 		"begränsat hemlig", "säkerhetsskyddslagen", "säkerhetsskyddsklass", "säkerhetsskyddsanalys",
+		// ISSUE-168: critical infrastructure and total defence, without a
+		// stamp: the words the people who work with it use.
+		"samhällsviktig verksamhet", "samhällsviktiga", "kritisk infrastruktur", "critical infrastructure",
+		"totalförsvar", "totalförsvaret", "civilt försvar", "civil defence", "civil defense", "krigsorganisation",
+		"krigsplacering", "krigsplacerad", "skyddsobjekt", "skyddsobjektet", "säkerhetsskydd", "signalskydd",
+		"beredskapsplan", "beredskapsplanen", "kontinuitetsplan för samhällsviktig",
+		"säkerhetskänslig verksamhet", "security-sensitive activities", "export control", "exportkontroll",
+		"dual-use", "itar", "krigsmateriel",
 		"nato restricted", "eu restricted", "eu classified", "top secret",
 		"classified document", "classified information",
 		"security classified", "security-classified",
@@ -271,7 +361,16 @@ func ExtractFromMessages(messages []openai.Message, hints RequestHints) Features
 		}
 
 		lower := strings.ToLower(text)
+		msgPII := pii.Detect(text)
+		msgSecret := len(secrets.Detect(text)) > 0
+		// A general question ("what is an IBAN?", "vad gör en tingsrätt?")
+		// uses the words without holding the data. Terms then do not count;
+		// values, names, markings and code still do (ISSUE-168).
+		general := len(msgPII) == 0 && !msgSecret && len(codeBlocks) == 0 && generalQuestion(text, lower)
 		for _, rule := range keywordRules {
+			if general && termOnlyClasses[rule.keyword] {
+				continue
+			}
 			if containsAnyTerm(lower, rule.terms) {
 				addKeyword(rule.keyword)
 			}
@@ -283,12 +382,12 @@ func ExtractFromMessages(messages []openai.Message, hints RequestHints) Features
 		// Content-level PII detection (ISSUE-077): the keyword rules above fire
 		// when the prompt TALKS ABOUT pii; the detector fires when the prompt
 		// CONTAINS it. Findings carry type+count only, never the matched values.
-		f.PIIFindings = pii.Merge(f.PIIFindings, pii.Detect(text))
+		f.PIIFindings = pii.Merge(f.PIIFindings, msgPII)
 
 		// Content-level secret detection (ISSUE-157): a prompt that CONTAINS
 		// an API key, token or password is a secrets prompt, even when it
 		// never says "api key". Same detectors that mask secrets in logs.
-		if len(secrets.Detect(text)) > 0 {
+		if msgSecret {
 			addKeyword("secret")
 		}
 	}
@@ -338,6 +437,30 @@ func ExtractFromMessages(messages []openai.Message, hints RequestHints) Features
 	}
 
 	return f
+}
+
+// termOnlyClasses are the data classes a term alone can give. In a general
+// question they are not given. Security markings are never skipped.
+var termOnlyClasses = map[string]bool{"pii": true, "secret": true, "financial": true, "health": true, "legal": true}
+
+// reGeneralQuestion matches the start of a question that asks for knowledge:
+// what something is, how it works, who someone was.
+var reGeneralQuestion = regexp.MustCompile(`^(?:can you |could you |please |kan du |snälla )?(?:explain (?:what|how|why|the difference)|what (?:is|are|does|do|makes)|how (?:does|do|should|is|are)|why (?:is|are|does|do)|who (?:is|was|were)|define |vad (?:är|gör|innebär|betyder)|hur (?:fungerar|funkar|ska|bör)|varför |förklara (?:vad|hur|varför|skillnaden)|vem (?:är|var))`)
+
+// reOwnMaterial matches a reference to something the person supplies: then
+// the question is about their material, not general knowledge.
+var reOwnMaterial = regexp.MustCompile(`(?:^|[^\p{L}])(?:this|these|attached|below|following|above|here is|here are|bifogad|bifogade|bifogat|nedan|följande|ovan|den här|det här|de här|dessa|denna|detta|min|mitt|mina|vår|vårt|våra|my|our)(?:[^\p{L}]|$)`)
+
+// generalQuestion reports whether text is one short question asking for
+// knowledge, with no material of the person's own and no person in it.
+func generalQuestion(text, lower string) bool {
+	if len(text) > 240 || strings.ContainsAny(text, "\n:`\"") {
+		return false
+	}
+	if !reGeneralQuestion.MatchString(lower) || reOwnMaterial.MatchString(lower) {
+		return false
+	}
+	return !pii.HasGivenName(text)
 }
 
 // codeLinePattern matches a line that reads as code rather than prose.

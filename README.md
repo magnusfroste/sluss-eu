@@ -51,8 +51,8 @@ the Version page and a `router.started` record in the audit log all say
 second opinion that may only make a decision stricter
 ([How Sluss decides](manual/how-sluss-decides.md)).
 
-The price is stated, not hidden: rules find identifiers, keys, markings,
-terms and code, not meaning. A text that is sensitive only because of what it
+The price is stated, not hidden: rules find identifiers, names, keys,
+markings, terms and code, not meaning. A text that is sensitive only because of what it
 says passes as harmless. [What Sluss catches](manual/what-sluss-catches.md)
 measures it on a fixed set of examples that runs with every change, and the
 [benchmark](manual/benchmark.md) scores 444 labelled questions, false alarms

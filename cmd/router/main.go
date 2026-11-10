@@ -29,6 +29,7 @@ import (
 	"github.com/magnusfroste/sluss/internal/health"
 	"github.com/magnusfroste/sluss/internal/history"
 	"github.com/magnusfroste/sluss/internal/outcomes"
+	"github.com/magnusfroste/sluss/internal/pii"
 	"github.com/magnusfroste/sluss/internal/policy"
 	"github.com/magnusfroste/sluss/internal/pricing"
 	"github.com/magnusfroste/sluss/internal/provider"
@@ -612,6 +613,15 @@ func main() {
 		rosterReloader.Auditor = auditSink
 		rosterReloader.Logger = logger
 		logger.Info("live roster reload enabled")
+	}
+
+	// Names in free text (ISSUE-168) are found by a rule and on by default.
+	// ROUTER_NAME_DETECTION=off turns the rule off, for an organisation
+	// whose questions are mostly about public people.
+	switch strings.ToLower(strings.TrimSpace(os.Getenv("ROUTER_NAME_DETECTION"))) {
+	case "off", "false", "0", "no":
+		pii.SetNameDetection(false)
+		logger.Info("name detection off (ROUTER_NAME_DETECTION): a name alone is not treated as personal data")
 	}
 
 	// A local second opinion (ISSUE-163): a roster model tagged local that may

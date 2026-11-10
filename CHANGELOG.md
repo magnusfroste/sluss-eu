@@ -10,6 +10,20 @@ ghcr.io/magnusfroste/sluss-eu:1.8      # the newest 1.8.x
 ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 ```
 
+## Unreleased
+
+### Protection
+- **A much broader classifier**, still rules you can read, still the same answer every time.
+  - **Names in free text.** A given name from a fixed list followed by a family name (*Karl Öberg*, *Anna Maria Lind*, *Carl von Essen*) is personal data, and so are later mentions of that given or family name. *Mask and send* replaces them with `[NAME_1]` and puts them back. The rule cannot tell a customer from an author, so a question about Astrid Lindgren is kept on your own models too; `ROUTER_NAME_DETECTION=off` turns it off. A name in an answer is not flagged by the answer check.
+  - **More identity numbers:** Finnish and Norwegian (check digits), US social security and UK national insurance numbers (format rules), a Danish CPR number next to the word; a passport number, a vehicle registration and a date of birth next to the word that says what it is.
+  - **More key formats:** Stripe, GitLab, npm, Hugging Face, SendGrid, Twilio, DigitalOcean, Shopify, Azure storage keys, and Slack, Discord and Teams webhook addresses; and the words *lösenord*, *credentials*, *passphrase*, *connection string*.
+  - **Larger word lists**, the way a DLP product's dictionaries are broad: conditions, care and the papers around them; deals, market-sensitive information, credit and tax; courts, parties and the documents a lawyer handles; registers of people, records an employer keeps and the special categories of the GDPR; critical infrastructure and total defence without a stamp.
+  - **A general question is not data.** *What is an IBAN?* or *how should passwords be stored?* no longer gets a class from a word alone. It stops applying when the question refers to material of your own, names a person, or holds a value, a marking or code.
+- This changes routing: more questions are kept on your own models (a full name is enough), and a general question about passwords, IBANs or diagnoses may now go to the cloud. Check with the dry-run.
+
+### Evidence
+- The benchmark got harder with the rules: new sensitive questions for what is new, and look-alikes written to trip it (famous people, *what is an IPO?*, a poster for diabetes awareness week). Rules only: 81 % of sensitive questions flagged (was 74 %), every identifier, term and name; 14 % of harmless ones (was 10 %, on an easier set). Presidio on the same set: 69 % and 24 %. The manual page shows all three versions side by side.
+
 ## v1.8.1 — 2026-11-10
 
 The benchmark's first findings, fixed: fewer false alarms, every identifier found.
