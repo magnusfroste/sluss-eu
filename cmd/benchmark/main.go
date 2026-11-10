@@ -25,7 +25,9 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"crypto/sha256"
 	"encoding/csv"
+	"encoding/hex"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -39,6 +41,7 @@ import (
 
 	"github.com/magnusfroste/sluss/internal/openai"
 	"github.com/magnusfroste/sluss/internal/router"
+	"github.com/magnusfroste/sluss/internal/secondopinion"
 )
 
 type benchCase struct {
@@ -72,13 +75,15 @@ func main() {
 		scoreCmd(os.Args[2:])
 	case "export":
 		exportCmd(os.Args[2:])
+	case "record":
+		recordCmd(os.Args[2:])
 	default:
 		usage()
 	}
 }
 
 func usage() {
-	fmt.Fprintln(os.Stderr, "usage: benchmark run|score|export [flags]")
+	fmt.Fprintln(os.Stderr, "usage: benchmark run|score|export|record [flags]")
 	os.Exit(2)
 }
 
@@ -123,11 +128,16 @@ func runCmd(args []string) {
 	repeat := fs.Int("repeat", 1, "classify each question this many times; differences are marked")
 	out := fs.String("out", "", "predictions file (default stdout)")
 	name := fs.String("name", "", "tool label written into each prediction")
+	recorded := fs.String("second-opinion", "", "a recording of the local model's answers (benchmark record): the rules in this binary plus those answers, with no model and no network")
 	_ = fs.Parse(args)
 
 	cases := loadCorpus(*corpus)
 	classify := classifyLocal
 	tool := "sluss rules only"
+	if *recorded != "" {
+		classify = replayClassifier(cases, *recorded)
+		tool = "sluss + second opinion (recorded)"
+	}
 	if *url != "" {
 		classify = remoteClassifier(strings.TrimRight(*url, "/"), *key)
 		tool = "sluss " + *url
@@ -181,49 +191,75 @@ func classifyLocal(text string) ([]string, error) {
 	return job.AllSensitivities(), nil
 }
 
+// postDecision asks the dry-run about one question. A dropped connection or
+// a 5xx is retried, so one network hiccup does not end a run of several
+// hundred questions. A block (403) is an answer; any other status is an error.
+func postDecision(client *http.Client, base, key, text string) ([]byte, error) {
+	body, _ := json.Marshal(map[string]any{
+		"model":    "auto",
+		"messages": []map[string]string{{"role": "user", "content": text}},
+	})
+	var data []byte
+	var status int
+	var lastErr error
+	for attempt := 0; attempt < 4; attempt++ {
+		if attempt > 0 {
+			time.Sleep(time.Duration(attempt) * 2 * time.Second)
+		}
+		req, _ := http.NewRequest(http.MethodPost, base+"/router/decision", bytes.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("X-Router-Explain", "true")
+		if key != "" {
+			req.Header.Set("Authorization", "Bearer "+key)
+		}
+		resp, err := client.Do(req)
+		if err != nil {
+			lastErr = err
+			continue
+		}
+		data, _ = io.ReadAll(resp.Body)
+		resp.Body.Close()
+		status = resp.StatusCode
+		if status >= 500 {
+			lastErr = fmt.Errorf("HTTP %d: %s", status, strings.TrimSpace(string(data)))
+			continue
+		}
+		lastErr = nil
+		break
+	}
+	if lastErr != nil {
+		return nil, lastErr
+	}
+	if status != http.StatusOK && status != http.StatusForbidden {
+		return nil, fmt.Errorf("HTTP %d: %s", status, strings.TrimSpace(string(data)))
+	}
+	return data, nil
+}
+
+// remoteReasons returns the decision's reasons for one question.
+func remoteReasons(base, key string) func(string) ([]string, error) {
+	client := &http.Client{Timeout: 30 * time.Second}
+	return func(text string) ([]string, error) {
+		data, err := postDecision(client, base, key, text)
+		if err != nil {
+			return nil, err
+		}
+		var dec struct {
+			DecisionReasons []string `json:"decision_reasons"`
+		}
+		if err := json.Unmarshal(data, &dec); err != nil {
+			return nil, fmt.Errorf("decode: %w", err)
+		}
+		return dec.DecisionReasons, nil
+	}
+}
+
 func remoteClassifier(base, key string) func(string) ([]string, error) {
 	client := &http.Client{Timeout: 30 * time.Second}
 	return func(text string) ([]string, error) {
-		body, _ := json.Marshal(map[string]any{
-			"model":    "auto",
-			"messages": []map[string]string{{"role": "user", "content": text}},
-		})
-		// A dropped connection or a 5xx is retried, so one network hiccup
-		// does not end a run of several hundred questions.
-		var data []byte
-		var status int
-		var lastErr error
-		for attempt := 0; attempt < 4; attempt++ {
-			if attempt > 0 {
-				time.Sleep(time.Duration(attempt) * 2 * time.Second)
-			}
-			req, _ := http.NewRequest(http.MethodPost, base+"/router/decision", bytes.NewReader(body))
-			req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("X-Router-Explain", "true")
-			if key != "" {
-				req.Header.Set("Authorization", "Bearer "+key)
-			}
-			resp, err := client.Do(req)
-			if err != nil {
-				lastErr = err
-				continue
-			}
-			data, _ = io.ReadAll(resp.Body)
-			resp.Body.Close()
-			status = resp.StatusCode
-			if status >= 500 {
-				lastErr = fmt.Errorf("HTTP %d: %s", status, strings.TrimSpace(string(data)))
-				continue
-			}
-			lastErr = nil
-			break
-		}
-		if lastErr != nil {
-			return nil, lastErr
-		}
-		// A block (403) still carries the job; any other error is a failure.
-		if status != http.StatusOK && status != http.StatusForbidden {
-			return nil, fmt.Errorf("HTTP %d: %s", status, strings.TrimSpace(string(data)))
+		data, err := postDecision(client, base, key, text)
+		if err != nil {
+			return nil, err
 		}
 		var dec struct {
 			Job *struct {
@@ -280,6 +316,170 @@ func secondOpinionClasses(reasons []string) []string {
 		}
 	}
 	return out
+}
+
+// ---- record and replay (ISSUE-170) ----
+//
+// The second opinion is a model, so CI cannot ask it. Instead its answers are
+// recorded once against a running instance and replayed: the rules in this
+// binary, plus what the model said. That measures today's rules together with
+// the model, catches a rule change that makes the combination worse, and
+// fails loudly when the recording no longer matches the questions or the
+// instruction the model is given.
+
+type recordingHeader struct {
+	Recording  string `json:"recording"` // "second-opinion"
+	Model      string `json:"model"`
+	PromptHash string `json:"prompt_hash"`
+	Commit     string `json:"commit,omitempty"`
+	Recorded   string `json:"recorded"`
+	Questions  int    `json:"questions"`
+}
+
+type recordedAnswer struct {
+	ID     string   `json:"id"`
+	Text   string   `json:"text_hash"`
+	Labels []string `json:"labels"`
+}
+
+func textHash(s string) string {
+	sum := sha256.Sum256([]byte(s))
+	return hex.EncodeToString(sum[:6])
+}
+
+func recordCmd(args []string) {
+	fs := flag.NewFlagSet("record", flag.ExitOnError)
+	corpus := fs.String("corpus", "benchmark/corpus.jsonl", "labelled questions")
+	url := fs.String("url", "", "a running Sluss with a second opinion configured")
+	key := fs.String("key", os.Getenv("SLUSS_KEY"), "API key (or SLUSS_KEY)")
+	out := fs.String("out", "benchmark/second-opinion.jsonl", "recording to write")
+	_ = fs.Parse(args)
+	if *url == "" {
+		fail(fmt.Errorf("record: -url is required"))
+	}
+	base := strings.TrimRight(*url, "/")
+	cases := loadCorpus(*corpus)
+
+	var version struct {
+		Commit    string `json:"commit"`
+		Decisions string `json:"decisions"`
+	}
+	if resp, err := http.Get(base + "/version"); err == nil {
+		_ = json.NewDecoder(resp.Body).Decode(&version)
+		resp.Body.Close()
+	}
+	if version.Decisions != "rules+second-opinion" {
+		fail(fmt.Errorf("record: %s decides with %q; a second opinion must be configured", base, version.Decisions))
+	}
+
+	ask := remoteReasons(base, *key)
+	answers := make([]recordedAnswer, 0, len(cases))
+	model := ""
+	for _, c := range cases {
+		reasons, err := ask(c.Text)
+		if err != nil {
+			fail(fmt.Errorf("case %s: %w", c.ID, err))
+		}
+		labels := secondOpinionClasses(reasons)
+		if m := secondOpinionModel(reasons); m != "" {
+			model = m
+		}
+		sort.Strings(labels)
+		if labels == nil {
+			labels = []string{}
+		}
+		answers = append(answers, recordedAnswer{ID: c.ID, Text: textHash(c.Text), Labels: labels})
+	}
+	f, err := os.Create(*out)
+	if err != nil {
+		fail(err)
+	}
+	defer f.Close()
+	enc := json.NewEncoder(f)
+	enc.SetEscapeHTML(false)
+	_ = enc.Encode(recordingHeader{Recording: "second-opinion", Model: model, PromptHash: secondopinion.PromptHash(),
+		Commit: version.Commit, Recorded: time.Now().UTC().Format("2006-01-02"), Questions: len(answers)})
+	for _, a := range answers {
+		_ = enc.Encode(a)
+	}
+	fmt.Printf("recorded %d answers from %s (model %s) to %s\n", len(answers), base, model, *out)
+}
+
+func secondOpinionModel(reasons []string) string {
+	const p = "second opinion (local model "
+	for _, r := range reasons {
+		if strings.HasPrefix(r, p) {
+			if i := strings.Index(r, "): "); i > len(p) {
+				return r[len(p):i]
+			}
+		}
+	}
+	return ""
+}
+
+// loadRecording reads a recording and checks it against the questions and
+// the instruction in this binary.
+func loadRecording(cases []benchCase, path string) (recordingHeader, map[string][]string, error) {
+	var h recordingHeader
+	f, err := os.Open(path)
+	if err != nil {
+		return h, nil, err
+	}
+	defer f.Close()
+	sc := bufio.NewScanner(f)
+	sc.Buffer(make([]byte, 1<<20), 1<<20)
+	byID := map[string]recordedAnswer{}
+	first := true
+	for sc.Scan() {
+		line := strings.TrimSpace(sc.Text())
+		if line == "" {
+			continue
+		}
+		if first {
+			first = false
+			if err := json.Unmarshal([]byte(line), &h); err != nil || h.Recording != "second-opinion" {
+				return h, nil, fmt.Errorf("%s: the first line is not a recording header", path)
+			}
+			continue
+		}
+		var a recordedAnswer
+		if err := json.Unmarshal([]byte(line), &a); err != nil {
+			return h, nil, fmt.Errorf("%s: %w", path, err)
+		}
+		byID[a.ID] = a
+	}
+	const again = "record it again: go run ./cmd/benchmark record -url <instance> -key <key>"
+	if h.PromptHash != secondopinion.PromptHash() {
+		return h, nil, fmt.Errorf("%s was recorded with another instruction to the model (%s, now %s); %s", path, h.PromptHash, secondopinion.PromptHash(), again)
+	}
+	labels := map[string][]string{}
+	for _, c := range cases {
+		a, ok := byID[c.ID]
+		if !ok || a.Text != textHash(c.Text) {
+			return h, nil, fmt.Errorf("%s does not match the questions (case %s); %s", path, c.ID, again)
+		}
+		labels[c.Text] = a.Labels
+	}
+	return h, labels, nil
+}
+
+func replayClassifier(cases []benchCase, path string) func(string) ([]string, error) {
+	_, labels, err := loadRecording(cases, path)
+	if err != nil {
+		fail(err)
+	}
+	return func(text string) ([]string, error) {
+		// Raise only, as in the router: the rules' classes plus the model's.
+		out, _ := classifyLocal(text)
+		seen := set(out)
+		for _, l := range labels[text] {
+			if !seen[l] {
+				seen[l] = true
+				out = append(out, l)
+			}
+		}
+		return out, nil
+	}
 }
 
 // ---- score ----
