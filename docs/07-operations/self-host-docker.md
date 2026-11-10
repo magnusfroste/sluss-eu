@@ -170,6 +170,8 @@ The audit chain can also be exported from the console. An auditor verifies the e
 
 **Anchor the chain outside the machine.** Every hour Sluss logs an `audit anchor` line with the sequence number and hash of the last record (`ROUTER_AUDIT_ANCHOR_INTERVAL` changes the interval; `off` disables). Ship the container's log to your log service or SIEM, as you do for other services, and that copy is the proof: an auditor runs `audit-verify -anchor <seq>:<hash> audit-chain.jsonl` with any anchor from before, and an export that was rewritten after that anchor fails, even if every hash in it was recomputed. `GET /router/audit/anchor` returns the current anchor for a script that files it elsewhere.
 
+**Close the log when it gets large.** Set `ROUTER_AUDIT_ROTATE_MB` (for example `50`) and the audit file is sealed at that size: it gets a last record, moves to `audit-archive/` in the data directory, read-only, and the log continues in a new file as the same chain. Nothing is deleted, the export is still the whole log, and the archive is backed up with the rest of the data directory. `POST /router/audit/rotate` seals by hand; `GET /router/audit/segments` lists the sealed files with their SHA-256.
+
 ## 6. Air-gapped installs
 
 1. On a connected machine, export the image: `docker save ghcr.io/magnusfroste/sluss-eu:<tag> | gzip > sluss.tar.gz`.

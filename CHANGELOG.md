@@ -10,6 +10,11 @@ ghcr.io/magnusfroste/sluss-eu:1.9      # the newest 1.9.x
 ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 ```
 
+## Unreleased
+
+### Evidence
+- **The audit log can be closed and continued, without deleting anything.** With `ROUTER_AUDIT_ROTATE_MB` set, the file is sealed at that size: it gets a last record, moves to `audit-archive` in the data directory, read-only, and the log continues in a new file as the same chain. The first record of the new file continues the numbering, links to the sealed file's last record and holds the SHA-256 of the whole sealed file. The export is still the whole log from the first record, and anchors work as before. `audit-verify` takes several files in order and checks each sealed file against the hash inside the chain. `GET /router/audit/segments` lists the sealed files; `POST /router/audit/rotate` seals by hand. Off unless the size is set.
+
 ## v1.9.2 — 2026-11-10
 
 The local second opinion is measured with every change, and the chat inspector names the new kinds of personal data in words.
