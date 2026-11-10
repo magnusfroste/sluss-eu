@@ -18,7 +18,7 @@ ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 - A Finnish identity number is no longer also reported as a phone number, so *mask and send* replaces it once.
 
 ### Evidence
-- The benchmark has four more kinds of question (two sensitive that the new rule does not catch, two look-alikes). Rules only: 84 % of sensitive questions flagged, 8 % of harmless ones; the manual explains why the second number is the set and not the rules.
+- The benchmark has four more kinds of question (two sensitive that the new rule does not catch, two look-alikes). Rules only: 84 % of sensitive questions flagged, 8 % of harmless ones; the manual explains why the second number is the set and not the rules. With the local second opinion on the demo's model: 97 % and 10 %, and the six requests for a commit message it used to read as code are left alone.
 
 ## v1.9.0 — 2026-11-10
 
