@@ -14,22 +14,22 @@ They do not understand meaning. A text that is sensitive only because of what it
 
 ## Measured
 
-The numbers come from a fixed set of 49 examples that lives in the code and runs with every change (`internal/classifier/catch_corpus_test.go`). Each example states what a careful reader would call it; the test records what the rules do. When the rules change, the table changes with them, or the test fails. The table is as of version 1.9.
+The numbers come from a fixed set of 49 examples that lives in the code and runs with every change (`internal/classifier/catch_corpus_test.go`). Each example states what a careful reader would call it; the test records what the rules do. When the rules change, the table changes with them, or the test fails. The table is as of version 1.9.1.
 
 | Kind of data | Examples | Rules: classified as that kind | Rules: flagged as sensitive at all | Rules + local second opinion: flagged at all |
 |---|---|---|---|---|
 | Personal data | 11 | 10 of 11 | 10 of 11 | 11 of 11 |
 | Keys and secrets | 8 | 7 of 8 | 7 of 8 | 8 of 8 |
-| Security-classified | 5 | 4 of 5 | 4 of 5 | 4 of 5 |
+| Security-classified | 5 | 5 of 5 | 5 of 5 | 5 of 5 |
 | Health | 6 | 5 of 6 | 5 of 6 | 6 of 6 |
 | Financial | 5 | 1 of 5 | 3 of 5 | 5 of 5 |
 | Legal | 3 | 2 of 3 | 2 of 3 | 3 of 3 |
 | Source code | 2 | 2 of 2 | 2 of 2 | 2 of 2 |
 | Harmless (must stay harmless) | 9 | 9 of 9 left alone | — | 8 of 9 left alone |
 
-*Classified as that kind* is the strict reading: the rules named the class a careful reader would. *Flagged as sensitive at all* is what matters for routing: any class keeps the question away from models your rules do not allow. Overall, 40 of 49 examples are classified as a careful reader would (an IBAN counts as personal data, like a card number), and the rules flag 33 of the 40 sensitive ones. For a larger set with look-alikes and false alarms measured, see the [benchmark](/manual/benchmark).
+*Classified as that kind* is the strict reading: the rules named the class a careful reader would. *Flagged as sensitive at all* is what matters for routing: any class keeps the question away from models your rules do not allow. Overall, 41 of 49 examples are classified as a careful reader would (an IBAN counts as personal data, like a card number), and the rules flag 34 of the 40 sensitive ones. For a larger set with look-alikes and false alarms measured, see the [benchmark](/manual/benchmark).
 
-**With a local second opinion** (last column), 39 of the 40 sensitive examples are flagged: what the rules find, plus what the model added when it was measured. It caught a list of names and ages, a password with no label, an absence explained only as *what happened in the spring*, an acquisition and results in plain words, and a dispute in everyday words. It still missed an infrastructure plan with no marking; a name alone and a review about an unnamed person, which it also missed, are found by the rules since version 1.9. It also flagged one harmless question, a git commit message, as code: an over-flag in the safe direction, which only keeps that question on your own models. Measured on version 1.4 against the demo instance's local model (a 27B reasoning model with thinking turned off), 46 questions, median 0.6 seconds and at most 1.0 second per decision including the second opinion. A different model gives different numbers: run the same set against yours (see below).
+**With a local second opinion** (last column), all 40 sensitive examples are flagged: what the rules find, plus what the model added when it was measured. It caught a list of names and ages, a password with no label, an absence explained only as *what happened in the spring*, an acquisition and results in plain words, and a dispute in everyday words. The three it missed when measured (an infrastructure plan with no marking, a name alone, a review about an unnamed person) are found by the rules since versions 1.9 and 1.9.1. It also flagged one harmless question, a git commit message, as code: an over-flag in the safe direction, which only keeps that question on your own models. Measured on version 1.4 against the demo instance's local model (a 27B reasoning model with thinking turned off), 46 questions, median 0.6 seconds and at most 1.0 second per decision including the second opinion. A different model gives different numbers: run the same set against yours (see below).
 
 ## What is caught
 
@@ -37,7 +37,7 @@ The numbers come from a fixed set of 49 examples that lives in the code and runs
 - **Names:** a given name from a fixed list followed by a family name (*Karl Öberg*, *Anna Maria Lind*, *Carl von Essen*, *Yusuf Al-Masri*), and later mentions of that given or family name in the same text. A given name alone is not a name. The rule cannot tell a customer from an author: a question about Astrid Lindgren is kept on your own models too. Whoever runs the server can turn the rule off with `ROUTER_NAME_DETECTION=off`.
 - **Records about people:** a customer or member register, a personnel file, a performance review, a written warning, a background check; and the special categories of the GDPR when they are named: trade union membership, religious belief, political opinion, sexual orientation, ethnic origin, biometric and genetic data, a criminal record.
 - **Keys and secrets:** OpenAI, Anthropic, AWS, Google, GitHub, GitLab, Slack, Stripe, npm, Hugging Face, SendGrid, Twilio, DigitalOcean, Shopify and Azure storage keys and tokens, webhook addresses for Slack, Discord and Teams, private keys, passwords inside connection addresses, labels such as `db_password=` in a config, and the words *api key*, *secret*, *token*, *password*, *lösenord*, *credentials* and *passphrase* when a question is about one.
-- **Security-classified material:** the Swedish protection levels and the law, stamps written in capitals, NATO and EU markings; and the words of the field without a stamp: *skyddsobjekt*, *totalförsvar*, *samhällsviktig verksamhet*, *critical infrastructure*, *export control*. Lower-case everyday words (*en hemlig önskelista*) are left alone.
+- **Security-classified material:** the Swedish protection levels and the law, stamps written in capitals, NATO and EU markings; and the words of the field without a stamp: *skyddsobjekt*, *totalförsvar*, *samhällsviktig verksamhet*, *critical infrastructure*, *export control*; and how a critical facility is protected: a facility (a waterworks, a substation, a control room, a dispatch centre) and a protection word (perimeter, weaknesses, guard rota, backup site, sabotage) in the same text. Lower-case everyday words (*en hemlig önskelista*) are left alone.
 - **Health:** patient, record, diagnosis, prescription, sick leave; conditions by name (cancer, diabetes, epilepsy, dementia, ADHD, pregnancy, burnout); care and its papers (a doctor's note, a referral, test results, a rehabilitation plan, Försäkringskassan); and their Swedish forms.
 - **Financial:** balance sheet, payroll, insider information, IBAN; deals (acquisition, term sheet, share issue, IPO), market-sensitive information (*not yet public*, profit warning, interim report), tenders, and a person's or a company's credit and tax (credit report, bank statement, debt collection, Kronofogden, tax return); and their Swedish forms.
 - **Legal:** NDA, lawsuit, settlement, breach of contract; courts and parties (*tingsrätt*, plaintiff, defendant, arbitration), documents (power of attorney, will, shareholder agreement, contract draft), bankruptcy, trade secrets and infringement; and their Swedish forms.
@@ -51,7 +51,7 @@ These are the misses in the set, by design of a rule-based reader:
 
 - **A person without a full name.** *Here is the employee list: Anna (sales, 34), Erik (finance, 51).* A given name alone is not enough, and neither is a name the list does not have.
 - **A password with nothing around it.** *Use this to log in: Tr0ub4dor&3.* Without the word *password* or a known key format, a string is a string.
-- **Critical-infrastructure content with no marking and none of the field's words.** A plan for protecting the grid's control systems, written in everyday language.
+- **Critical-infrastructure content in words the rules do not know.** *The key to the substation hangs in the break room and everyone knows the code.*
 - **An absence that is not called an illness.** *Erik is on leave until March because of what happened in the spring.*
 - **A deal in plain words.** *We will buy the company for about 40 million next month; keep it quiet.* Also revenue figures about to be published, and a dispute described as *they say we broke the deal*.
 - **A card number is flagged as personal data, not as financial.** It still stays local; only the label differs.

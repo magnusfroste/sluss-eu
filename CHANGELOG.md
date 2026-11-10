@@ -10,6 +10,16 @@ ghcr.io/magnusfroste/sluss-eu:1.9      # the newest 1.9.x
 ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 ```
 
+## Unreleased
+
+### Protection
+- **How a critical facility is protected, with no marking.** A facility (a waterworks, a substation, a control room, a dispatch centre, a fuel depot) and a protection word (perimeter, weaknesses, guard rota, backup site, sabotage) in the same text is security-classified. Either alone is not: a study visit to the waterworks is a study visit. On the benchmark, security-classified questions found go from 67 % to 92 %.
+- **The local second opinion is told more precisely what counts.** A request to write a commit message, with no code in it, is not source code; a general question with no person or document in it holds no data; and how critical infrastructure is protected is security-classified.
+- A Finnish identity number is no longer also reported as a phone number, so *mask and send* replaces it once.
+
+### Evidence
+- The benchmark has four more kinds of question (two sensitive that the new rule does not catch, two look-alikes). Rules only: 84 % of sensitive questions flagged, 8 % of harmless ones; the manual explains why the second number is the set and not the rules.
+
 ## v1.9.0 — 2026-11-10
 
 A much broader classifier: names, more identity numbers and key formats, and word lists as wide as a DLP product's. Still rules you can read.

@@ -99,3 +99,33 @@ func TestNameDetectionCanBeTurnedOff(t *testing.T) {
 		t.Fatalf("on=%v off=%v", on, off)
 	}
 }
+
+// ISSUE-169: how a critical facility is protected, with no marking and none
+// of the field's formal words. Examples are not in the benchmark set.
+func TestCriticalFacilityProtection(t *testing.T) {
+	cases := []struct {
+		name, text string
+		want       bool
+	}{
+		{"substation perimeter", "Granska skalskyddet runt ställverket i Norrby och föreslå var kamerorna ska sitta.", true},
+		{"pumping station guard rota", "Here is the guard rota for the pumping station; find the hours with nobody on site.", true},
+		{"control room redundancy", "Kontrollrummet saknar reservkraft efter klockan 22; skriv en åtgärdslista.", true},
+		{"dispatch centre weak points", "List the weak points of the dispatch centre's access control before the audit.", true},
+		{"fuel depot threat", "Sammanfatta hotbilden mot bränsledepån inför ledningsgruppens möte.", true},
+		{"a visit is not protection", "Boka ett studiebesök på vattenverket för klass 5B i maj.", false},
+		{"a facility in the news", "Write a short news item: the new power plant opens in June.", false},
+		{"protection without a facility", "List the weaknesses in our onboarding process for new hires.", false},
+		{"an office door", "Vi behöver nya passerkort till kontoret; skriv en beställning.", false},
+	}
+	for _, c := range cases {
+		if got := classesOf(c.text)["security_classified"]; got != c.want {
+			t.Errorf("%s: security_classified=%v, want %v", c.name, got, c.want)
+		}
+	}
+	// The Finnish number's digits are not also a phone number.
+	job := router.NewJobDescriptor(router.JobDescriptorInput{Request: &openai.ChatRequest{Model: "auto",
+		Messages: []openai.Message{{Role: "user", Content: "Asiakas 010190-900P haluaa perua tilauksen."}}}})
+	if strings.Join(job.PIITypes, ",") != "national_id" {
+		t.Errorf("pii types %v, want national_id only", job.PIITypes)
+	}
+}
