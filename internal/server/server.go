@@ -470,6 +470,35 @@ func New(cfg Config) http.Handler {
 			}
 			_ = json.NewEncoder(w).Encode(a)
 		}))
+		// Sealed rotation (ISSUE-171). The list of sealed files, with the
+		// SHA-256 of each; and sealing the current file by hand. Sealing
+		// moves the file to the archive and continues the chain in a new
+		// one. There is no way to delete a file from here.
+		mux.Handle("GET /router/audit/segments", dashGuard(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			w.Header().Set("Cache-Control", "no-store")
+			segs, err := cfg.AuditChain.Segments()
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				_ = json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+				return
+			}
+			if segs == nil {
+				segs = []audit.Segment{}
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"sealed": segs})
+		}))
+		mux.Handle("POST /router/audit/rotate", dashGuard(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			w.Header().Set("Cache-Control", "no-store")
+			seg, err := cfg.AuditChain.Rotate("admin", "sealed by hand")
+			if err != nil {
+				w.WriteHeader(http.StatusConflict)
+				_ = json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+				return
+			}
+			_ = json.NewEncoder(w).Encode(seg)
+		}))
 		mux.Handle("GET /router/audit/export", dashGuard(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/x-ndjson")
 			w.Header().Set("Content-Disposition", `attachment; filename="audit-chain.jsonl"`)

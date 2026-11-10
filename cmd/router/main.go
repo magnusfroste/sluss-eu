@@ -64,6 +64,17 @@ func main() {
 		} else {
 			auditChain = chain
 			logger.Info("tamper-evident audit chain enabled", "file", chain.Path())
+			// Sealed rotation (ISSUE-171): at this size the file gets a
+			// last record, moves to audit-archive beside it and the chain
+			// continues in a new file. Nothing is deleted. 0 or unset: never.
+			if v := strings.TrimSpace(os.Getenv("ROUTER_AUDIT_ROTATE_MB")); v != "" && v != "0" {
+				if mb, err := strconv.ParseFloat(v, 64); err == nil && mb > 0 {
+					chain.SetRotateBytes(int64(mb * 1024 * 1024))
+					logger.Info("audit chain rotation enabled: sealed files are kept in the archive, never deleted", "at_mb", mb, "archive", filepath.Join(dir, audit.ArchiveDirName))
+				} else {
+					logger.Warn("ROUTER_AUDIT_ROTATE_MB not understood; the audit chain is not rotated", "value", v)
+				}
+			}
 		}
 	}
 	// Anchor the chain in the log (ISSUE-160): its head every hour, so a log

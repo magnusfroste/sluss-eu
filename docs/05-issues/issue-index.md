@@ -132,6 +132,7 @@ P2:
 4. Uppdatera dokumentation om kontrakt ändras.
 5. Kontrollera latency om issue påverkar fast path.
 6. Merge efter review.
+- ISSUE-171 — Förseglad rotation av auditloggen: filen avslutas med `audit.sealed`, flyttas till `audit-archive/` (raderas aldrig), ny fil fortsätter samma kedja och bär den förseglade filens SHA-256; `ROUTER_AUDIT_ROTATE_MB`, `audit-verify` med flera filer. `epic: EPIC-15`, `priority: P2`, `state: done`, klar 2026-11-10.
 - ISSUE-170 — Andra åsikten mätt i CI: modellens svar spelas in (`benchmark record`) och spelas upp ovanpå dagens regler i `make benchmark`; inspelningen vägras om frågor eller instruktion ändrats. `epic: EPIC-15`, `priority: P2`, `state: done`, klar 2026-11-10.
 - ISSUE-169 — Skydd av samhällsviktig anläggning utan märkning (anläggning + skyddsord ger security_classified), preciserad instruktion till andra åsikten (commit-meddelande är inte kod), finskt id-nummer inte längre även telefon. `epic: EPIC-14`, `priority: P1`, `state: done`, klar 2026-11-10.
 - ISSUE-168 — Bredare klassificerare: namn i fritext (maskeras som `[NAME_1]`), finska/norska/US/UK/danska identitetsnummer, pass, regnr, födelsedatum, fler nyckelformat, ca 350 nya termer (hälsa, ekonomi, juridik, HR, GDPR art. 9, samhällsviktig verksamhet), allmän fråga är inte data; endast regler 74 % → 81 % fångade. `epic: EPIC-14`, `priority: P1`, `state: done`, klar 2026-11-10.

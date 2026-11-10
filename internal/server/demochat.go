@@ -874,7 +874,7 @@ function fmtMs(ms){return ms==null?'':(ms<1000?Math.round(ms)+' ms':(ms/1000).to
 function fmtUSD(v){return v==null?'':(v===0?'$0':'$'+(v<0.01?v.toFixed(5):v.toFixed(3)));}
 function dataText(meta){
   const r=meta.reason||'';let t='';
-  if(r.indexOf('pii')===0){const types=r.split(':')[1];const pw={personnummer:'personal identity number',email:'e-mail address',phone:'phone number',iban:'IBAN',card:'card number',address:'postal address',name:'a person\'s name',national_id:'identity number',birthdate:'date of birth',passport:'passport number',vehicle:'vehicle registration'};t='Personal data'+(types?' ('+types.split(',').map(x=>esc(pw[x]||x)).join(', ')+')':'');}
+  if(r.indexOf('pii')===0){const types=r.split(':')[1];const pw={personnummer:'personal identity number',email:'e-mail address',phone:'phone number',iban:'IBAN',card:'card number',address:'postal address',name:'name',national_id:'identity number',birthdate:'date of birth',passport:'passport number',vehicle:'vehicle registration'};t='Personal data'+(types?' ('+types.split(',').map(x=>esc(pw[x]||x)).join(', ')+')':'');}
   else if(meta.sens&&meta.sens!=='none')t=esc(human(meta.sens));
   else t='No sensitive data found';
   if(meta.sensSrc==='conversation')t+='<div class="sub">found earlier in this chat — the whole chat is routed by it</div>';

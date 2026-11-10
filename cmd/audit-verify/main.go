@@ -18,6 +18,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
@@ -31,27 +32,52 @@ import (
 func main() {
 	anchor := flag.String("anchor", "", "an anchor to check the export against, as <seq>:<entry_hash> (from the \"audit anchor\" log line or /router/audit/anchor)")
 	flag.Usage = func() {
-		fmt.Fprintln(os.Stderr, "usage: audit-verify [-anchor <seq>:<entry_hash>] <file>")
+		fmt.Fprintln(os.Stderr, "usage: audit-verify [-anchor <seq>:<entry_hash>] <file> [<next file> ...]")
 		flag.PrintDefaults()
 	}
 	flag.Parse()
 
-	var in io.Reader = os.Stdin
+	// One file, stdin, or several files in order: sealed files from the
+	// archive, oldest first, and then the current one. Given several, each
+	// sealed file is also checked against the SHA-256 that the file after
+	// it holds inside the chain.
+	var data []byte
 	name := "stdin"
-	if arg := flag.Arg(0); arg != "" && arg != "-" {
-		f, err := os.Open(arg)
+	if flag.NArg() == 0 || flag.Arg(0) == "-" {
+		b, err := io.ReadAll(os.Stdin)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "audit-verify: %v\n", err)
 			os.Exit(1)
 		}
-		defer f.Close()
-		in = f
-		name = arg
+		data = b
+	} else {
+		name = strings.Join(flag.Args(), " + ")
+		var prev []byte
+		for i, arg := range flag.Args() {
+			b, err := os.ReadFile(arg)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "audit-verify: %v\n", err)
+				os.Exit(1)
+			}
+			if i > 0 {
+				var first audit.ChainRecord
+				line, _, _ := bytes.Cut(b, []byte("\n"))
+				if json.Unmarshal(line, &first) != nil || first.Action != string(audit.ActionAuditContinued) {
+					fmt.Fprintf(os.Stderr, "audit-verify: %s does not start where a sealed file ends; give the files in order, oldest first\n", arg)
+					os.Exit(1)
+				}
+				if err := audit.VerifySealed(prev, first); err != nil {
+					fmt.Fprintf(os.Stderr, "audit-verify: SEALED FILE CHANGED — %s: %v\n", flag.Arg(i-1), err)
+					os.Exit(1)
+				}
+			}
+			prev = b
+			data = append(data, b...)
+		}
 	}
-	data, err := io.ReadAll(in)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "audit-verify: %v\n", err)
-		os.Exit(1)
+	var firstRec audit.ChainRecord
+	if line, _, _ := bytes.Cut(data, []byte("\n")); json.Unmarshal(line, &firstRec) == nil && firstRec.Seq > 1 && firstRec.Action == string(audit.ActionAuditContinued) {
+		fmt.Printf("audit-verify: note — this starts at record %d and continues from %s; verify it together with that file to show that nothing before it is missing\n", firstRec.Seq, firstRec.Detail["previous_file"])
 	}
 	n, err := audit.VerifyChain(bytes.NewReader(data))
 	if err != nil {

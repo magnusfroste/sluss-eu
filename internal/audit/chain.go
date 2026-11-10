@@ -71,6 +71,9 @@ type ChainSink struct {
 	seq      uint64
 	prevHash string
 	logger   *slog.Logger
+	// rotateBytes seals and archives the file once it is this large; zero
+	// is never (rotate.go).
+	rotateBytes int64
 }
 
 // NewChainSink opens (creating if needed) the chain file and resumes the chain
@@ -107,55 +110,52 @@ func NewChainSink(path string, logger *slog.Logger) (*ChainSink, error) {
 		return nil, fmt.Errorf("audit chain: open for append: %w", err)
 	}
 	s.file = f
+	// An empty current file beside sealed ones: a rotation was interrupted
+	// after the move, or the file was set aside by hand. Continue the chain
+	// from the newest sealed file instead of starting a second chain at 1.
+	if s.seq == 0 {
+		if segs, err := s.segmentsLocked(true); err == nil && len(segs) > 0 {
+			last := segs[len(segs)-1]
+			if seq, prev, ok := lastRecord(filepath.Join(s.archiveDir(), last.Name)); ok {
+				s.seq, s.prevHash = seq, prev
+				if err := s.appendLocked(continuedEntry(last, "system")); err != nil {
+					return nil, err
+				}
+			}
+		}
+	}
 	return s, nil
 }
 
 // Record appends the entry to the chain. Errors are logged, never propagated —
 // the audit contract is that recording can never affect the request path.
-func (s *ChainSink) Record(_ context.Context, e Entry) {
+func (s *ChainSink) Record(ctx context.Context, e Entry) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	// Another Sluss process may share this file — during an overlapping
 	// deploy the old and the new container both run for a few seconds. Lock
 	// the file across processes and continue from the record that is really
 	// last on disk, not the one this process remembers, so the chain never
-	// forks.
-	unlock := lockFile(s.file)
-	defer unlock()
-	if seq, prev, ok := lastRecord(s.path); ok {
-		s.seq, s.prevHash = seq, prev
+	// forks. The other process may also have sealed the file and moved it
+	// to the archive; then this handle points at the archived file, and the
+	// append must go to the new one.
+	var unlock func()
+	for attempt := 0; attempt < 3; attempt++ {
+		unlock = lockFile(s.file)
+		if cur, err := os.Stat(s.path); err == nil && sameFile(s.file, cur) {
+			break
+		}
+		unlock()
+		unlock = func() {}
+		s.resyncLocked()
 	}
-	rec := ChainRecord{
-		Seq:       s.seq + 1,
-		Time:      e.Time.UTC(),
-		Action:    string(e.Action),
-		Actor:     e.Actor,
-		TenantID:  e.TenantID,
-		ProjectID: e.ProjectID,
-		Target:    e.Target,
-		Outcome:   e.Outcome,
-		RequestID: e.RequestID,
-		Reason:    e.Reason,
-		Detail:    e.Detail,
-		PrevHash:  s.prevHash,
-	}
-	hash, err := hashRecord(rec)
-	if err != nil {
-		s.logf("audit chain: hash failed", err)
-		return
-	}
-	rec.EntryHash = hash
-	line, err := json.Marshal(rec)
-	if err != nil {
-		s.logf("audit chain: marshal failed", err)
-		return
-	}
-	if _, err := s.file.Write(append(line, '\n')); err != nil {
+	defer func() { unlock() }()
+	s.resyncLocked()
+	if err := s.appendLocked(e); err != nil {
 		s.logf("audit chain: append failed", err)
 		return
 	}
-	s.seq = rec.Seq
-	s.prevHash = rec.EntryHash
+	s.maybeRotateLocked(ctx)
 }
 
 // lastRecord reads the last complete record in the file at path. ok is false
@@ -204,8 +204,9 @@ func (s *ChainSink) Path() string {
 	return s.path
 }
 
-// ExportTo streams the current chain file to w while holding the append lock,
-// so the export is a consistent prefix of the chain.
+// ExportTo streams the whole chain to w while holding the append lock: the
+// sealed files, oldest first, and then the current file. The export is a
+// consistent prefix of the chain, from record 1.
 func (s *ChainSink) ExportTo(w io.Writer) error {
 	if s == nil {
 		return fmt.Errorf("audit chain: not configured")
@@ -215,13 +216,7 @@ func (s *ChainSink) ExportTo(w io.Writer) error {
 	if err := s.file.Sync(); err != nil {
 		return fmt.Errorf("audit chain: sync before export: %w", err)
 	}
-	f, err := os.Open(s.path)
-	if err != nil {
-		return fmt.Errorf("audit chain: open for export: %w", err)
-	}
-	defer f.Close()
-	_, err = io.Copy(w, f)
-	return err
+	return s.exportAllLocked(w)
 }
 
 // Close releases the underlying file.
@@ -254,6 +249,13 @@ func VerifyChain(r io.Reader) (int, error) {
 		var rec ChainRecord
 		if err := json.Unmarshal(raw, &rec); err != nil {
 			return count, fmt.Errorf("line %d: unparseable record: %w", line, err)
+		}
+		// One sealed-and-continued file on its own starts where the file
+		// before it ended (rotate.go). Verified alone it proves that
+		// nothing in it was changed; verified after the file before it,
+		// that nothing is missing between them.
+		if count == 0 && rec.Seq > 1 && rec.Action == string(ActionAuditContinued) {
+			prevSeq, prevHash = rec.Seq-1, rec.PrevHash
 		}
 		if rec.Seq != prevSeq+1 {
 			return count, fmt.Errorf("line %d: sequence %d does not follow %d (record removed or inserted)", line, rec.Seq, prevSeq)
