@@ -31,30 +31,31 @@ Every AI gateway and DLP product says it finds sensitive data. Few say how often
 Version 1.9.
 
 - **Sluss, rules only**: measured in process (`make benchmark`), each question five times.
+- **Sluss, rules + second opinion**: the demo instance over the network, with its local model (a 27B reasoning model with thinking turned off) as the second opinion, through the dry-run, each question twice. The time includes the round trip to the instance.
 - **Presidio**: Microsoft's open-source PII detector (`presidio-analyzer` 2.2.366 with spaCy 3.8 and `en_core_web_lg`, its English setup out of the box, score threshold 0.5, dates and URLs ignored), run with `benchmark/presidio.py`. Any entity it finds counts as *flagged*; a Swedish model or custom recognisers would change its numbers, and the script is there to try.
 
-| | Sluss, rules only | Presidio |
-|---|---|---|
-| Sensitive questions flagged | 188 of 232 (81 %) | 159 of 232 (69 %) |
-| Harmless questions flagged | 30 of 212 (14 %) | 51 of 212 (24 %) |
-| — with an identifier or key | 104 of 104 (100 %) | 72 of 104 (69 %) |
-| — with a term or marking | 70 of 70 (100 %) | 48 of 70 (69 %) |
-| — with meaning only | 14 of 58 (24 %) | 39 of 58 (67 %) |
-| — look-alikes left alone | 80 of 110 (73 %) | 63 of 110 (57 %) |
-| — plain questions left alone | 102 of 102 (100 %) | 98 of 102 (96 %) |
-| Right class, exactly | 365 of 444 (82 %) | 236 of 444 (53 %) |
-| Same answer every run | yes (5 runs) | not measured |
-| Time per question (median / p95) | 0.14 ms / 0.20 ms | 5 ms / 8 ms |
+| | Sluss, rules only | Sluss, rules + second opinion | Presidio |
+|---|---|---|---|
+| Sensitive questions flagged | 188 of 232 (81 %) | 221 of 232 (95 %) | 159 of 232 (69 %) |
+| Harmless questions flagged | 30 of 212 (14 %) | 39 of 212 (18 %) | 51 of 212 (24 %) |
+| — with an identifier or key | 104 of 104 (100 %) | 104 of 104 (100 %) | 72 of 104 (69 %) |
+| — with a term or marking | 70 of 70 (100 %) | 70 of 70 (100 %) | 48 of 70 (69 %) |
+| — with meaning only | 14 of 58 (24 %) | 47 of 58 (81 %) | 39 of 58 (67 %) |
+| — look-alikes left alone | 80 of 110 (73 %) | 78 of 110 (71 %) | 63 of 110 (57 %) |
+| — plain questions left alone | 102 of 102 (100 %) | 95 of 102 (93 %) | 98 of 102 (96 %) |
+| Right class, exactly | 365 of 444 (82 %) | 349 of 444 (79 %) | 236 of 444 (53 %) |
+| Same answer every run | yes (5 runs) | yes (2 runs) | not measured |
+| Time per question (median / p95) | 0.14 ms / 0.20 ms | 317 ms / 355 ms | 5 ms / 8 ms |
 
-| Class | Sluss recall / precision | Presidio recall / precision |
-|---|---|---|
-| Personal data | 1.00 / 0.83 | 0.88 / 0.36 |
-| Keys and secrets | 0.75 / 1.00 | — |
-| Security-classified | 0.67 / 1.00 | — |
-| Health | 0.62 / 0.55 | — |
-| Financial | 0.62 / 0.94 | — |
-| Legal | 0.64 / 0.78 | — |
-| Source code | 1.00 / 1.00 | — |
+| Class | Rules only, recall / precision | Rules + second opinion | Presidio |
+|---|---|---|---|
+| Personal data | 1.00 / 0.83 | 1.00 / 0.72 | 0.88 / 0.36 |
+| Keys and secrets | 0.75 / 1.00 | 1.00 / 0.94 | — |
+| Security-classified | 0.67 / 1.00 | 0.71 / 1.00 | — |
+| Health | 0.62 / 0.55 | 0.96 / 0.62 | — |
+| Financial | 0.62 / 0.94 | 0.96 / 0.64 | — |
+| Legal | 0.64 / 0.78 | 0.91 / 0.62 | — |
+| Source code | 1.00 / 1.00 | 1.00 / 0.67 | — |
 
 *Recall* is the share of questions with that class in which the tool found it. *Precision* is the share of the tool's findings of that class that were right.
 
@@ -64,7 +65,7 @@ Version 1.9.
 - **Names are found, and that has a price.** A given name followed by a family name is personal data: 14 of the meaning-only questions are caught that way. The rule cannot tell a customer from an author, so 11 questions about Astrid Lindgren, Olof Palme and Marie Curie are flagged too. They are kept on your own models; if that is wrong for you, `ROUTER_NAME_DETECTION=off` turns the rule off.
 - **A general question is not data.** *What is an IBAN?*, *how should API keys be rotated?*, *what does a district court do?* use the words without holding anything: the rules now let them pass. A poster for diabetes awareness week does not pass: it is not a question, and *diabetes* is a health word. That is most of the remaining 14 %.
 - **Rules still do not read meaning.** 44 of 58 meaning-only questions are missed: a password with no label, an illness never called one, a deal or a dispute in everyday words, a plan to protect a waterworks with no marking. No word list fixes that.
-- **The second opinion is what reads meaning.** A model on your own hardware reading the question after the rules ([How Sluss decides](/manual/how-sluss-decides)). On version 1.8.1 and that version's questions it took sensitive questions flagged from 74 % to 92 %, with 13 % of harmless questions flagged and about a third of a second per question. It is measured again on this set after each release; run the commands below against your own model.
+- **The second opinion is what reads meaning.** With a model on your own hardware reading the question after the rules ([How Sluss decides](/manual/how-sluss-decides)), *meaning only* goes from 14 to 47 of 58 and sensitive questions flagged from 81 % to 95 %. The price: 9 more harmless questions flagged (six git commit messages read as code, one post about the canteen, two general questions), which keeps them on your own models, and about a third of a second per question including the network. It gave the same answer both times for all 444 questions; that is an observation on this model, not a guarantee, and only the rules' part is the same by construction. What it still missed, 11 questions: protection of critical infrastructure described without a marking (7), a threat from a supplier in everyday words, a bid with no financial term, and *has had it tough since the accident*. A different model gives different numbers; measure yours with the commands below.
 
 ## Before and after
 
