@@ -5,12 +5,14 @@ All notable changes to Sluss. Versions follow [semantic versioning](https://semv
 Releases are published from this file by the `release` workflow (Actions → release → Run workflow). Every release is a container image you can pin:
 
 ```
-ghcr.io/magnusfroste/sluss-eu:v1.9.0   # this release
+ghcr.io/magnusfroste/sluss-eu:v1.9.1   # this release
 ghcr.io/magnusfroste/sluss-eu:1.9      # the newest 1.9.x
 ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 ```
 
-## Unreleased
+## v1.9.1 — 2026-11-10
+
+How a critical facility is protected is caught without a marking, and the local second opinion flags fewer harmless questions.
 
 ### Protection
 - **How a critical facility is protected, with no marking.** A facility (a waterworks, a substation, a control room, a dispatch centre, a fuel depot) and a protection word (perimeter, weaknesses, guard rota, backup site, sabotage) in the same text is security-classified. Either alone is not: a study visit to the waterworks is a study visit. On the benchmark, security-classified questions found go from 67 % to 92 %.
@@ -18,7 +20,7 @@ ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 - A Finnish identity number is no longer also reported as a phone number, so *mask and send* replaces it once.
 
 ### Evidence
-- The benchmark has four more kinds of question (two sensitive that the new rule does not catch, two look-alikes). Rules only: 84 % of sensitive questions flagged, 8 % of harmless ones; the manual explains why the second number is the set and not the rules.
+- The benchmark has four more kinds of question (two sensitive that the new rule does not catch, two look-alikes). Rules only: 84 % of sensitive questions flagged, 8 % of harmless ones; the manual explains why the second number is the set and not the rules. With the local second opinion on the demo's model: 97 % and 10 %, and the six requests for a commit message it used to read as code are left alone.
 
 ## v1.9.0 — 2026-11-10
 

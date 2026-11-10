@@ -34,7 +34,9 @@ manualen.
 | Säkerhetsklassat, recall | 0,67 | 0,92 |
 | Rätt klass exakt | 82 % | 86 % |
 
-## Kvar
+## Med andra åsikt (demo, 2026-11-10)
 
-- Andra åsikten mätt om efter utrullning (instruktionen är ändrad, så både
-  träffar och falsklarm kan ha rört sig).
+Känsliga flaggade 84 % → 97 %; bara innebörd 20 → 52 av 58; ofarliga
+flaggade 8 % → 10 %; samma svar båda körningarna; median 304 ms med nätverk.
+Commit-meddelandena flaggas inte längre (källkod: precision 0,67 → 1,00).
+Kvar att missa: 6 frågor, alla i vardagsord utan fackterm.
