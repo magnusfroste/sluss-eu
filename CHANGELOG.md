@@ -5,12 +5,14 @@ All notable changes to Sluss. Versions follow [semantic versioning](https://semv
 Releases are published from this file by the `release` workflow (Actions → release → Run workflow). Every release is a container image you can pin:
 
 ```
-ghcr.io/magnusfroste/sluss-eu:v1.9.1   # this release
+ghcr.io/magnusfroste/sluss-eu:v1.9.2   # this release
 ghcr.io/magnusfroste/sluss-eu:1.9      # the newest 1.9.x
 ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 ```
 
-## Unreleased
+## v1.9.2 — 2026-11-10
+
+The local second opinion is measured with every change, and the chat inspector names the new kinds of personal data in words.
 
 ### Evidence
 - **The local second opinion is measured with every change.** Its answers to the 444 benchmark questions are recorded (`benchmark/second-opinion.jsonl`, with the model, the date and a fingerprint of its instruction) and replayed in CI on top of today's rules, held to a floor. A recording that no longer matches the questions or the instruction is refused, so it cannot go stale unnoticed. `benchmark record` makes a new one against a running instance.
