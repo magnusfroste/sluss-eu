@@ -5,12 +5,14 @@ All notable changes to Sluss. Versions follow [semantic versioning](https://semv
 Releases are published from this file by the `release` workflow (Actions → release → Run workflow). Every release is a container image you can pin:
 
 ```
-ghcr.io/magnusfroste/sluss-eu:v1.8.1   # this release
-ghcr.io/magnusfroste/sluss-eu:1.8      # the newest 1.8.x
+ghcr.io/magnusfroste/sluss-eu:v1.9.0   # this release
+ghcr.io/magnusfroste/sluss-eu:1.9      # the newest 1.9.x
 ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 ```
 
-## Unreleased
+## v1.9.0 — 2026-11-10
+
+A much broader classifier: names, more identity numbers and key formats, and word lists as wide as a DLP product's. Still rules you can read.
 
 ### Protection
 - **A much broader classifier**, still rules you can read, still the same answer every time.
@@ -22,7 +24,7 @@ ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 - This changes routing: more questions are kept on your own models (a full name is enough), and a general question about passwords, IBANs or diagnoses may now go to the cloud. Check with the dry-run.
 
 ### Evidence
-- The benchmark got harder with the rules: new sensitive questions for what is new, and look-alikes written to trip it (famous people, *what is an IPO?*, a poster for diabetes awareness week). Rules only: 81 % of sensitive questions flagged (was 74 %), every identifier, term and name; 14 % of harmless ones (was 10 %, on an easier set). Presidio on the same set: 69 % and 24 %. The manual page shows all three versions side by side.
+- The benchmark got harder with the rules: new sensitive questions for what is new, and look-alikes written to trip it (famous people, *what is an IPO?*, a poster for diabetes awareness week). Rules only: 81 % of sensitive questions flagged (was 74 %), every identifier, term and name; 14 % of harmless ones (was 10 %, on an easier set). With the local second opinion on the demo's model: 95 % and 18 %. Presidio on the same set: 69 % and 24 %. The manual page shows all three versions side by side.
 
 ## v1.8.1 — 2026-11-10
 

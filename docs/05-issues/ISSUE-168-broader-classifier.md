@@ -51,6 +51,11 @@ Presidio på samma korpus: 69 % och 24 %. På 1.8.1-korpusen ger de nya
 reglerna 80 % och 4 %; den siffran smickrar, eftersom regeln om allmänna
 frågor skrevs med de motexemplen kända.
 
+## Med andra åsikt (demo, 2026-11-10)
+
+Känsliga flaggade 81 % → 95 %; bara innebörd 14 → 47 av 58; ofarliga
+flaggade 14 % → 18 %; samma svar båda körningarna; median 317 ms med nätverk.
+
 ## Kända kostnader
 
 - Frågor om kända personer flaggas (11 i korpusen).
@@ -61,5 +66,4 @@ frågor skrevs med de motexemplen kända.
 
 ## Kvar
 
-- Andra åsikten mätt om på den nya korpusen (efter utrullning).
 - Regeltexten i konsolen (Inspector) visar typen `name` men förklarar den inte.
