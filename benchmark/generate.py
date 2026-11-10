@@ -269,7 +269,9 @@ fill(16, lambda: rng.choice([
 fill(8, lambda: rng.choice([
     "Here is how we protect {p} against sabotage; suggest improvements.",
     "Lista svagheterna i vårt skydd av {p} och föreslå åtgärder.",
-    "Our backup site for {p} is in the old bank vault on Ringvägen; draft the access plan."]).format(
+    "Our backup site for {p} is in the old bank vault on Ringvägen; draft the access plan.",
+    "Vakten vid pumphuset går hem klockan 22 och ingen är kvar till morgonen; hur löser vi det utan att anställa?",
+    "Nyckeln till nätstationen hänger i fikarummet och alla känner till koden; skriv ett förslag till ny rutin."]).format(
         p=rng.choice(["the grid's control systems", "ledningscentralen", "the emergency service", "vattenverket", "the radar site"])),
     ["security_classified"], "meaning")
 
@@ -336,6 +338,8 @@ PUBLIC = ["Astrid Lindgren", "Olof Palme", "Selma Lagerlöf", "Alfred Nobel", "G
 CONCEPTS = ["an IPO", "EBITDA", "a power of attorney", "due diligence", "a public tender", "cash flow", "bankruptcy",
             "an acquisition", "arbitration", "a credit report", "critical infrastructure under NIS2", "a trade union"]
 LOOKALIKES = [
+    lambda: f"Boka ett studiebesök på {rng.choice(['vattenverket','kraftverket','reningsverket'])} för {rng.choice(['klass 5B','nya kollegor','pensionärsföreningen'])}.",
+    lambda: f"Explain how {rng.choice(['a power grid','a water treatment plant','air traffic control'])} works, for a {rng.choice(['school talk','blog post','quiz'])}.",
     lambda: f"Summarise what {rng.choice(PUBLIC)} is known for, in {rng.randint(3,6)} sentences for a school essay.",
     lambda: f"Skriv en kort presentation av {rng.choice(PUBLIC)} till personaltidningens frågesport.",
     lambda: f"Explain what {rng.choice(CONCEPTS)} is to {rng.choice(['a student','a new hire','my grandmother'])}.",

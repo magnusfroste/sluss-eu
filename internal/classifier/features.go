@@ -378,6 +378,11 @@ func ExtractFromMessages(messages []openai.Message, hints RequestHints) Features
 		if securityStampPattern.MatchString(text) {
 			addKeyword("security_classified")
 		}
+		// How a critical facility is protected, with no marking on it
+		// (ISSUE-169): a facility and a protection word in the same text.
+		if containsAnyTerm(lower, criticalFacilities) && containsAnyTerm(lower, protectionWords) {
+			addKeyword("security_classified")
+		}
 
 		// Content-level PII detection (ISSUE-077): the keyword rules above fire
 		// when the prompt TALKS ABOUT pii; the detector fires when the prompt
@@ -437,6 +442,39 @@ func ExtractFromMessages(messages []openai.Message, hints RequestHints) Features
 	}
 
 	return f
+}
+
+// criticalFacilities are the kinds of site and system that society depends
+// on (the sectors MSB calls samhällsviktig verksamhet). Alone they are
+// ordinary words: a school visit to the waterworks is not sensitive.
+var criticalFacilities = []string{
+	"vattenverk", "vattenverket", "reningsverk", "reningsverket", "dricksvattenförsörjning", "vattentäkt",
+	"kraftverk", "kraftverket", "kärnkraftverk", "kärnkraftverket", "vattenkraftverk", "värmeverk", "värmeverket",
+	"ställverk", "ställverket", "transformatorstation", "elnätet", "kraftnätet", "stamnätet", "fjärrvärmenät",
+	"ledningscentral", "ledningscentralen", "larmcentral", "larmcentralen", "sos-central", "räddningscentral",
+	"driftcentral", "driftcentralen", "kontrollrum", "kontrollrummet", "styrsystem", "styrsystemet",
+	"radaranläggning", "radarstation", "flygledning", "flygledningen", "bränsledepå", "drivmedelsdepå",
+	"ammunitionsförråd", "regemente", "regementet", "garnison", "militär anläggning", "militära anläggningar",
+	"datahall", "datahallen", "telestation", "mobilmast", "teknikbod", "sambandscentral",
+	"waterworks", "water treatment plant", "water supply", "power plant", "power station", "nuclear plant",
+	"substation", "power grid", "electrical grid", "grid's control", "grid control", "control room", "control systems",
+	"scada", "dispatch centre", "dispatch center", "emergency service", "emergency services", "emergency dispatch",
+	"radar site", "radar station", "air traffic control", "fuel depot", "ammunition depot", "military base",
+	"military site", "data centre", "data center", "telecom exchange", "pumping station", "pumpstation",
+}
+
+// protectionWords say that the text is about how something is protected or
+// where it is weak.
+var protectionWords = []string{
+	"sabotage", "skalskydd", "skalskyddet", "perimeterskydd", "intrångsskydd", "tillträdesskydd",
+	"sårbarhet", "svaghet", "svagheter", "svagheterna", "hotbild", "hotbilden", "säkerhetsanalys", "riskanalys",
+	"bevakning", "bevakningen", "vaktschema", "rondering", "larmanläggning", "kameraövervakning",
+	"reservplats", "reservanläggning", "reservkraft", "redundans", "tillträdesplan", "passerkort", "passersystem",
+	"angrepp", "skyddsnivå", "vårt skydd", "skyddet av", "skydd av", "skyddar vi", "skyddsåtgärd",
+	"vulnerability", "vulnerabilities", "weakness", "weaknesses", "weak points", "weak point", "threat assessment",
+	"perimeter", "guard schedule", "guard rota", "patrol", "intrusion", "physical security", "access plan",
+	"access control", "backup site", "fallback site", "redundancy", "single point of failure",
+	"single points of failure", "how we protect", "we protect", "protection of", "security measures", "attack",
 }
 
 // termOnlyClasses are the data classes a term alone can give. In a general

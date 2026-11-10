@@ -78,8 +78,9 @@ const systemPrompt = `You classify text for a data-protection gateway. Answer wi
 "financial" (a company's non-public financial data: deals, results before publication, payroll, bank details),
 "legal" (contracts, disputes, legal advice),
 "secrets" (passwords, API keys, tokens, private keys),
-"security_classified" (classified or security-protected material),
-"source_code" (program code).
+"security_classified" (classified or security-protected material, or details of how critical infrastructure is protected: power, water, telecom, emergency services, defence sites; their weaknesses, backup sites, access and guarding),
+"source_code" (program code that is present in the text; a request to write code, a commit message or a description of a change, with no code in it, is not source code).
+Label only what the text itself holds. A general question about a topic, with no person, no document and no organisation's own data in it, gets [].
 If none apply, answer []. Do not explain.
 /no_think`
 

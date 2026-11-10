@@ -64,7 +64,7 @@ var catchCorpus = []catchCase{
 	{router.SensitivitySecurityClassified, "Begränsat hemlig — skriv en sammanfattning av rapporten.", true, "a protection level"},
 	{router.SensitivitySecurityClassified, "Translate this classified document, marked NATO restricted.", true, "a NATO marking"},
 	{router.SensitivitySecurityClassified, "Summarise the attached: RESTREINT UE/EU RESTRICTED.", true, "an EU marking"},
-	{router.SensitivitySecurityClassified, "Här är planen för hur vi skyddar kraftnätets styrsystem mot sabotage; föreslå förbättringar.", false, "critical-infrastructure content with no marking"},
+	{router.SensitivitySecurityClassified, "Här är planen för hur vi skyddar kraftnätets styrsystem mot sabotage; föreslå förbättringar.", true, "how a critical facility is protected, no marking (ISSUE-169)"},
 
 	// ---- Health ---------------------------------------------------------------
 	{router.SensitivityHealth, "Sammanfatta patientjournalen: diagnos F32.1, sjukskriven 50 %.", true, "patient record, diagnosis"},

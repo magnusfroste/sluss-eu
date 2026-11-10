@@ -138,7 +138,9 @@ func scan(text string, emit func(t Type, start, end int)) {
 		emit(TypeEmail, loc[0], loc[1])
 	}
 	for _, loc := range rePhone.FindAllStringIndex(text, -1) {
-		if digitBounded(text, loc[0], loc[1]) && validPhone(text[loc[0]:loc[1]]) && !numberContext(text, loc[0]) {
+		// A letter directly after the digits makes it something else: a
+		// Finnish identity number ends in a check character (010190-900P).
+		if digitBounded(text, loc[0], loc[1]) && !letterFollows(text, loc[1]) && validPhone(text[loc[0]:loc[1]]) && !numberContext(text, loc[0]) {
 			emit(TypePhone, loc[0], loc[1])
 		}
 	}
@@ -269,6 +271,10 @@ func alnumBounded(s string, start, end int) bool {
 }
 
 func isDigit(b byte) bool { return b >= '0' && b <= '9' }
+
+func letterFollows(s string, end int) bool {
+	return end < len(s) && ((s[end] >= 'a' && s[end] <= 'z') || (s[end] >= 'A' && s[end] <= 'Z'))
+}
 
 func isAlnum(b byte) bool {
 	return isDigit(b) || (b >= 'a' && b <= 'z') || (b >= 'A' && b <= 'Z')

@@ -95,7 +95,7 @@ demo-ciso:
 benchmark:
 	python3 benchmark/generate.py | cmp -s - benchmark/corpus.jsonl || { echo "benchmark/corpus.jsonl is not what benchmark/generate.py writes"; exit 1; }
 	go run ./cmd/benchmark run -repeat 3 -out bin/benchmark-rules.jsonl
-	go run ./cmd/benchmark score -min-recall 0.80 -max-fpr 0.15 bin/benchmark-rules.jsonl
+	go run ./cmd/benchmark score -min-recall 0.83 -max-fpr 0.09 bin/benchmark-rules.jsonl
 
 # Live smoke against OpenRouter (periodic real-provider validation). Skips when
 # OPENROUTER_API_KEY is unset.
