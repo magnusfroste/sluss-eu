@@ -1,6 +1,13 @@
 package main
 
-import "testing"
+import (
+	"encoding/json"
+	"os"
+	"path/filepath"
+	"testing"
+
+	"github.com/magnusfroste/sluss/internal/secondopinion"
+)
 
 func TestScore(t *testing.T) {
 	cases := []benchCase{
@@ -48,5 +55,53 @@ func TestSecondOpinionClasses(t *testing.T) {
 	got := secondOpinionClasses([]string{"Policy rule r1 matched", "second opinion (local model m): pii, health — may only make the decision stricter"})
 	if len(got) != 2 || got[0] != "pii" || got[1] != "health" {
 		t.Fatalf("got %v", got)
+	}
+}
+
+// ISSUE-170: a recording of the second opinion is replayed on top of the
+// rules, raise only, and is refused when it no longer matches.
+func TestReplayRecording(t *testing.T) {
+	cases := []benchCase{
+		{ID: "1", Text: "Plan a team lunch for nine people."},
+		{ID: "2", Text: "Mejla anna.svensson@example.se om fakturan."},
+	}
+	write := func(h recordingHeader, answers ...recordedAnswer) string {
+		path := filepath.Join(t.TempDir(), "rec.jsonl")
+		f, err := os.Create(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer f.Close()
+		enc := json.NewEncoder(f)
+		_ = enc.Encode(h)
+		for _, a := range answers {
+			_ = enc.Encode(a)
+		}
+		return path
+	}
+	good := recordingHeader{Recording: "second-opinion", Model: "m", PromptHash: secondopinion.PromptHash()}
+	a1 := recordedAnswer{ID: "1", Text: textHash(cases[0].Text), Labels: []string{"health"}}
+	a2 := recordedAnswer{ID: "2", Text: textHash(cases[1].Text), Labels: []string{}}
+
+	classify := replayClassifier(cases, write(good, a1, a2))
+	if got, _ := classify(cases[0].Text); len(got) != 1 || got[0] != "health" {
+		t.Fatalf("the model's class was not added: %v", got)
+	}
+	if got, _ := classify(cases[1].Text); len(got) == 0 {
+		t.Fatalf("the rules' class was lost: %v", got)
+	}
+
+	stale := good
+	stale.PromptHash = "0000000000000000"
+	if _, _, err := loadRecording(cases, write(stale, a1, a2)); err == nil {
+		t.Fatal("a recording made with another instruction was accepted")
+	}
+	moved := a1
+	moved.Text = textHash("another question")
+	if _, _, err := loadRecording(cases, write(good, moved, a2)); err == nil {
+		t.Fatal("a recording of other questions was accepted")
+	}
+	if _, _, err := loadRecording(cases, write(good, a1)); err == nil {
+		t.Fatal("a recording with a question missing was accepted")
 	}
 }

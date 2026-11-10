@@ -100,7 +100,7 @@ The harmless share went up from 10 % to 14 % because the set now asks harder que
 ## Run it
 
 ```bash
-make benchmark                                            # rules only, in process, also in CI
+make benchmark                                            # rules only, and rules + recorded second opinion; also in CI
 go run ./cmd/benchmark run -repeat 5 -out rules.jsonl    # the same by hand
 go run ./cmd/benchmark score -markdown rules.jsonl        # the tables above
 go run ./cmd/benchmark score -misses rules.jsonl          # every miss and false alarm
@@ -111,6 +111,13 @@ Against a running Sluss, to include a second opinion or your own policy's rules 
 ```bash
 go run ./cmd/benchmark run -url {{BASE}} -key <api key> -out yours.jsonl
 go run ./cmd/benchmark score rules.jsonl yours.jsonl
+```
+
+**The second opinion in CI.** A model cannot be asked from a build, so its answers are recorded once and replayed. `benchmark/second-opinion.jsonl` holds, for every question, the classes the demo's local model gave, with the model's name, the date and a fingerprint of the instruction it was given. `make benchmark` adds those to the classes of today's rules (raise only, as the router does) and holds the result to a floor. The replay shows what the rules and that model give together, and it catches a rule change that makes the pair worse. It does not show how the model would answer a new question. The recording is refused when the questions or the instruction have changed since it was made; then record again, against an instance that has the second opinion turned on:
+
+```bash
+go run ./cmd/benchmark record -url {{BASE}} -key <api key>       # writes benchmark/second-opinion.jsonl
+go run ./cmd/benchmark run -second-opinion benchmark/second-opinion.jsonl -out replay.jsonl
 ```
 
 ## Measure your current gateway the same way

@@ -874,13 +874,13 @@ function fmtMs(ms){return ms==null?'':(ms<1000?Math.round(ms)+' ms':(ms/1000).to
 function fmtUSD(v){return v==null?'':(v===0?'$0':'$'+(v<0.01?v.toFixed(5):v.toFixed(3)));}
 function dataText(meta){
   const r=meta.reason||'';let t='';
-  if(r.indexOf('pii')===0){const types=r.split(':')[1];t='Personal data'+(types?' ('+esc(types.replace(/,/g,', '))+')':'');}
+  if(r.indexOf('pii')===0){const types=r.split(':')[1];const pw={personnummer:'personal identity number',email:'e-mail address',phone:'phone number',iban:'IBAN',card:'card number',address:'postal address',name:'a person\'s name',national_id:'identity number',birthdate:'date of birth',passport:'passport number',vehicle:'vehicle registration'};t='Personal data'+(types?' ('+types.split(',').map(x=>esc(pw[x]||x)).join(', ')+')':'');}
   else if(meta.sens&&meta.sens!=='none')t=esc(human(meta.sens));
   else t='No sensitive data found';
   if(meta.sensSrc==='conversation')t+='<div class="sub">found earlier in this chat — the whole chat is routed by it</div>';
   const also=(meta.classes||[]).filter(c=>c!==meta.sens);
   if(also.length)t+='<div class="sub">also found: '+also.map(c=>esc(human(c))).join(', ')+' — rules for these apply too</div>';
-  if(meta.masked){const mk={personnummer:'personal identity number',email:'e-mail address',phone:'phone number',iban:'IBAN',card:'card number',address:'address',secret:'key or token'};
+  if(meta.masked){const mk={personnummer:'personal identity number',email:'e-mail address',phone:'phone number',iban:'IBAN',card:'card number',address:'address',name:'name',national_id:'identity number',birthdate:'date of birth',passport:'passport number',vehicle:'vehicle registration',secret:'key or token'};
     t+='<div class="sub">masked before the cloud model saw it: '+meta.masked.split(',').map(x=>{const p=x.split(':');return esc((mk[p[0]]||p[0])+(p[1]&&p[1]!=='1'?' ×'+p[1]:''));}).join(', ')+' — placeholders went out, the values were put back in the answer</div>';}
   if((meta.second||[]).length)t+='<div class="sub">second opinion from the local model '+esc(meta.secondModel||'')+': '+meta.second.map(c=>esc(human(c))).join(', ')+' — it may only make the decision stricter</div>';
   return t;
@@ -968,7 +968,7 @@ function outputTab(meta,m){
     (FULL?kv('Cost',meta.cost!=null?fmtUSD(meta.cost)+(meta.cost===0&&meta.egress==='local'?'<div class="sub">own hardware</div>':''):''):'')+'</div>'+
     answerCheckGrp(meta)+auditGrp(meta);
 }
-const FLAG_NAMES={personnummer:'a personal identity number',email:'an e-mail address',phone:'a phone number',address:'a postal address',card:'a card number',iban:'an IBAN'};
+const FLAG_NAMES={personnummer:'a personal identity number',email:'an e-mail address',phone:'a phone number',address:'a postal address',card:'a card number',iban:'an IBAN',national_id:'an identity number',birthdate:'a date of birth',passport:'a passport number',vehicle:'a vehicle registration'};
 function answerCheckGrp(meta){
   const f=meta.answerFlags||[];if(!f.length)return '';
   const words=f.map(x=>{const p=x.split(':');return p[0]==='secret'?'a key or token ('+esc(p[1]||'')+')':(FLAG_NAMES[p[1]]||esc(p[1]||''));});

@@ -88,14 +88,20 @@ use-cases:
 demo-ciso:
 	./scripts/demo-ciso.sh
 
-# Benchmark (benchmark/): 444 labelled synthetic questions, rules only, in
-# process. Fails if the corpus no longer matches its generator, or if the
-# share caught or the share of harmless questions flagged gets worse than
+# Benchmark (benchmark/): 444 labelled synthetic questions, in process: rules
+# only, and rules plus a recording of the local second opinion. Fails if
+# the corpus no longer matches its generator, or if the share caught or the share of harmless questions flagged gets worse than
 # the floor below. See manual/benchmark.md.
 benchmark:
 	python3 benchmark/generate.py | cmp -s - benchmark/corpus.jsonl || { echo "benchmark/corpus.jsonl is not what benchmark/generate.py writes"; exit 1; }
 	go run ./cmd/benchmark run -repeat 3 -out bin/benchmark-rules.jsonl
 	go run ./cmd/benchmark score -min-recall 0.83 -max-fpr 0.09 bin/benchmark-rules.jsonl
+	@# The same with the local second opinion, from a recording of the model's
+	@# answers (no model, no network). Fails if the recording no longer matches
+	@# the questions or the instruction the model is given; then record again:
+	@#   go run ./cmd/benchmark record -url <instance> -key <key>
+	go run ./cmd/benchmark run -second-opinion benchmark/second-opinion.jsonl -out bin/benchmark-second-opinion.jsonl
+	go run ./cmd/benchmark score -min-recall 0.96 -max-fpr 0.11 bin/benchmark-second-opinion.jsonl
 
 # Live smoke against OpenRouter (periodic real-provider validation). Skips when
 # OPENROUTER_API_KEY is unset.

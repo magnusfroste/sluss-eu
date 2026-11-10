@@ -16,6 +16,8 @@ package secondopinion
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"log/slog"
 	"strings"
@@ -83,6 +85,14 @@ const systemPrompt = `You classify text for a data-protection gateway. Answer wi
 Label only what the text itself holds. A general question about a topic, with no person, no document and no organisation's own data in it, gets [].
 If none apply, answer []. Do not explain.
 /no_think`
+
+// PromptHash identifies the instruction the model is given. A recording of
+// the model's answers (benchmark/second-opinion.jsonl) carries it, so a
+// changed instruction makes the recording stale and CI says so (ISSUE-170).
+func PromptHash() string {
+	sum := sha256.Sum256([]byte(systemPrompt))
+	return hex.EncodeToString(sum[:8])
+}
 
 var outcomes = promauto.NewCounterVec(prometheus.CounterOpts{
 	Name: "router_second_opinion_total",

@@ -15,7 +15,6 @@ Klart enligt kod- och test-evidens:
 Nästa (i ordning):
 
 - ISSUE-150 — Konsolen 70/30: väsentligt först, Advanced hopfällt, klartext i stället för koder; Policy blir regler + dry-run + enkel dialog, Providers och Models städas. `epic: EPIC-14`, `priority: P1`, `state: ready-for-human` (väntar på ägarens genomgång av demon).
-- ISSUE-151 — "Mask and send": tredje utfall för en regel — maskera personuppgifter, skicka till molnet, fyll i igen i svaret. Konservativ start, synligt i Inspector och audit. `epic: EPIC-14`, `priority: P1`, `state: needs-info`.
 - ISSUE-152 — Kontroll av svaren: svaret läses med frågans värdedetektorer; det nya flaggas i request-loggen, auditkedjan, /metrics och inspektorn. Blockerar aldrig. `epic: EPIC-14`, `priority: P2`, `state: done`, klar 2026-11-08.
 
 Backlogg — användardriven (byggs när en användare ber om det):
@@ -133,6 +132,7 @@ P2:
 4. Uppdatera dokumentation om kontrakt ändras.
 5. Kontrollera latency om issue påverkar fast path.
 6. Merge efter review.
+- ISSUE-170 — Andra åsikten mätt i CI: modellens svar spelas in (`benchmark record`) och spelas upp ovanpå dagens regler i `make benchmark`; inspelningen vägras om frågor eller instruktion ändrats. `epic: EPIC-15`, `priority: P2`, `state: done`, klar 2026-11-10.
 - ISSUE-169 — Skydd av samhällsviktig anläggning utan märkning (anläggning + skyddsord ger security_classified), preciserad instruktion till andra åsikten (commit-meddelande är inte kod), finskt id-nummer inte längre även telefon. `epic: EPIC-14`, `priority: P1`, `state: done`, klar 2026-11-10.
 - ISSUE-168 — Bredare klassificerare: namn i fritext (maskeras som `[NAME_1]`), finska/norska/US/UK/danska identitetsnummer, pass, regnr, födelsedatum, fler nyckelformat, ca 350 nya termer (hälsa, ekonomi, juridik, HR, GDPR art. 9, samhällsviktig verksamhet), allmän fråga är inte data; endast regler 74 % → 81 % fångade. `epic: EPIC-14`, `priority: P1`, `state: done`, klar 2026-11-10.
 - ISSUE-167 — Fem brister som benchmarken hittade rättade (nyckeletikett bakom understreck, gata i två ord, SQL på en rad, orden email/phone/address, ämnesord om kod); korpusen omgenererad med nytt frö; ofarliga flaggade 18 % → 10 %. `epic: EPIC-14`, `priority: P1`, `state: done`, klar 2026-11-10.

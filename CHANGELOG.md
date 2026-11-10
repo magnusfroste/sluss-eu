@@ -10,6 +10,14 @@ ghcr.io/magnusfroste/sluss-eu:1.9      # the newest 1.9.x
 ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 ```
 
+## Unreleased
+
+### Evidence
+- **The local second opinion is measured with every change.** Its answers to the 444 benchmark questions are recorded (`benchmark/second-opinion.jsonl`, with the model, the date and a fingerprint of its instruction) and replayed in CI on top of today's rules, held to a floor. A recording that no longer matches the questions or the instruction is refused, so it cannot go stale unnoticed. `benchmark record` makes a new one against a running instance.
+
+### Console
+- The chat inspector says *a person's name*, *identity number*, *date of birth*, *passport number* and *vehicle registration* in words, where it showed the internal type.
+
 ## v1.9.1 — 2026-11-10
 
 How a critical facility is protected is caught without a marking, and the local second opinion flags fewer harmless questions.
