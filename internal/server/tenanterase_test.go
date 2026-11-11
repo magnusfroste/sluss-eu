@@ -125,7 +125,7 @@ func TestPolicyPageShowsErasureForm(t *testing.T) {
 	rec := httptest.NewRecorder()
 	h(rec, httptest.NewRequest(http.MethodGet, "/router/policy", nil))
 	body := rec.Body.String()
-	for _, want := range []string{"Tenant erasure", "/router/data/erase-tenant", "revoke the tenant"} {
+	for _, want := range []string{"One tenant's data", "/router/data/erase-tenant", "also revoke its keys"} {
 		if !strings.Contains(body, want) {
 			t.Errorf("policy page missing %q", want)
 		}

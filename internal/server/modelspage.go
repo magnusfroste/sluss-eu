@@ -314,6 +314,7 @@ var modelsTmpl = template.Must(template.New("models").Funcs(template.FuncMap{
 	"adminNav": adminNavFunc,
 	"dsHead":   dsHeadFunc,
 	"usd":      func(v float64) string { return fmt.Sprintf("$%.2f", v) },
+	"advJS":    advancedScriptFunc,
 	"tierClass": func(t string) string {
 		switch t {
 		case "premium":
@@ -343,7 +344,7 @@ const modelsHTML = `<!doctype html>
   h1{font-size:1.3rem;margin:0}
   .sub{color:#8fa1bf;font-size:.85rem;margin-top:4px}
   .wrap{padding:26px 32px;display:flex;flex-direction:column;gap:18px}
-  .card{background:#101c34;border:1px solid #22324f;border-radius:12px;overflow-x:auto}
+  .card{background:#101c34;border:1px solid #22324f;border-radius:12px;overflow-x:auto;position:relative}
   form.addf{max-width:1100px}
   table{border-collapse:collapse;width:100%;font-size:13.5px}
   th,td{text-align:left;padding:10px 11px;border-bottom:1px solid #17253f;white-space:nowrap;vertical-align:top}
@@ -435,78 +436,85 @@ tr.mrow:focus{outline:none}tr.mrow:focus-visible td:first-child{box-shadow:inset
 .mp-danger{display:flex;gap:10px;align-items:center;justify-content:space-between}
 .mp-danger p{margin:0;color:#8fa1bf;font-size:12.5px}
 @media(max-width:560px){.mp .f2{grid-template-columns:1fr}}
+.psub{color:#b7c4dc;font-size:.92rem;line-height:1.55;max-width:75ch}
 </style></head>
 <body>
 <div class="tk-shell">
 {{adminNav "models"}}
 <div class="tk-main">
-{{dsHead "models" "Models" "Which models Sluss may use, where they run, and what they cost."}}
+{{dsHead "models" "Models" "The models Sluss may choose among, and where each one runs."}}
 <div class="wrap">
   {{if .Notice}}<div class="banner ok">{{.Notice}}</div>{{end}}
   {{if .Error}}<div class="banner err">{{.Error}}</div>{{end}}
-  <div class="note">
-    <b>Tier is the router's USP.</b> The router picks a model per task automatically (task → tier);
-    here you curate the <b>tier per model</b> — not a model per task. A model points at a
-    <a href="/router/providers" style="color:#7fd3ff">provider connection</a>. Changes apply <b>{{if .Live}}immediately{{else}}on restart{{end}}</b>.
-    <a href="/manual/choosing-models" style="color:#7fd3ff">How Sluss picks a model ›</a>
-  </div>
+  <div class="psub" style="margin-bottom:14px">For each question Sluss picks one of these, among those your rules allow: a simple question gets a cheap model, a hard one a capable model. A model on your own hardware is the only kind that may answer when a rule says <i>keep on own hardware</i>. <a href="/manual/choosing-models" style="color:#7fd3ff">How Sluss picks a model</a></div>
   <div class="card">
     <table>
       <thead><tr>
-        <th>Model</th><th>Provider</th><th>Provider model</th><th>Tier</th>
-        <th class="num">In $/Mtok</th><th class="num">Out $/Mtok</th><th>Status</th>
+        <th>Model</th><th>Runs at</th><th>Level</th><th>State</th>
         <th><span class="sr">Details</span></th>
       </tr></thead>
       <tbody>
       {{range .Models}}
       <tr class="mrow" data-model="{{.ID}}" tabindex="0" aria-label="Open {{.ID}}">
         <td><b class="mid">{{.ID}}</b>{{if .Builtin}}<br><span class="tag neutral">built-in</span>{{end}}</td>
-        <td>{{.ProviderName}}{{if eq .Egress "local"}}<br><span class="tag eg-local" title="Carries a local/on-prem tag — prompts routed here stay in the house">local</span>{{else if eq .Egress "cloud"}}<br><span class="tag eg-cloud" title="No local tag — prompts routed here leave the house">cloud</span>{{end}}</td>
-        <td class="slug">{{.Slug}}</td>
-        <td><span class="pill {{tierClass .Tier}}">{{.Tier}}</span></td>
-        <td class="num">{{usd .InPerMTok}}</td>
-        <td class="num">{{usd .OutPerMTok}}<div class="psrc" title="{{if .Synced}}Price synced from the provider catalog{{else}}Price set by you{{end}}">{{if .Synced}}synced{{else}}manual{{end}}</div></td>
+        <td>{{.ProviderName}} {{if eq .Egress "local"}}<span class="tag eg-local" title="Tagged local: questions answered here stay on your own hardware">own hardware</span>{{else if eq .Egress "cloud"}}<span class="tag eg-cloud" title="Not tagged local: questions answered here leave your hardware">cloud</span>{{end}}</td>
+        <td><span class="pill {{tierClass .Tier}}" title="How capable the model is. Sluss uses a cheap one for simple questions and a premium one for hard ones.">{{.Tier}}</span></td>
         <td>
-          {{if .Routable}}<span class="tag ok">routable</span>
-          {{else if not .Enabled}}<span class="tag warn">disabled</span>
-          {{else}}<span class="tag bad">key missing</span>{{end}}
-          {{if .Pending}}<span class="tag warn">⏳ restart</span>{{end}}
+          {{if .Routable}}<span class="tag ok">Ready</span>
+          {{else if not .Enabled}}<span class="tag warn">Turned off</span>
+          {{else}}<span class="tag bad" title="The provider's key is not set in the server's environment yet. See Providers.">No key yet</span>{{end}}
+          {{if .Pending}}<span class="tag warn" title="Saved; starts working at the next restart.">Starts at next restart</span>{{end}}
           <button class="btn sm test" type="button" data-model="{{.ID}}" data-out="tres-{{.ID}}"
-            title="Live-test this row from the router: a 1-token completion with this exact slug against its provider. Catches a wrong slug before production does.">Test</button>
+            title="Sends this model a one-word question now, the way a real question would be sent.">Test</button>
           <div class="tres" id="tres-{{.ID}}"></div>
         </td>
         <td><button class="btn sm ghost open" type="button" data-model="{{.ID}}">{{if and $.CRUD .Editable}}Open{{else}}Details{{end}} ›</button></td>
       </tr>
-      {{else}}<tr><td colspan="8" class="empty">No models.</td></tr>
+      {{else}}<tr><td colspan="5" class="empty">No models yet. Add a connection on Providers, then a model under Advanced.</td></tr>
       {{end}}
       </tbody>
     </table>
   </div>
 
-  {{if .CRUD}}
+  <details class="ds-adv" data-adv="models">
+    <summary>Advanced <small>prices, the provider's model names, add a model by hand</small></summary>
+    <div class="ds-adv-body">
+      <div class="card">
+        <h2 style="margin:0 0 8px;font-size:1rem">Prices and names</h2>
+        <div class="psub" style="margin-bottom:10px">What each model is called at its provider, and what it costs per million tokens. A price is fetched from the provider where that is possible, otherwise set by hand in the model's panel. Changes apply {{if .Live}}at once{{else}}at the next restart{{end}}.</div>
+        <table>
+          <thead><tr><th>Model</th><th>Called at the provider</th><th class="num">In</th><th class="num">Out</th><th>Price</th></tr></thead>
+          <tbody>
+          {{range .Models}}<tr><td><b>{{.ID}}</b>{{if .Builtin}} <span class="tag neutral" title="Comes with Sluss">built-in</span>{{end}}</td><td class="slug">{{.Slug}}</td><td class="num">{{usd .InPerMTok}}</td><td class="num">{{usd .OutPerMTok}}</td><td>{{if .Synced}}fetched{{else}}set by hand{{end}}</td></tr>
+          {{end}}</tbody>
+        </table>
+      </div>
+      {{if .CRUD}}
   <form class="addf" method="post" action="/router/models">
-    <h2>Add model</h2>
+    <h2>Add a model by hand</h2>
     <div class="grid">
-      <div><label>ID (short name, a–z0–9)</label><input name="id" placeholder="glm-balanced" required></div>
-      <div><label>Provider connection</label>
+      <div><label>Short name (a–z, 0–9)</label><input name="id" placeholder="glm-balanced" required></div>
+      <div><label>Provider</label>
         <select name="provider_id" required>
           {{range .Providers}}<option value="{{.ID}}">{{.Name}} ({{.ID}})</option>{{else}}<option value="">— add a provider first —</option>{{end}}
         </select></div>
-      <div><label>Provider model (slug)</label><input name="provider_model_id" placeholder="z-ai/glm-4.6" required></div>
-      <div><label>Tier</label>
+      <div><label>The provider's name for the model</label><input name="provider_model_id" placeholder="z-ai/glm-4.6" required></div>
+      <div><label>Level</label>
         <select name="tier">
           <option value="cheap">cheap</option>
           <option value="balanced" selected>balanced</option>
           <option value="premium">premium</option>
         </select></div>
-      <div><label>Input $/Mtok</label><input name="input_usd_per_mtok" placeholder="0.6"></div>
-      <div><label>Output $/Mtok</label><input name="output_usd_per_mtok" placeholder="2.2"></div>
-      <div><label>Enabled</label><label style="display:inline-flex;gap:6px;align-items:center;color:#b7c4dc;margin-top:6px"><input type="checkbox" name="enabled" style="width:auto" checked> routable</label></div>
+      <div><label>Price in, $ per million tokens</label><input name="input_usd_per_mtok" placeholder="0.6"></div>
+      <div><label>Price out, $ per million tokens</label><input name="output_usd_per_mtok" placeholder="2.2"></div>
+      <div><label>In use</label><label style="display:inline-flex;gap:6px;align-items:center;color:#b7c4dc;margin-top:6px"><input type="checkbox" name="enabled" style="width:auto" checked> may be chosen</label></div>
       <div><label>Thinking model</label><label style="display:inline-flex;gap:6px;align-items:center;color:#b7c4dc;margin-top:6px" title="Qwen3-style switchable thinking: the router enables thinking for hard tasks (requires_reasoning) and disables it for simple ones — same model, fast when possible."><input type="checkbox" name="reasoning" style="width:auto"> control thinking per task</label></div>
     </div>
     <div style="margin-top:14px"><button class="btn" type="submit">Save model</button></div>
   </form>
-  {{end}}
+      {{end}}
+    </div>
+  </details>
 </div>
 </div>
 </div>
@@ -712,4 +720,5 @@ document.addEventListener('keydown',function(e){
 });
 (function(){var m=new URLSearchParams(location.search).get('m');if(m)openPanel(m,false);})();
 </script>
+{{advJS}}
 </body></html>`

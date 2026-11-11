@@ -23,6 +23,22 @@ import (
 // air-gapped, and the markup stays readable in a security review.
 
 const designCSS = `
+.ds-adv{border:1px solid var(--ds-line);border-radius:var(--ds-r3);background:transparent}
+.ds-adv>summary{cursor:pointer;padding:14px 18px;font-weight:600;color:var(--ds-muted);list-style:none;display:flex;align-items:center;gap:10px;min-height:44px}
+.ds-adv>summary::-webkit-details-marker{display:none}
+.ds-adv>summary::before{content:"";width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-45deg);transition:transform .12s}
+.ds-adv[open]>summary::before{transform:rotate(45deg)}
+.ds-adv>summary:hover{color:var(--ds-ink)}
+.ds-adv>summary small{font-weight:400;color:var(--ds-muted)}
+.ds-adv-body{padding:0 18px 18px;display:flex;flex-direction:column;gap:18px}
+.ds-adv-body>.card,.ds-adv-body>form.addf{margin:0}
+dialog.ds-dialog{background:var(--ds-surface);color:var(--ds-ink);border:1px solid var(--ds-line);border-radius:var(--ds-r3);padding:22px 24px;max-width:560px;width:calc(100% - 32px)}
+dialog.ds-dialog::backdrop{background:rgba(3,8,20,.7)}
+dialog.ds-dialog h2{margin:0 0 4px;font-size:1.1rem}
+.ds-choice{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--ds-line);border-radius:var(--ds-r2);cursor:pointer}
+.ds-choice:hover{border-color:#3a527c}
+.ds-choice input{margin-top:3px;width:auto}
+.ds-choice small{display:block;color:var(--ds-muted);font-weight:400;margin-top:2px}
 :root{
   --ds-bg:#081328;--ds-surface:#101c34;--ds-surface-2:#0b1528;--ds-line:#22324f;--ds-line-soft:#17253f;
   --ds-ink:#e8eef7;--ds-ink-2:#b7c4dc;--ds-muted:#8fa1bf;--ds-faint:#5f6e87;
@@ -141,3 +157,17 @@ const designFrameCSS = `
 .ds-toolbar-note{margin-left:auto;color:var(--ds-muted);font-size:.82rem}
 @media(max-width:900px){.ds-top{padding:var(--ds-s5) var(--ds-s4) 0}.tk-main>.wrap{padding:0 var(--ds-s4) var(--ds-s7)!important}}
 `
+
+// advancedJS makes every <details class="ds-adv" data-adv="name"> remember
+// whether it was open, per browser, and opens the one a link points into
+// (ISSUE-150). Storage can be unavailable; the page works without it.
+const advancedJS = `<script>
+document.querySelectorAll('details.ds-adv[data-adv]').forEach(function(d){
+  var k='sluss.adv.'+d.dataset.adv;
+  try{if(localStorage.getItem(k)==='1')d.open=true}catch(e){}
+  if(location.hash){try{if(d.querySelector(location.hash))d.open=true}catch(e){}}
+  d.addEventListener('toggle',function(){try{localStorage.setItem(k,d.open?'1':'0')}catch(e){}});
+});
+</script>`
+
+func advancedScriptFunc() template.HTML { return template.HTML(advancedJS) }

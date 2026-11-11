@@ -150,6 +150,12 @@ func summarizeRoute(r Route) (string, string) {
 			kind = "default"
 		}
 	}
+	if r.Mask {
+		parts = append(parts, "mask and send")
+		if kind == "other" || kind == "default" {
+			kind = "mask"
+		}
+	}
 	if h := r.Hints; h.Tier != "" {
 		parts = append(parts, "prefer "+h.Tier+" tier")
 	}

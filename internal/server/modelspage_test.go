@@ -58,7 +58,7 @@ func TestModelsPageRendersRoster(t *testing.T) {
 		t.Fatalf("status = %d, want 200", rec.Code)
 	}
 	body := rec.Body.String()
-	for _, want := range []string{"cheap-general", "balanced-coder", "premium-reasoning", "Models", "Add model"} {
+	for _, want := range []string{"cheap-general", "balanced-coder", "premium-reasoning", "Models", "Add a model by hand", `data-adv="models"`, "own hardware"} {
 		if !strings.Contains(body, want) {
 			t.Errorf("rendered page missing %q", want)
 		}

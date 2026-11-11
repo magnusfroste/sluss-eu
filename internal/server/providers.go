@@ -377,6 +377,7 @@ var providersTmpl = template.Must(template.New("providers").Funcs(template.FuncM
 	"adminNav":  adminNavFunc,
 	"dsHead":    dsHeadFunc,
 	"healthPct": func(v float64) string { return fmt.Sprintf("%.0f%%", v*100) },
+	"advJS":     advancedScriptFunc,
 }).Parse(providersHTML))
 
 const providersHTML = `<!doctype html>
@@ -430,6 +431,10 @@ const providersHTML = `<!doctype html>
   .rtab td{padding:8px 6px;text-align:center;border-bottom:1px solid #17253f}
   .rtab tbody tr:last-child td{border-bottom:none}
   .rtab .req{color:#f4b740;font-size:10px;letter-spacing:.03em;margin-top:2px}
+.phead{display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:14px}
+.psub{color:#b7c4dc;font-size:.92rem;line-height:1.55;max-width:70ch}
+.btn.ghost{background:transparent;color:#e8eef7;border:1px solid #2c4066}
+.mono{font-family:ui-monospace,Menlo,monospace;font-size:.88em}
 .ptest{margin-top:10px;padding:10px 12px;background:#0b1528;border:1px solid #22324f;border-radius:8px;font-size:.84rem;line-height:1.55}
 .ptest .ok{color:#4ade80}.ptest .bad{color:#f87171}.ptest .warn{color:#f4b740}.ptest .mono{font-family:ui-monospace,Menlo,monospace}
 </style></head>
@@ -437,29 +442,13 @@ const providersHTML = `<!doctype html>
 <div class="tk-shell">
 {{adminNav "providers"}}
 <div class="tk-main">
-{{dsHead "providers" "Providers" "The endpoints Sluss connects to, and the name of the environment variable that holds each key."}}
+{{dsHead "providers" "Providers" "The services and servers your models run on. Test a connection, or add one."}}
 <div class="wrap">
   {{if .Notice}}<div class="banner ok">{{.Notice}}</div>{{end}}
   {{if .Error}}<div class="banner err">{{.Error}}</div>{{end}}
-  <div class="note">
-    <b>A provider is just a connection</b> — an OpenAI-compatible endpoint and the name of
-    the env var holding its key. Models (and their tier/price) are curated on
-    <a href="/router/models" style="color:#7fd3ff">Models</a>.
-    <b>Keys are set in the environment, never here</b>{{if .Live}} — endpoint, tag and
-    model changes apply <b>immediately</b>; a <b>new key</b> env var needs a
-    restart/redeploy, because the process reads its environment at start.{{else}} — changes
-    therefore apply on <b>restart/redeploy</b> (the same moment you add the key).{{end}}
-    Secrets never leave the app or the database.
-    <br><br>
-    <b>Your own private AI model (on-prem, DGX, air-gapped)?</b> Add its endpoint like any
-    provider and give it the compliance tag <b><code>local</code></b>
-    (<code>private</code>, <code>on-prem</code>, <code>self-hosted</code> and
-    <code>air-gapped</code> also count as "stays in the house"). Policy can then route
-    flagged content (e.g. personal IDs) there instead of the cloud — and the demo chat
-    shows "the data never left the house". Then add the model on
-    <a href="/router/models" style="color:#7fd3ff">Models</a> and give it a tier so it
-    becomes routable. What you assert about each provider — DPA, certifications,
-    residency — is curated on the <a href="/router/risk" style="color:#7fd3ff">Risk register</a>.
+  <div class="phead">
+    <div class="psub">A provider is a connection to a service or to a server of your own. A server you tag <b>local</b> counts as your own hardware, and rules can keep data there.</div>
+    {{if .CRUD}}<button class="btn" type="button" style="margin:0" onclick="openProvider()">Add a connection</button>{{end}}
   </div>
   {{range .Providers}}
   <div class="card{{if .Pending}} pending{{end}}">
@@ -467,16 +456,14 @@ const providersHTML = `<!doctype html>
       <span class="pname">{{.Name}}</span>
       <span class="purl">{{.BaseURL}}</span>
       <span class="spacer"></span>
-      {{if .Pending}}<span class="tag warn">⏳ awaiting restart</span>{{end}}
+      {{if .Pending}}<span class="tag warn" title="This connection is saved and starts working at the next restart.">Starts at next restart</span>{{end}}
       {{if .KeyEnv}}
-        {{if .KeySet}}<span class="tag ok">key set · {{.KeyEnv}}</span>
-        {{else}}<span class="tag bad">key missing · {{.KeyEnv}}</span>{{end}}
-      {{else}}<span class="tag neutral">no key needed</span>{{end}}
-      {{if .HasHealth}}<span class="tag {{if ge .Health 0.9}}ok{{else if ge .Health 0.5}}warn{{else}}bad{{end}}" title="Share of successful calls in recent live traffic — passive. Press Test for a live check now.">traffic health {{healthPct .Health}}</span>{{end}}
-      {{if .Synced}}<span class="tag neutral">prices synced</span>{{else}}<span class="tag neutral">manual prices</span>{{end}}
+        {{if .KeySet}}<span class="tag ok" title="The key is read from {{.KeyEnv}} in the server's environment.">Key in place</span>
+        {{else}}<span class="tag bad" title="Whoever runs the server sets {{.KeyEnv}} in its environment and restarts.">No key yet</span>{{end}}
+      {{else}}<span class="tag neutral">No key needed</span>{{end}}
+      {{if .HasHealth}}<span class="tag {{if ge .Health 0.9}}ok{{else if ge .Health 0.5}}warn{{else}}bad{{end}}" title="Share of successful calls in recent live traffic — passive. Press Test for a live check now.">{{healthPct .Health}} of recent calls worked</span>{{end}}
       {{range .Tags}}<span class="tag neutral">{{.}}</span>{{end}}
-      <a class="tag neutral" href="/router/models">{{.ModelN}} models</a>
-      <span class="tag neutral">{{.Status}}</span>
+      <a class="tag neutral" href="/router/models">{{.ModelN}} {{if eq .ModelN 1}}model{{else}}models{{end}}</a>
       <button class="btn sm" type="button" style="margin:0" onclick="testProvider(this)" data-id="{{.ID}}" title="Ask this provider which models it serves, then send each model routed to it a 1-token request — the same call a real request makes.">Test</button>
       {{if and .Deletable $.CRUD}}
       <span class="pacts">
@@ -494,21 +481,43 @@ const providersHTML = `<!doctype html>
   <div class="empty">No providers configured.</div>
   {{end}}
 
-  {{if .Missing}}<div class="rwarn">⚠ The active policy requires {{range $i, $t := .Missing}}{{if $i}}, {{end}}<b>{{$t}}</b>{{end}} — no provider carries {{if eq (len .Missing) 1}}it{{else}}them{{end}}. Prompts matching those rules are blocked (fail-closed) until a provider is tagged on the <a href="/router/risk" style="color:#f4d38a">Risk register</a>.</div>{{end}}
+  {{if .Missing}}<div class="rwarn">Your rules require {{range $i, $t := .Missing}}{{if $i}}, {{end}}<b>{{$t}}</b>{{end}}, and no provider has {{if eq (len .Missing) 1}}it{{else}}them{{end}}. Questions those rules match are refused until a provider is given the tag on the <a href="/router/risk" style="color:#f4d38a">Risk register</a>.</div>{{end}}
+
+  <details class="ds-adv" data-adv="providers">
+    <summary>Advanced <small>where keys come from, prices, tags</small></summary>
+    <div class="ds-adv-body">
+      <div class="card">
+        <h2 style="margin:0 0 8px;font-size:1rem">Where each key comes from</h2>
+        <div class="psub" style="margin-bottom:10px">Keys are never typed here and never stored by Sluss. Whoever runs the server puts each key in the server's environment, under the name below{{if .Live}}; a new key needs a restart, because the environment is read at start. Addresses, tags and models apply at once.{{else}}, and restarts.{{end}}</div>
+        <table class="rtab" style="text-align:left">
+          <thead><tr><th style="text-align:left">Provider</th><th style="text-align:left">Address</th><th style="text-align:left">Key is read from</th><th style="text-align:left">Prices</th><th style="text-align:left">State</th></tr></thead>
+          <tbody>
+          {{range .Providers}}<tr><td style="text-align:left">{{.Name}}</td><td style="text-align:left" class="mono">{{.BaseURL}}</td><td style="text-align:left" class="mono">{{if .KeyEnv}}{{.KeyEnv}}{{else}}—{{end}}</td><td style="text-align:left">{{if .Synced}}fetched from the provider{{else}}set by hand{{end}}</td><td style="text-align:left">{{.Status}}</td></tr>
+          {{end}}</tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h2 style="margin:0 0 8px;font-size:1rem">A model of your own</h2>
+        <div class="psub">Add its address like any provider and give it the tag <span class="mono">local</span> (<span class="mono">private</span>, <span class="mono">on-prem</span>, <span class="mono">self-hosted</span> and <span class="mono">air-gapped</span> count the same). Then add the model on <a href="/router/models" style="color:#7fd3ff">Models</a>. What you state about each provider, such as a signed agreement or where it stores data, is kept on the <a href="/router/risk" style="color:#7fd3ff">Risk register</a>, and rules can require those tags.</div>
+      </div>
+    </div>
+  </details>
 
   {{if .CRUD}}
-  <form class="addf" method="post" action="/router/providers" id="provform">
-    <h2 id="provh">Add provider connection</h2>
-    <p id="provhint" style="display:none;font-size:.82rem;color:#8fa1bf;margin:-6px 0 10px">Editing an existing connection — saving replaces its endpoint, key env var and tags (the ID stays). {{if .Live}}Changes apply immediately.{{else}}Changes apply on restart.{{end}}</p>
-    <div class="grid">
-      <div><label>ID (short name, a–z0–9)</label><input name="id" id="prov_id" placeholder="zai" required></div>
-      <div><label>Display name</label><input name="name" id="prov_name" placeholder="Z.ai"></div>
-      <div class="full"><label>Base URL (OpenAI-compatible)</label><input name="base_url" id="prov_url" placeholder="https://api.z.ai/api/coding/paas/v4" required></div>
-      <div class="full"><label>Key env var (the value is set in the environment, not here). Leave empty for a local server that takes no key.</label><input name="key_env" id="prov_key" placeholder="ZAI_API_KEY"></div>
-      <div class="full"><label>Compliance tags (comma-separated — policy can require/deny them). Residency: eu-resident, dpa-signed. Private/on-prem model: <b>local</b> (stays in the house)</label><input name="compliance_tags" id="prov_tags" placeholder="local, on-prem, eu-resident"></div>
+  <dialog class="ds-dialog" id="provdlg" style="max-width:640px">
+  <form method="post" action="/router/providers" id="provform">
+    <h2 id="provh">Add a connection</h2>
+    <p id="provhint" style="display:none;font-size:.82rem;color:#8fa1bf;margin:4px 0 10px">Saving replaces this connection's address, key name and tags. {{if .Live}}It applies at once.{{else}}It applies at the next restart.{{end}}</p>
+    <div class="grid" style="margin-top:12px">
+      <div><label>Short name (a–z, 0–9)</label><input name="id" id="prov_id" placeholder="zai" required></div>
+      <div><label>Name shown</label><input name="name" id="prov_name" placeholder="Z.ai"></div>
+      <div class="full"><label>Address (OpenAI-compatible)</label><input name="base_url" id="prov_url" placeholder="https://api.z.ai/api/coding/paas/v4" required></div>
+      <div class="full"><label>Name of the environment variable that holds the key. Leave empty for a server that needs no key.</label><input name="key_env" id="prov_key" placeholder="ZAI_API_KEY"></div>
+      <div class="full"><label>Tags, comma-separated. <b>local</b> for a server of your own; others such as eu-resident or dpa-signed if your rules use them.</label><input name="compliance_tags" id="prov_tags" placeholder="local"></div>
     </div>
-    <div style="margin-top:14px"><button class="btn" type="submit" id="provsave">Save connection</button> <button class="btn" type="button" id="provcancel" style="display:none" onclick="resetProvider()">Cancel</button></div>
+    <div style="margin-top:16px;display:flex;gap:10px;justify-content:flex-end"><button class="btn ghost" type="button" style="margin:0" onclick="closeProvider()">Cancel</button><button class="btn" type="submit" id="provsave" style="margin:0">Save connection</button></div>
   </form>
+  </dialog>
   <script>
   function useSlug(b,pid){b.disabled=true;b.textContent='Switching…';
     fetch('/router/models/slug',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'id='+encodeURIComponent(b.dataset.model)+'&slug='+encodeURIComponent(b.dataset.slug)})
@@ -526,21 +535,24 @@ const providersHTML = `<!doctype html>
       if(!(j.models||[]).length){h+='<div class="warn">No models are routed to this provider.</div>'}
       if((j.missing||[]).length){h+='<div class="bad">Registered here but not served there: <span class="mono">'+e(j.missing.join(', '))+'</span> — the model was renamed or unloaded on the provider. Update the model\'s slug on <a href="/router/models" style="color:#7fd3ff">Models</a>.</div>'}
       box.innerHTML=h;}).catch(function(err){box.textContent='Test failed: '+err}).finally(function(){b.disabled=false});}
+  function openProvider(){resetProvider();document.getElementById('provdlg').showModal();document.getElementById('prov_id').focus();}
+  function closeProvider(){document.getElementById('provdlg').close();resetProvider();}
   function editProvider(b){var d=b.dataset;
     document.getElementById('prov_id').value=d.id;document.getElementById('prov_id').readOnly=true;
     document.getElementById('prov_name').value=d.name;document.getElementById('prov_url').value=d.url;
     document.getElementById('prov_key').value=d.key;document.getElementById('prov_tags').value=d.tags;
-    document.getElementById('provh').textContent='Edit connection: '+d.id;document.getElementById('provsave').textContent='Save changes';
-    document.getElementById('provhint').style.display='';document.getElementById('provcancel').style.display='';
-    document.getElementById('provform').scrollIntoView({behavior:'smooth'});document.getElementById('prov_url').focus();}
+    document.getElementById('provh').textContent='Edit '+d.name;document.getElementById('provsave').textContent='Save changes';
+    document.getElementById('provhint').style.display='';
+    document.getElementById('provdlg').showModal();document.getElementById('prov_url').focus();}
   function resetProvider(){var f=document.getElementById('provform');f.reset();document.getElementById('prov_id').readOnly=false;
-    document.getElementById('provh').textContent='Add provider connection';document.getElementById('provsave').textContent='Save connection';
-    document.getElementById('provhint').style.display='none';document.getElementById('provcancel').style.display='none';}
+    document.getElementById('provh').textContent='Add a connection';document.getElementById('provsave').textContent='Save connection';
+    document.getElementById('provhint').style.display='none';}
   </script>
   {{end}}
 </div>
 </div>
 </div>
+{{advJS}}
 </body></html>`
 
 var riskTmpl = template.Must(template.New("risk").Funcs(template.FuncMap{
@@ -603,13 +615,13 @@ const riskHTML = `<!doctype html>
 <div class="tk-shell">
 {{adminNav "risk"}}
 <div class="tk-main">
-{{dsHead "risk" "Risk register" "What you assert about each AI provider, and what the active policy requires."}}
+{{dsHead "risk" "Risk register" "What you have stated about each provider, for an auditor to read and for rules to require."}}
 <div class="wrap">
   {{if .Notice}}<div class="banner ok">{{.Notice}}</div>{{end}}
   {{if .Error}}<div class="banner err">{{.Error}}</div>{{end}}
   <div class="rcard">
-    <div class="rnote">Curated compliance facts per provider — what <b>you</b> assert (DPA on file, certifications, residency), never what the router assumes. Policy rules <b>require</b> these tags; a required tag with no provider means those prompts <b>fail closed</b>. Tag changes are audited and apply {{if .Live}}immediately{{else}}on restart{{end}}.</div>
-    {{if .Missing}}<div class="rwarn">⚠ The active policy requires {{range $i, $t := .Missing}}{{if $i}}, {{end}}<b>{{$t}}</b>{{end}} — no provider carries {{if eq (len .Missing) 1}}it{{else}}them{{end}}. Prompts matching those rules are blocked (fail-closed) until a provider is tagged.</div>{{end}}
+    <div class="rnote">What <b>you</b> have stated about each provider: a signed agreement, a certification, where data is stored. Sluss does not check these statements; it records them, and your rules can require them. A change here is written to the audit log and applies {{if .Live}}at once{{else}}at the next restart{{end}}.</div>
+    {{if .Missing}}<div class="rwarn">Your rules require {{range $i, $t := .Missing}}{{if $i}}, {{end}}<b>{{$t}}</b>{{end}}, and no provider has {{if eq (len .Missing) 1}}it{{else}}them{{end}}. Questions those rules match are refused until a provider is given the tag.</div>{{end}}
     <div style="overflow-x:auto">
     <table class="rtab">
       <thead><tr><th style="text-align:left">Provider</th>
@@ -636,6 +648,6 @@ const riskHTML = `<!doctype html>
     {{range .Register}}{{if .Editable}}<form id="tags-{{.ID}}" method="post" action="/router/providers/tags"><input type="hidden" name="id" value="{{.ID}}"></form>{{end}}{{end}}
   </div>
 
-  <div class="note">Connections (endpoint, key env var) are managed on <a href="/router/providers" style="color:#7fd3ff">Providers</a>. Hover a column for what the tag asserts. The <b>local</b> class (local, private, on-prem, self-hosted, air-gapped) means "stays in the house" for routing and the dashboard.</div>
+  <div class="note">Point at a column heading to see what it states. <b>local</b>, and <b>air-gapped</b> with it, mean the provider is your own hardware: rules that say <i>keep on own hardware</i> allow only those. A row marked read-only is set where the server is configured. Connections themselves are on <a href="/router/providers" style="color:#7fd3ff">Providers</a>.</div>
 </div></div></div>
 </body></html>`

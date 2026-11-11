@@ -10,6 +10,19 @@ ghcr.io/magnusfroste/sluss-eu:1.10     # the newest 1.10.x
 ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 ```
 
+## Unreleased
+
+### Console
+- **The essential first, the rest folded away.** Policy, Providers and Models each fit on one screen. What is needed every day is visible; everything else is under one *Advanced* section at the bottom that remembers whether you left it open.
+  - **Policy:** *Your rules* is one list in plain words (*data is personal data → Keep on own hardware*), with *Remove* on the rules added in the console. *Add a rule* is a dialog: the kind of data, then one of the three outcomes. *Test a sentence* answers in plain words, with the reasons under *Details*. Conditions on task, risk and an agent's tools, rule packs, retention and erasure are under *Advanced*.
+  - **Providers:** the list, *Test*, and *Add a connection* behind a button. Where each key is read from, prices and state are under *Advanced*.
+  - **Models:** the list says where each model runs (own hardware or cloud), its level and whether it is ready. Prices, the provider's names for the models and adding a model by hand are under *Advanced*.
+  - **Risk register:** the same table, with the text written for an auditor.
+- Codes are replaced by words on these pages (*Personal data* for `pii`, *No key yet* for `key missing`); the code stays in tooltips, exports, the audit log and the API.
+- A rule that masks is now listed as *Mask and send*; it used to read *route by scoring*.
+
+Nothing changes in what Sluss does, only in what is shown first.
+
 ## v1.10.2 — 2026-11-11
 
 A question about a person from history is a question about history.

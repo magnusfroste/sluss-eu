@@ -68,7 +68,7 @@ func TestPolicyPageRenders(t *testing.T) {
 	h := PolicyPageHandler(PolicyPageOptions{Engine: policyEngine(t), Version: "v-test"})
 	rec := httptest.NewRecorder()
 	h(rec, httptest.NewRequest(http.MethodGet, "/router/policy", nil))
-	if rec.Code != 200 || !strings.Contains(rec.Body.String(), "Dry-run") {
+	if rec.Code != 200 || !strings.Contains(rec.Body.String(), "Test a sentence") {
 		t.Fatalf("policy page did not render dry-run: %d", rec.Code)
 	}
 }

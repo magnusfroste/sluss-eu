@@ -236,7 +236,7 @@ func TestPolicyPageShowsRulesCard(t *testing.T) {
 	rec := httptest.NewRecorder()
 	h(rec, httptest.NewRequest(http.MethodGet, "/router/policy", nil))
 	body := rec.Body.String()
-	for _, want := range []string{"Rules — no YAML", "security_classified", "Activate ruleset", "sensitivity: health", "require provider tags: local"} {
+	for _, want := range []string{"Your rules", "Not applied yet", "Apply these rules", "data is health", "Keep on own hardware", "Add a rule", `value="security_classified"`, "Security classified"} {
 		if !strings.Contains(body, want) {
 			t.Errorf("policy page missing %q", want)
 		}
