@@ -5,12 +5,14 @@ All notable changes to Sluss. Versions follow [semantic versioning](https://semv
 Releases are published from this file by the `release` workflow (Actions → release → Run workflow). Every release is a container image you can pin:
 
 ```
-ghcr.io/magnusfroste/sluss-eu:v1.10.0  # this release
+ghcr.io/magnusfroste/sluss-eu:v1.10.1  # this release
 ghcr.io/magnusfroste/sluss-eu:1.10     # the newest 1.10.x
 ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 ```
 
-## Unreleased
+## v1.10.1 — 2026-11-11
+
+A fix in Go's standard library, and a page for the audit log with a button that seals it.
 
 ### Security
 - **Go 1.26.11.** It fixes a vulnerability in the standard library's `net/http` (GO-2026-6859) that the build's own check, `govulncheck`, found the day it was published. Images from v1.10.0 and earlier are built with Go 1.26.10; upgrade to this release.

@@ -108,7 +108,7 @@ logged under the person and their department. Product information lives on
 [www.sluss.eu](https://www.sluss.eu); a running instance tells search engines
 not to index it.
 
-Prefer a container? Releases are published as `ghcr.io/magnusfroste/sluss-eu:v1.10.0`
+Prefer a container? Releases are published as `ghcr.io/magnusfroste/sluss-eu:v1.10.1`
 (pin a release in production — see [CHANGELOG](CHANGELOG.md)); every push to `main` publishes
 `ghcr.io/magnusfroste/sluss-eu:latest` (public); `deploy/docker-compose.yml` is a
 one-service compose with a data volume. Step by step — `docker run`, TLS,
