@@ -334,7 +334,9 @@ fill(16, lambda: rng.choice(CODE).format(n=rng.choice(["orders","users","invoice
 
 # ---------------------------------------------------------------- harmless lookalikes
 PUBLIC = ["Astrid Lindgren", "Olof Palme", "Selma Lagerlöf", "Alfred Nobel", "Greta Thunberg", "Marie Curie",
-          "Albert Einstein", "Ingrid Bergman", "August Strindberg", "Dag Hammarskjöld", "Anders Celsius", "Zlatan Ibrahimović"]
+          "Albert Einstein", "Ingrid Bergman", "August Strindberg", "Dag Hammarskjöld", "Anders Celsius", "Zlatan Ibrahimović",
+          # Living public figures, and two people from history the rules' list does not have.
+          "Carl Bildt", "Magdalena Andersson", "Anna Lindh", "Lennart Hyland"]
 CONCEPTS = ["an IPO", "EBITDA", "a power of attorney", "due diligence", "a public tender", "cash flow", "bankruptcy",
             "an acquisition", "arbitration", "a credit report", "critical infrastructure under NIS2", "a trade union"]
 LOOKALIKES = [

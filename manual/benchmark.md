@@ -28,32 +28,32 @@ Every AI gateway and DLP product says it finds sensitive data. Few say how often
 
 ## Results
 
-Version 1.9.1.
+Version 1.10.2.
 
 - **Sluss, rules only**: measured in process (`make benchmark`), each question five times.
-- **Sluss, rules + second opinion**: the demo instance over the network, with its local model (a 27B reasoning model with thinking turned off) as the second opinion, through the dry-run, each question twice. The time includes the round trip to the instance.
+- **Sluss, rules + second opinion**: today's rules plus the answers of the demo instance's local model (a 27B reasoning model with thinking turned off), recorded through the dry-run and replayed (`benchmark/second-opinion.jsonl`, see *The second opinion in CI* below). The time, and that the model gave the same answer twice for all 444 questions, were measured live on version 1.9.1.
 - **Presidio**: Microsoft's open-source PII detector (`presidio-analyzer` 2.2.366 with spaCy 3.8 and `en_core_web_lg`, its English setup out of the box, score threshold 0.5, dates and URLs ignored), run with `benchmark/presidio.py`. Any entity it finds counts as *flagged*; a Swedish model or custom recognisers would change its numbers, and the script is there to try.
 
 | | Sluss, rules only | Sluss, rules + second opinion | Presidio |
 |---|---|---|---|
 | Sensitive questions flagged | 194 of 232 (84 %) | 226 of 232 (97 %) | 161 of 232 (69 %) |
-| Harmless questions flagged | 17 of 212 (8 %) | 21 of 212 (10 %) | 48 of 212 (23 %) |
+| Harmless questions flagged | 16 of 212 (8 %) | 19 of 212 (9 %) | 47 of 212 (22 %) |
 | — with an identifier or key | 104 of 104 (100 %) | 104 of 104 (100 %) | 72 of 104 (69 %) |
 | — with a term or marking | 70 of 70 (100 %) | 70 of 70 (100 %) | 48 of 70 (69 %) |
 | — with meaning only | 20 of 58 (34 %) | 52 of 58 (90 %) | 41 of 58 (71 %) |
-| — look-alikes left alone | 93 of 110 (85 %) | 89 of 110 (81 %) | 67 of 110 (61 %) |
+| — look-alikes left alone | 94 of 110 (85 %) | 91 of 110 (83 %) | 68 of 110 (62 %) |
 | — plain questions left alone | 102 of 102 (100 %) | 102 of 102 (100 %) | 97 of 102 (95 %) |
-| Right class, exactly | 384 of 444 (86 %) | 363 of 444 (82 %) | 239 of 444 (54 %) |
-| Same answer every run | yes (5 runs) | yes (2 runs) | not measured |
-| Time per question (median / p95) | 0.13 ms / 0.20 ms | 304 ms / 333 ms | 5 ms / 8 ms |
+| Right class, exactly | 385 of 444 (87 %) | 365 of 444 (82 %) | 240 of 444 (54 %) |
+| Same answer every run | yes (5 runs) | yes (2 runs, live) | not measured |
+| Time per question (median / p95) | 0.13 ms / 0.20 ms | 304 ms / 333 ms (live) | 5 ms / 8 ms |
 
 | Class | Rules only, recall / precision | Rules + second opinion | Presidio |
 |---|---|---|---|
-| Personal data | 1.00 / 0.89 | 1.00 / 0.70 | 0.88 / 0.37 |
+| Personal data | 1.00 / 0.91 | 1.00 / 0.71 | 0.88 / 0.37 |
 | Keys and secrets | 0.75 / 1.00 | 1.00 / 0.84 | — |
 | Security-classified | 0.92 / 0.96 | 0.96 / 0.96 | — |
 | Health | 0.62 / 0.67 | 0.96 / 0.74 | — |
-| Financial | 0.62 / 1.00 | 0.92 / 0.65 | — |
+| Financial | 0.62 / 0.94 | 0.92 / 0.65 | — |
 | Legal | 0.64 / 0.88 | 0.91 / 0.69 | — |
 | Source code | 1.00 / 1.00 | 1.00 / 1.00 | — |
 
@@ -62,24 +62,24 @@ Version 1.9.1.
 ## What the numbers say
 
 - **Rules find everything there is to find.** Every identifier, key, term and marking in the set, and now every full name, in a fraction of a millisecond and the same way every time. Presidio has no notion of keys, security markings, health, finance, legal or code; what it flags among those questions is a name or a place in them.
-- **Names are found, and that has a price.** A given name followed by a family name is personal data: 14 of the meaning-only questions are caught that way. The rule cannot tell a customer from an author, so questions about Astrid Lindgren, Olof Palme and Marie Curie are flagged too; they are most of the 8 %. They are kept on your own models; if that is wrong for you, `ROUTER_NAME_DETECTION=off` turns the rule off.
+- **Names are found, and that has a price.** A given name followed by a family name is personal data: 14 of the meaning-only questions are caught that way. People from history are left alone: a school essay about Astrid Lindgren or Marie Curie is not personal data, and the rules hold a list of such names. A living public figure is still a living person and is still found, so a quiz question about a former prime minister is kept on your own models; so is a person from history that the list does not have. If that is wrong for you, `ROUTER_NAME_DETECTION=off` turns the name rule off.
 - **A general question is not data.** *What is an IBAN?*, *how should API keys be rotated?*, *what does a district court do?* use the words without holding anything: the rules let them pass. A poster for diabetes awareness week does not pass: it is not a question, and *diabetes* is a health word.
 - **Rules still do not read meaning.** 38 of 58 meaning-only questions are missed: a password with no label, an illness never called one, a deal or a dispute in everyday words. How a waterworks or a control room is protected is now caught without a marking (a facility and a protection word in the same text), but not when neither word is one the rules know: *the key to the substation hangs in the break room*.
-- **The second opinion is what reads meaning.** With a model on your own hardware reading the question after the rules ([How Sluss decides](/manual/how-sluss-decides)), *meaning only* goes from 20 to 52 of 58 and sensitive questions flagged from 84 % to 97 %. The price: 4 more harmless questions flagged (two invoice reminders, two general questions about rotating API keys), which keeps them on your own models, and about a third of a second per question including the network. Since 1.9.1 the model is told that code must be present to be source code; before that it read six requests for a commit message as code, and now none. It gave the same answer both times for all 444 questions; that is an observation on this model, not a guarantee, and only the rules' part is the same by construction. What it still missed, 6 questions: a guard who goes home at ten with nobody left at the pump house, a bid with no financial term, a threat from a supplier and a claim from a former employee in everyday words, and *has had it tough since the accident*. A different model gives different numbers; measure yours with the commands below.
+- **The second opinion is what reads meaning.** With a model on your own hardware reading the question after the rules ([How Sluss decides](/manual/how-sluss-decides)), *meaning only* goes from 20 to 52 of 58 and sensitive questions flagged from 84 % to 97 %. The price: 3 more harmless questions flagged (an invoice reminder, two general questions about rotating API keys), which keeps them on your own models, and about a third of a second per question including the network. The model is told that code must be present to be source code; before that it read six requests for a commit message as code, and now none. That it gave the same answer twice for all 444 questions is an observation on this model, not a guarantee; only the rules' part is the same by construction. What it still missed, 6 questions: a guard who goes home at ten with nobody left at the pump house, a bid with no financial term, a threat from a supplier and a claim from a former employee in everyday words, and *has had it tough since the accident*. A different model gives different numbers; measure yours with the commands below.
 
 ## Before and after
 
 Rules only, as the rules and the set have changed:
 
-| | 1.8.0 | 1.8.1 | 1.9.0 | 1.9.1 |
-|---|---|---|---|---|
-| The set | first | new seed | broader and harder | four more kinds of question |
-| Sensitive questions flagged | 71 % | 74 % | 81 % | 84 % |
-| Harmless questions flagged | 18 % | 10 % | 14 % | 8 % |
-| — with an identifier or key | 90 % | 100 % | 100 % | 100 % |
-| — with meaning only | 7 % | 0 % | 24 % | 34 % |
-| — look-alikes left alone | 65 % | 80 % | 73 % | 85 % |
-| Right class, exactly | 75 % | 81 % | 82 % | 86 % |
+| | 1.8.0 | 1.8.1 | 1.9.0 | 1.9.1 | 1.10.2 |
+|---|---|---|---|---|---|
+| The set | first | new seed | broader and harder | four more kinds of question | four more public figures |
+| Sensitive questions flagged | 71 % | 74 % | 81 % | 84 % | 84 % |
+| Harmless questions flagged | 18 % | 10 % | 14 % | 8 % | 8 % |
+| — with an identifier or key | 90 % | 100 % | 100 % | 100 % | 100 % |
+| — with meaning only | 7 % | 0 % | 24 % | 34 % | 34 % |
+| — look-alikes left alone | 65 % | 80 % | 73 % | 85 % | 85 % |
+| Right class, exactly | 75 % | 81 % | 82 % | 86 % | 87 % |
 
 **1.8.1** fixed five faults the first run found: `db_password=…` and other labels behind an underscore; an address with the street in two words (*Lilla torget 47*); one complete SQL statement without a code fence; the words *email*, *phone* and *address* alone are no longer personal data; and a word about a code topic (*invoice*, *checkout*) is source code only when the task is a code task.
 
@@ -94,6 +94,8 @@ Rules only, as the rules and the set have changed:
 The harmless share went up from 10 % to 14 % because the set now asks harder questions of broader rules: on the 1.8.1 set, these rules flag 80 % of the sensitive questions and 4 % of the harmless ones. That 4 % flatters: the rule for general questions was written by people who had seen those look-alikes.
 
 **1.9.1** added one rule: how a critical facility is protected, with no marking. A facility (a waterworks, a substation, a control room, a dispatch centre) and a protection word (perimeter, weaknesses, guard rota, backup site, sabotage) in the same text is security-classified; either alone is not. The rule was written by people who had seen the seven such questions the set held, so those now pass by construction; two new ones were added that it does not catch, with two kinds of look-alike (a study visit to the waterworks, *how does a power grid work?*). That addition is also why the harmless share fell from 14 % to 8 %: the rules flag no fewer harmless questions than before, but with more kinds of look-alike among the 110, fewer of the hard kinds are drawn. Read the row as a property of the set, not as an improvement.
+
+**1.10.2** leaves people from history alone: the name rule skips a list of about 250 people who are no longer alive (authors, scientists, artists, statesmen). The list was written by people who knew which names the set held, so the set got four more at the same time: two living public figures, who stay flagged by design, and two people from history that the list does not have. On the set the change is one question out of 212; its value is outside the set, in every question about a book, a theory or a period.
 
 `go run ./cmd/benchmark score -misses <predictions>` lists every question behind every number.
 

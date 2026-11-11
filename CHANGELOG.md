@@ -5,10 +5,17 @@ All notable changes to Sluss. Versions follow [semantic versioning](https://semv
 Releases are published from this file by the `release` workflow (Actions → release → Run workflow). Every release is a container image you can pin:
 
 ```
-ghcr.io/magnusfroste/sluss-eu:v1.10.1  # this release
+ghcr.io/magnusfroste/sluss-eu:v1.10.2  # this release
 ghcr.io/magnusfroste/sluss-eu:1.10     # the newest 1.10.x
 ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 ```
+
+## v1.10.2 — 2026-11-11
+
+A question about a person from history is a question about history.
+
+### Protection
+- **People from history are not personal data.** The name rule now skips a list of about 250 people who are no longer alive: authors, scientists, artists, statesmen. A question about Astrid Lindgren, Charles Darwin or Olof Palme may go to the cloud like any other general question. A living public figure is still a living person and is still found, and a name on the list is skipped only as a name: an identifier, an address or a health term in the same text still counts.
 
 ## v1.10.1 — 2026-11-11
 
