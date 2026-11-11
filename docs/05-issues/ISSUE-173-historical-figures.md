@@ -36,4 +36,4 @@ fråga om en bok, en teori eller en epok.
 
 ## Kvar
 
-- *Karl Johans gate* läses som ett namn (gatunamn efter en person).
+- *Karl Johans gate* lästes som ett namn; rättat i ISSUE-174.

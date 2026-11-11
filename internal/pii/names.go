@@ -144,6 +144,15 @@ func findNames(text string) [][2]int {
 		if end < 0 {
 			continue
 		}
+		// A street, a square or a school named after someone is a place:
+		// "Karl Johans gate", "Olof Palmes plats", "Anna Whitlocks gymnasium".
+		if placeFollows(text, end) {
+			for k := i; k <= j; k++ {
+				used[k] = true
+			}
+			i = j
+			continue
+		}
 		// A person from history is not a person whose data needs keeping
 		// in the house (historical.go).
 		if isHistoricalFigure(text[w[0]:end]) {
@@ -227,4 +236,31 @@ func HasGivenName(text string) bool {
 		}
 	}
 	return false
+}
+
+// placeWords follow a name that has become the name of a place.
+var placeWords = wordSet(`
+gate gata gatan gade väg vägen vei vej torg torget plass plats platsen plads allé alle esplanad park parken bro bron
+skola skolan gymnasium gymnasiet sjukhus sjukhuset stadion arena kyrka kyrkan museum museet
+street road avenue boulevard square bridge airport school hospital stadium institute university
+strasse straße platz
+`)
+
+// placeFollows reports whether the word after the name ending at end is one
+// that makes it a place name.
+func placeFollows(text string, end int) bool {
+	rest := text[end:]
+	if !strings.HasPrefix(rest, " ") {
+		return false
+	}
+	rest = rest[1:]
+	n := 0
+	for n < len(rest) {
+		r, size := utf8.DecodeRuneInString(rest[n:])
+		if !unicode.IsLetter(r) {
+			break
+		}
+		n += size
+	}
+	return n > 0 && placeWords[strings.ToLower(rest[:n])]
 }

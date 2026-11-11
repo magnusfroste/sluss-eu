@@ -33,6 +33,21 @@ jobs:
         with:
           fetch-depth: 0
 
+      # The run may start on the commit before the one that added the
+      # release notes: a workflow started right after a merge can still see
+      # the old main (it happened for v1.11.0). Move to the newest main and
+      # wait a little for the notes to arrive, then tag that commit.
+      - name: Use the newest main
+        run: |
+          set -eu
+          for _ in $(seq 1 12); do
+            git fetch --quiet origin main --tags
+            git checkout --quiet --detach origin/main
+            if grep -q "^## $VERSION" CHANGELOG.md; then break; fi
+            sleep 10
+          done
+          echo "TARGET_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
       - name: Check the version
         run: |
           set -eu
@@ -58,7 +73,7 @@ jobs:
           printf '\n**Image:** `ghcr.io/%s:%s`\n' "$GITHUB_REPOSITORY" "$VERSION" >> notes.md
 
       - name: Create the tag and the release
-        run: gh release create "$VERSION" --target "$GITHUB_SHA" --title "Sluss $VERSION" --notes-file notes.md
+        run: gh release create "$VERSION" --target "$TARGET_SHA" --title "Sluss $VERSION" --notes-file notes.md
 
       - name: Build the image for the tag
         run: gh workflow run publish-image.yml --ref "$VERSION"

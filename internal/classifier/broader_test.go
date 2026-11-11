@@ -152,3 +152,23 @@ func TestHistoricalFigures(t *testing.T) {
 		}
 	}
 }
+
+// A street, a square or a school named after a person is a place, not a
+// person.
+func TestPlacesNamedAfterPeople(t *testing.T) {
+	for _, c := range []struct {
+		text string
+		pii  bool
+	}{
+		{"Give directions from Karl Johans gate to the office.", false},
+		{"Mötet hålls på Anna Whitlocks gymnasium klockan nio.", false},
+		{"Hur tar jag mig från Gustav Adolfs torg till centralen?", false},
+		{"Park at Martin Olsson Road and walk the last bit.", false},
+		{"Skicka kallelsen till Karl Johansson om mötet på torget.", true},
+		{"Ring Anna Whitlock om gymnasiets schema.", true},
+	} {
+		if got := classesOf(c.text)["pii"]; got != c.pii {
+			t.Errorf("%q: pii=%v, want %v", c.text, got, c.pii)
+		}
+	}
+}
