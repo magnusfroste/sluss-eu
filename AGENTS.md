@@ -24,7 +24,7 @@ Rules for an operating agent:
 
 - **Secrets go in the environment, never in files you commit or paste.** Provider keys are referenced by the *name* of an environment variable; the console never asks for a key's value.
 - **Mount a volume at `/data`** (`ROUTER_DATA_DIR`, which the image sets by default). Without the mount, history, accounts and the audit chain sit in the container's own filesystem and are lost when it is recreated; without the variable at all they live in memory. The boot banner says which.
-- **Pin a release** (`:v1.10.2` or `:1.10`) in production, not `:latest`.
+- **Pin a release** (`:v1.11.0` or `:1.11`) in production, not `:latest`.
 - **A provider key is optional.** Local models are added in the console, with or without a key variable. Until a real model is connected, every answer is a built-in test answer that says so.
 - **Keep the fail-closed rule** that keeps personal data on local models unless the organisation decides otherwise. A block is the product working, not an error to route around.
 - **Know the decision mode.** By default no model takes part in any decision (`rules-only`); `ROUTER_SECOND_OPINION_MODEL` adds a local second opinion that may only make a decision stricter. The banner, `GET /version` and the `router.started` audit record say which. Do not turn it on for an organisation that wants no AI in the decision.

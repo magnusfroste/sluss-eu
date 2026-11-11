@@ -5,12 +5,14 @@ All notable changes to Sluss. Versions follow [semantic versioning](https://semv
 Releases are published from this file by the `release` workflow (Actions → release → Run workflow). Every release is a container image you can pin:
 
 ```
-ghcr.io/magnusfroste/sluss-eu:v1.10.2  # this release
-ghcr.io/magnusfroste/sluss-eu:1.10     # the newest 1.10.x
+ghcr.io/magnusfroste/sluss-eu:v1.11.0  # this release
+ghcr.io/magnusfroste/sluss-eu:1.11     # the newest 1.11.x
 ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 ```
 
-## Unreleased
+## v1.11.0 — 2026-11-11
+
+The console shows the essential first: Policy, Providers and Models each fit on one screen, and everything else is one click away.
 
 ### Console
 - **The essential first, the rest folded away.** Policy, Providers and Models each fit on one screen. What is needed every day is visible; everything else is under one *Advanced* section at the bottom that remembers whether you left it open.
