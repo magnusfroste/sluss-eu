@@ -70,7 +70,7 @@ That is all. Sending a certain kind of question to one particular model (for exa
 ## How to see why
 
 - In the chat, click the short line under an answer. The **Route** card in the inspector shows the kind of question, the data found, the rules that matched, and the model that answered.
-- On [Policy]({{BASE}}/router/policy), the **dry-run** shows the same for any sentence, without sending it to any model.
+- On [Policy]({{BASE}}/router/policy), **Test a sentence** (the dry-run) shows the same for any sentence, without sending it to any model. *Details* under the result has the reasons, line by line.
 
 ## A simple starting point
 

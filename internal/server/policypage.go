@@ -146,7 +146,16 @@ type policyPageData struct {
 	HasPolicy     bool
 	// ActiveRules is the active policy in plain words (ISSUE-116).
 	ActiveRules []policy.RuleSummary
-	Packs       []policyPack
+	// Rows is ActiveRules ready for the page (ISSUE-150): one list, in
+	// plain words, with a Remove button on the rules that were added here.
+	Rows []policyRow
+	// Drafts are rules added here that do not apply yet.
+	Drafts []ConsoleRule
+	// Classes are the kinds of data a rule can name, code and label.
+	Classes []labelled
+	// ClassJSON is code to label, for the dry-run's script.
+	ClassJSON template.JS
+	Packs     []policyPack
 	// Console rules (no-YAML rule editing, ISSUE-093).
 	RulesEnabled  bool
 	ConsoleRules  []ConsoleRule
@@ -162,6 +171,17 @@ type policyPageData struct {
 	Notice         string
 	Error          string
 }
+
+// policyRow is one line of "Your rules".
+type policyRow struct {
+	When, Then, Kind string
+	Title            string // the rule's id and its exact outcome, for a tooltip
+	Note             string
+	Removable        bool
+	Index            int
+}
+
+type labelled struct{ Code, Label string }
 
 // PolicyPageOptions configures the policy console page.
 type PolicyPageOptions struct {
@@ -193,6 +213,30 @@ func PolicyPageHandler(o PolicyPageOptions) http.HandlerFunc {
 		d.RulesEnabled = o.History != nil
 		d.ConsoleRules = LoadConsoleRules(o.History)
 		d.ConsoleActive = ConsolePolicyActive(o.History)
+		// While the rules added here are the ones in force, the active
+		// policy is those rules in order and then the default; each of them
+		// can be removed from the same list. Otherwise they are a draft.
+		for i, r := range d.ActiveRules {
+			row := policyRow{When: plainRule(r.When), Then: plainThen(r.Kind, r.Then), Kind: r.Kind,
+				Title: r.ID + ": " + r.Then, Note: r.Description, Index: i}
+			if d.ConsoleActive && i < len(d.ConsoleRules) {
+				row.Removable = true
+				row.Note = d.ConsoleRules[i].Note
+			}
+			if row.When == "" || row.When == "every request" {
+				row.When = "everything else"
+			}
+			d.Rows = append(d.Rows, row)
+		}
+		if !d.ConsoleActive {
+			d.Drafts = d.ConsoleRules
+		}
+		for _, c := range consoleSensitivities {
+			d.Classes = append(d.Classes, labelled{c, dataClassLabel(c)})
+		}
+		if b, err := json.Marshal(dataClassLabels); err == nil {
+			d.ClassJSON = template.JS(b)
+		}
 		d.Sensitivities = consoleSensitivities
 		d.ToolRisks = consoleToolRisks
 		d.TaskTypes = consoleTaskTypes
@@ -214,6 +258,8 @@ var policyTmpl = template.Must(template.New("policy").Funcs(template.FuncMap{
 	"adminNav":  adminNavFunc,
 	"dsHead":    dsHeadFunc,
 	"plainRule": plainRule,
+	"advJS":     advancedScriptFunc,
+	"taskLabel": taskLabel,
 	"inc":       func(i int) int { return i + 1 },
 }).Parse(policyHTML))
 
@@ -251,199 +297,254 @@ textarea{width:100%;background:#081328;border:1px solid #2c4066;border-radius:8p
 .chip{display:inline-block;padding:2px 8px;border-radius:6px;background:#182a4a;color:#b7c4dc;font-size:.78rem;margin:2px}
 .eg{color:#5f6e87;font-size:.82rem;margin-top:6px}
 .eg a{color:#7fd3ff;cursor:pointer}
+.cardhd{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.cardhd h2{margin:0}
+tr.k-mask .then{color:#f4b740}tr.k-default .then,tr.k-other .then{color:#b7c4dc;font-weight:500}
+.linkbtn{background:transparent;border:0;color:#f07ab0;font:inherit;font-size:.82rem;cursor:pointer;padding:8px 4px}
+.linkbtn:hover{text-decoration:underline}
+.btn.ghost{background:transparent;color:#e8eef7;border:1px solid #2c4066}
+.btn.dangerbtn{background:#3a1620;color:#f8b4bc;border:1px solid #5b2330}
+.draft{margin-top:16px;border:1px dashed #7a5a1f;border-radius:10px;padding:12px 14px;background:#1a1608}
+.drafthd{margin-bottom:4px}
+.lbl{font-size:.82rem;color:#8fa1bf;margin:10px 0 6px}
+.checks{display:flex;flex-wrap:wrap;gap:8px}
+.check{display:inline-flex;gap:6px;align-items:center;font-size:.88rem;background:#081328;border:1px solid #22324f;border-radius:8px;padding:8px 11px;cursor:pointer}
+.check input{width:auto}
+.fields{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+.fields label{font-size:.82rem;color:#8fa1bf;display:flex;flex-direction:column;gap:4px}
+.fields select,.fields input,.card input[name=tenant_id]{background:#081328;border:1px solid #22324f;color:#e8eef7;border-radius:8px;padding:8px 10px;font:inherit;font-size:.9rem;min-width:180px}
+.note a{color:#7fd3ff}
+details.why{margin-top:10px}details.why summary{cursor:pointer;color:#8fa1bf;font-size:.85rem}
+@media(max-width:640px){table.rules th:nth-child(3){display:none}.fields select,.fields input{min-width:0;width:100%}.fields label{width:100%}}
 </style></head>
 <body>
 <div class="tk-shell">
 {{adminNav "policy"}}
 <div class="tk-main">
-{{dsHead "policy" "Policy" "The rules every request passes, and a dry run that shows where a prompt would go without sending it."}}
+{{dsHead "policy" "Policy" "What may go where. Add a rule, and test any sentence against the rules without sending it."}}
 <div class="wrap">
 
 {{if .Notice}}<div class="card" style="border-color:#1f6b45;color:#a7f3d0;background:#0f2f22">{{.Notice}}</div>{{end}}
 {{if .Error}}<div class="card" style="border-color:#5b2330;color:#f8b4bc;background:#2a1118">{{.Error}}</div>{{end}}
 
 <div class="card">
-  <h2>Active policy</h2>
-  {{if .HasPolicy}}
-  <div class="kv">
-    <span><b>version</b> <span class="mono">{{.PolicyVersion}}</span></span>
-    <span><b>rules</b> {{.RuleCount}}</span>
-    <span><b>registry</b> <span class="mono">{{.RegistryVer}}</span></span>
+  <div class="cardhd">
+    <h2>Your rules</h2>
+    {{if .RulesEnabled}}<button class="btn" style="margin:0" type="button" onclick="document.getElementById('addrule').showModal()">Add a rule</button>{{end}}
   </div>
-    {{if .ActiveRules}}
+  {{if .Rows}}
   <table class="rules">
-    <thead><tr><th>#</th><th>When</th><th>Then</th></tr></thead>
+    <thead><tr><th>When</th><th>Then</th><th></th></tr></thead>
     <tbody>
-    {{range $i, $r := .ActiveRules}}
-    <tr class="k-{{$r.Kind}}">
-      <td class="mono" style="color:#64748b">{{inc $i}}</td>
-      <td title="{{$r.When}}">{{plainRule $r.When}}<div class="rid">{{$r.ID}}{{if $r.Description}} — {{$r.Description}}{{end}}</div></td>
-      <td class="then">{{$r.Then}}</td>
+    {{range .Rows}}
+    <tr class="k-{{.Kind}}" title="{{.Title}}">
+      <td>{{.When}}{{if .Note}}<div class="rid">{{.Note}}</div>{{end}}</td>
+      <td class="then">{{.Then}}</td>
+      <td style="text-align:right;white-space:nowrap">{{if .Removable}}<form method="post" action="/router/policy/rules/delete" style="margin:0" onsubmit="return confirm('Remove this rule? It stops applying at once.')"><input type="hidden" name="index" value="{{.Index}}"><button class="linkbtn" type="submit">Remove</button></form>{{end}}</td>
     </tr>
     {{end}}
     </tbody>
   </table>
-  <div class="note" style="margin-top:6px">Evaluated top-down: <b>block → force → constraints → hints → defaults</b>. Constraints accumulate and are <b>fail-closed</b> — with no compliant provider the request is blocked, never silently sent to the cloud.</div>
+  <div class="note" style="margin-top:10px">Every question is checked against these rules. When several match, the strictest wins. If no allowed model is left, the question is refused and recorded, never sent somewhere else.</div>
+  {{else}}<div class="note">No rules yet. Every question may go to any model. Add a rule to keep a kind of data on your own hardware.</div>{{end}}
+
+  {{if .Drafts}}
+  <div class="draft">
+    <div class="drafthd"><b>Not applied yet</b> <span class="note">{{len .Drafts}} {{if eq (len .Drafts) 1}}rule{{else}}rules{{end}} added here. Applying them replaces the rules above.</span></div>
+    <table class="rules">
+      <tbody>
+      {{range $i, $r := .Drafts}}
+      <tr class="k-{{$r.Kind}}">
+        <td>{{$r.PlainWhen}}{{if $r.Note}}<div class="rid">{{$r.Note}}</div>{{end}}</td>
+        <td class="then">{{$r.PlainThen}}</td>
+        <td style="text-align:right;white-space:nowrap"><form method="post" action="/router/policy/rules/delete" style="margin:0"><input type="hidden" name="index" value="{{$i}}"><button class="linkbtn" type="submit">Remove</button></form></td>
+      </tr>
+      {{end}}
+      </tbody>
+    </table>
+    <form method="post" action="/router/policy/activate" style="margin:12px 0 0"><button class="btn" style="margin:0" type="submit">Apply these rules</button></form>
+  </div>
   {{end}}
-  {{else}}<div class="note">No active policy (built-in default). Set <span class="mono">ROUTER_POLICY_PATH=builtin:nis2-baseline</span> for the NIS2 starter ruleset.</div>{{end}}
-  <div class="note" style="margin-top:8px">Evidence: <a href="/router/compliance/report" style="color:#7fd3ff">control report</a> · <a href="/router/gap-report" style="color:#7fd3ff">shadow-AI gap report</a> · <a href="/router/incident-report?window=24h" style="color:#7fd3ff">incident evidence 24h</a> · <a href="/router/incident-report" style="color:#7fd3ff">72h</a> · <a href="/router/audit/export" style="color:#7fd3ff">audit chain</a></div>
 </div>
 
 <div class="card">
-  <h2>Dry-run — test a prompt</h2>
-  <div class="note" style="margin-bottom:8px">Paste a prompt → see the classification, selected model, tier and egress (or a fail-closed block). No data leaves the router; no provider is called.</div>
-  <textarea id="p" placeholder="e.g. Summarise the case for customer 811218-2392 ..."></textarea>
-  <div class="eg">Examples:
-    <a onclick="ex('Summarise the case for customer 811218-2392 who complained about an invoice.')">personal ID</a> ·
-    <a onclick="ex('security review our SSO login flow for auth bypass and secret leakage')">security review</a> ·
-    <a onclick="ex('write a concise git commit message for a bugfix')">trivial</a>
+  <h2>Test a sentence</h2>
+  <div class="note" style="margin-bottom:8px">Type or paste a question and see what the rules do with it. Nothing is sent to any model.</div>
+  <textarea id="p" placeholder="e.g. Summarise the case for customer 811218-2392"></textarea>
+  <div class="eg">Try:
+    <a onclick="ex('Summarise the case for customer 811218-2392 who complained about an invoice.')">a personal identity number</a> ·
+    <a onclick="ex('Write a letter to our customer Karin Ek about the late delivery.')">a name</a> ·
+    <a onclick="ex('Write a short commit message for a bug fix.')">nothing sensitive</a>
   </div>
-  <button class="btn" onclick="run()">Run dry-run</button>
+  <button class="btn" onclick="run()">Test</button>
   <div class="res" id="res"></div>
 </div>
 
-<div class="card">
-  <h2>Rules — no YAML {{if .ConsoleActive}}<span class="badge b-local">LIVE</span>{{else if .ConsoleRules}}<span class="badge b-neutral">draft</span>{{end}}</h2>
-  {{if not .RulesEnabled}}
-  <div class="note">Rule editing needs a data dir (<span class="mono">ROUTER_DATA_DIR</span>).</div>
-  {{else}}
-  <div class="note" style="margin-bottom:10px">Build the egress firewall like firewall rules: <b>condition → action</b>, evaluated top-down, fail-closed. Activate applies instantly (no restart) and is recorded in the audit chain; rollback returns to the baseline policy (<span class="mono">ROUTER_POLICY_PATH</span>). Test with the dry-run above before and after.</div>
-  {{if .ConsoleRules}}
-  <table style="width:100%;border-collapse:collapse;margin-bottom:12px">
-    <tr style="color:#8fa1bf;font-size:.78rem;text-transform:uppercase;letter-spacing:.05em"><td style="padding:4px 0">#</td><td>When</td><td>Then</td><td></td></tr>
-    {{range $i, $r := .ConsoleRules}}
-    <tr style="border-top:1px solid #17253f">
-      <td style="padding:8px 8px 8px 0;color:#8fa1bf">{{$i}}</td>
-      <td style="padding:8px 8px 8px 0"><span class="chip">{{$r.WhenSummary}}</span>{{if $r.Note}}<div class="note">{{$r.Note}}</div>{{end}}</td>
-      <td style="padding:8px 8px 8px 0;font-size:.86rem">{{$r.ActionSummary}}</td>
-      <td style="padding:8px 0;text-align:right">
-        <form method="post" action="/router/policy/rules/delete" style="margin:0">
-          <input type="hidden" name="index" value="{{$i}}">
-          <button class="btn" style="background:transparent;color:#f07ab0;border:1px solid #4a1c33;padding:4px 10px;font-size:12px;margin:0" type="submit">Remove</button>
-        </form>
-      </td>
-    </tr>
-    {{end}}
-  </table>
-  <div style="display:flex;gap:10px">
-    {{if not .ConsoleActive}}
-    <form method="post" action="/router/policy/activate" style="margin:0"><button class="btn" style="margin:0" type="submit">Activate ruleset</button></form>
-    {{end}}
+<details class="ds-adv" data-adv="policy">
+  <summary>Advanced <small>more conditions, rule packs, retention, erasure</small></summary>
+  <div class="ds-adv-body">
+
+  <div class="card">
+    <h2>What is in force</h2>
+    {{if .HasPolicy}}
+    <div class="kv">
+      <span><b>policy</b> <span class="mono">{{.PolicyVersion}}</span></span>
+      <span><b>rules</b> {{.RuleCount}}</span>
+      <span><b>model list</b> <span class="mono">{{.RegistryVer}}</span></span>
+      <span><b>source</b> {{if .ConsoleActive}}rules added here{{else}}the policy the server started with{{end}}</span>
+    </div>
+    {{else}}<div class="note">No policy is loaded; the built-in default applies.</div>{{end}}
     {{if .ConsoleActive}}
-    <form method="post" action="/router/policy/rollback" style="margin:0" onsubmit="return confirm('Roll back to the baseline policy? The console rules stay saved but stop applying.')"><button class="btn" style="margin:0;background:#33290f;color:#f4d38a;border:1px solid #7a5a1f" type="submit">Roll back to baseline</button></form>
+    <div class="note" style="margin-top:10px">Going back makes the policy the server started with apply again. The rules added here stay saved but stop applying.</div>
+    <form method="post" action="/router/policy/rollback" style="margin:10px 0 0" onsubmit="return confirm('Go back to the policy the server started with? The rules added here stay saved but stop applying.')"><button class="btn ghost" style="margin:0" type="submit">Go back to the starting policy</button></form>
     {{end}}
+    <div class="note" style="margin-top:10px">For an auditor: <a href="/router/compliance/report">control report</a> · <a href="/router/gap-report">gap report</a> · <a href="/router/incident-report?window=24h">incident, 24 h</a> · <a href="/router/incident-report">72 h</a> · <a href="/router/audit">audit log</a></div>
+  </div>
+
+  {{if .RulesEnabled}}
+  <div class="card" id="morerule">
+    <h2>A rule with more conditions</h2>
+    <div class="note" style="margin-bottom:10px">Besides the kind of data, a rule can look at the kind of task, the risk, and what an agent's tools can do; and it can require any tag you have given your models, not only <span class="mono">local</span>. All the conditions you choose must hold.</div>
+    <form method="post" action="/router/policy/rules">
+      <div class="lbl">Kind of data</div>
+      <div class="checks">
+        {{range .Classes}}<label class="check"><input type="checkbox" name="sensitivity" value="{{.Code}}">{{.Label}}</label>{{end}}
+      </div>
+      <div class="lbl">What the agent's tools can do</div>
+      <div class="checks">
+        {{range .ToolRisks}}<label class="check"><input type="checkbox" name="tool_risk" value="{{.}}">{{.}}</label>{{end}}
+      </div>
+      <div class="fields">
+        <label>Kind of task
+          <select name="task_type"><option value="">any</option>{{range .TaskTypes}}<option value="{{.}}">{{taskLabel .}}</option>{{end}}</select></label>
+        <label>Risk
+          <select name="risk_level"><option value="">any</option>{{range .RiskLevels}}<option value="{{.}}">{{.}}</option>{{end}}</select></label>
+        <label>Then
+          <select name="action" id="ruleaction">
+            <option value="require_tags">only models with these tags</option>
+            <option value="mask">mask and send</option>
+            <option value="block">block</option>
+          </select></label>
+        <label id="tagslabel">Tags, comma-separated
+          <input name="tags" value="local"></label>
+        <label>Note, optional
+          <input name="note" placeholder="why this rule exists"></label>
+      </div>
+      <button class="btn" style="margin:0" type="submit">Add rule</button>
+    </form>
   </div>
   {{end}}
-  <form method="post" action="/router/policy/rules" style="margin-top:14px;border-top:1px solid #17253f;padding-top:12px">
-    <div style="font-size:.82rem;color:#8fa1bf;margin-bottom:6px">WHEN (at least one condition)</div>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">
-      {{range .Sensitivities}}<label style="display:inline-flex;gap:5px;align-items:center;font-size:.85rem;background:#081328;border:1px solid #22324f;border-radius:8px;padding:6px 10px;cursor:pointer"><input type="checkbox" name="sensitivity" value="{{.}}">{{.}}</label>{{end}}
-    </div>
-    <div style="font-size:.78rem;color:#8fa1bf;margin:2px 0 6px">or the <strong>agent capability</strong> the request declares (its tools, classified read &lt; write &lt; external &lt; destructive):</div>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">
-      {{range .ToolRisks}}<label style="display:inline-flex;gap:5px;align-items:center;font-size:.85rem;background:#081328;border:1px solid #22324f;border-radius:8px;padding:6px 10px;cursor:pointer"><input type="checkbox" name="tool_risk" value="{{.}}">{{.}}</label>{{end}}
-    </div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
-      <label style="font-size:.85rem;color:#8fa1bf">task type
-        <select name="task_type" style="display:block;background:#081328;border:1px solid #22324f;color:#e8eef7;border-radius:8px;padding:7px 9px;margin-top:4px">
-          <option value="">any</option>
-          {{range .TaskTypes}}<option value="{{.}}">{{.}}</option>{{end}}
-        </select></label>
-      <label style="font-size:.85rem;color:#8fa1bf">risk level
-        <select name="risk_level" style="display:block;background:#081328;border:1px solid #22324f;color:#e8eef7;border-radius:8px;padding:7px 9px;margin-top:4px">
-          <option value="">any</option>
-          {{range .RiskLevels}}<option value="{{.}}">{{.}}</option>{{end}}
-        </select></label>
-    </div>
-    <div style="font-size:.82rem;color:#8fa1bf;margin-bottom:6px">THEN</div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:10px">
-      <label style="font-size:.85rem;color:#8fa1bf">action
-        <select name="action" id="ruleaction" style="display:block;background:#081328;border:1px solid #22324f;color:#e8eef7;border-radius:8px;padding:7px 9px;margin-top:4px">
-          <option value="require_tags">keep on own hardware (require provider tags)</option>
-          <option value="mask">mask and send (placeholders to the cloud, restored in the answer)</option>
-          <option value="block">block (fail-closed)</option>
-        </select></label>
-      <label style="font-size:.85rem;color:#8fa1bf" id="tagslabel">provider tags (comma-separated)
-        <input name="tags" value="local" style="display:block;background:#081328;border:1px solid #22324f;color:#e8eef7;border-radius:8px;padding:7px 9px;margin-top:4px;min-width:220px"></label>
-      <label style="font-size:.85rem;color:#8fa1bf">note (optional)
-        <input name="note" placeholder="why this rule exists" style="display:block;background:#081328;border:1px solid #22324f;color:#e8eef7;border-radius:8px;padding:7px 9px;margin-top:4px;min-width:220px"></label>
-    </div>
-    <button class="btn" style="margin:0" type="submit">Add rule</button>
-  </form>
-  {{end}}
-</div>
 
-<div class="card">
-  <h2>Compliance packs (modules)</h2>
-  <div class="note" style="margin-bottom:10px">Embedded rulesets — each market/regime enables the pack it needs. Activate with <span class="mono">ROUTER_POLICY_PATH=builtin:&lt;name&gt;</span> (restart). Same engine; the pack is market-specific.</div>
-  <table style="width:100%;border-collapse:collapse">
-  {{range .Packs}}
-    <tr style="border-top:1px solid #17253f">
-      <td style="padding:8px 8px 8px 0;vertical-align:top;white-space:nowrap">
-        <span class="mono">builtin:{{.Name}}</span>{{if .Active}} <span class="badge b-local">active</span>{{end}}
-      </td>
-      <td style="padding:8px 0;color:#8fa1bf;font-size:.86rem">{{.Desc}} <span class="chip">{{.Rules}} rules</span></td>
-    </tr>
-  {{end}}
-  </table>
-</div>
-
-<div class="card danger">
-  <h2>Data, retention &amp; danger zone</h2>
-  <div class="kv">
-    <span><b>retention</b> {{if .RetentionDays}}{{.RetentionDays}} days (automatic sweep){{else}}not set{{end}}</span>
-    <span><b>prompt logging</b> {{if .PromptLogging}}on{{else}}off (default){{end}}</span>
+  <div class="card">
+    <h2>Rule packs</h2>
+    <div class="note" style="margin-bottom:10px">Ready-made sets of rules for a regulation. Whoever runs the server chooses one at start with <span class="mono">ROUTER_POLICY_PATH=builtin:&lt;name&gt;</span>.</div>
+    <table style="width:100%;border-collapse:collapse">
+    {{range .Packs}}
+      <tr style="border-top:1px solid #17253f">
+        <td style="padding:8px 8px 8px 0;vertical-align:top;white-space:nowrap">
+          <span class="mono">{{.Name}}</span>{{if .Active}} <span class="badge b-local">in use</span>{{end}}
+        </td>
+        <td style="padding:8px 0;color:#8fa1bf;font-size:.86rem">{{.Desc}} <span class="chip">{{.Rules}} rules</span></td>
+      </tr>
+    {{end}}
+    </table>
   </div>
-  <div class="note" style="margin-top:10px">Deletion by policy, not by button: the retention sweeper removes request
-  history past the window automatically (GDPR storage limitation). Prompt text is never stored unless prompt logging
-  is explicitly enabled.</div>
+
+  <div class="card">
+    <h2>What is kept, and for how long</h2>
+    <div class="kv">
+      <span><b>request history</b> {{if .RetentionDays}}{{.RetentionDays}} days, then removed automatically{{else}}no limit set{{end}}</span>
+      <span><b>the text of questions</b> {{if .PromptLogging}}stored{{else}}never stored{{end}}</span>
+    </div>
+    <div class="note" style="margin-top:10px">The request history holds counts and classes, never the text of a question unless that is turned on. The audit log is separate and is never removed.</div>
+  </div>
+
   {{if .ResetAvailable}}
-  <div class="note" style="margin-top:10px"><b>Reset demo data</b> clears operational data only — request history,
-  spend/savings, demo chat sessions and in-memory counters. It never touches the audit chain, API keys, users or the
-  roster — and the reset itself is <b>recorded in the tamper-evident audit chain</b>: you can delete data, but never
-  the fact that you deleted it.</div>
-  <form method="post" action="/router/data/reset" onsubmit="return confirm('Reset demo data? Request history, spend and demo sessions will be cleared. The reset is recorded in the audit chain.')" style="margin:10px 0 0">
-    <button class="btn" style="background:#3a1620;color:#f8b4bc;border:1px solid #5b2330" type="submit">Reset demo data</button>
-  </form>
-  <div class="note" style="margin-top:14px"><b>Tenant erasure (GDPR art. 17)</b>: delete ONE tenant's request history and
-  spend attribution, optionally revoking its API keys. The audit chain is never selectively deleted — the erasure itself
-  is recorded in it.</div>
-  <form method="post" action="/router/data/erase-tenant" onsubmit="return confirm('Erase all request data for this tenant? The erasure is recorded in the audit chain.')" style="margin:8px 0 0;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-    <input name="tenant_id" placeholder="tenant id (e.g. prospect_acme)" required style="background:#081328;border:1px solid #2c4066;border-radius:8px;color:#e8eef7;padding:9px 12px;font-size:.88rem;min-width:240px">
-    <label style="display:inline-flex;gap:6px;align-items:center;font-size:.85rem;color:#8fa1bf"><input type="checkbox" name="revoke_keys" checked style="width:auto">also revoke the tenant's API keys</label>
-    <button class="btn" style="margin:0;background:#3a1620;color:#f8b4bc;border:1px solid #5b2330" type="submit">Erase tenant data</button>
-  </form>
+  <div class="card danger">
+    <h2>Erase</h2>
+    <div class="note"><b>One tenant's data</b> (GDPR article 17): removes that tenant's request history and spend, and can revoke its keys. The erasure itself is written to the audit log.</div>
+    <form method="post" action="/router/data/erase-tenant" onsubmit="return confirm('Erase all request data for this tenant? The erasure is recorded in the audit log.')" style="margin:8px 0 0;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <input name="tenant_id" placeholder="tenant id" required style="min-width:220px">
+      <label style="display:inline-flex;gap:6px;align-items:center;font-size:.85rem;color:#8fa1bf"><input type="checkbox" name="revoke_keys" checked style="width:auto">also revoke its keys</label>
+      <button class="btn dangerbtn" style="margin:0" type="submit">Erase tenant data</button>
+    </form>
+    <div class="note" style="margin-top:16px"><b>Demo data</b>: clears request history, spend, chat sessions and counters. It does not touch the audit log, keys, users or models, and the reset itself is written to the audit log.</div>
+    <form method="post" action="/router/data/reset" onsubmit="return confirm('Reset demo data? Request history, spend and chat sessions are cleared. The reset is recorded in the audit log.')" style="margin:10px 0 0">
+      <button class="btn dangerbtn" style="margin:0" type="submit">Reset demo data</button>
+    </form>
+  </div>
   {{end}}
-</div>
+
+  </div>
+</details>
 
 </div></div></div>
+
+{{if .RulesEnabled}}
+<dialog class="ds-dialog" id="addrule">
+  <form method="post" action="/router/policy/rules">
+    <h2>Add a rule</h2>
+    <div class="note" style="margin-bottom:14px">When a question holds this kind of data, do this.</div>
+    <div class="lbl">When a question holds</div>
+    <div class="checks">
+      {{range .Classes}}<label class="check"><input type="checkbox" name="sensitivity" value="{{.Code}}">{{.Label}}</label>{{end}}
+    </div>
+    <div class="lbl" style="margin-top:14px">Then</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <label class="ds-choice"><input type="radio" name="action" value="require_tags" checked><span><b>Keep on own hardware</b><small>Only models you have tagged local may answer.</small></span></label>
+      <label class="ds-choice"><input type="radio" name="action" value="mask"><span><b>Mask and send</b><small>Identifiers, names and keys are replaced before the question goes to a cloud model, and put back in the answer.</small></span></label>
+      <label class="ds-choice"><input type="radio" name="action" value="block"><span><b>Block</b><small>The question is refused and recorded.</small></span></label>
+    </div>
+    <input type="hidden" name="tags" value="local">
+    <div class="fields" style="margin-top:14px"><label style="flex:1">Note, optional<input name="note" placeholder="why this rule exists"></label></div>
+    <div id="addruleerr" class="note" style="color:#f8b4bc;display:none;margin-top:8px">Choose at least one kind of data.</div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px">
+      <button class="btn ghost" style="margin:0" type="button" onclick="document.getElementById('addrule').close()">Cancel</button>
+      <button class="btn" style="margin:0" type="submit">Add rule</button>
+    </div>
+    <div class="note" style="margin-top:12px">Need the kind of task, the risk or an agent's tools as a condition? <a href="#morerule" onclick="document.getElementById('addrule').close();var d=document.querySelector('details[data-adv=policy]');d.open=true;">More conditions</a></div>
+  </form>
+</dialog>
+{{end}}
+
+{{advJS}}
 <script>
-const ra=document.getElementById('ruleaction');
+var dlg=document.getElementById('addrule');
+if(dlg){dlg.querySelector('form').addEventListener('submit',function(e){
+  if(!dlg.querySelector('input[name=sensitivity]:checked')){e.preventDefault();document.getElementById('addruleerr').style.display='block';}
+});}
+var ra=document.getElementById('ruleaction');
 if(ra){ra.onchange=function(){document.getElementById('tagslabel').style.display=(ra.value==='block'||ra.value==='mask')?'none':'';};}
+var CLASS={{.ClassJSON}};
+var PII={personnummer:'personal identity number',email:'e-mail address',phone:'phone number',iban:'IBAN',card:'card number',address:'postal address',name:'name',national_id:'identity number',birthdate:'date of birth',passport:'passport number',vehicle:'vehicle registration'};
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
 function ex(t){document.getElementById('p').value=t;run();}
 async function run(){
-  const p=document.getElementById('p').value.trim();if(!p)return;
-  const res=document.getElementById('res');res.style.display='block';res.innerHTML='<span class="note">running…</span>';
+  var p=document.getElementById('p').value.trim();if(!p)return;
+  var res=document.getElementById('res');res.style.display='block';res.innerHTML='<span class="note">testing…</span>';
   try{
-    const r=await fetch('/router/policy/dryrun',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:p})});
-    if(!r.ok){res.innerHTML='<span class="badge b-block">error</span> '+(await r.text());return;}
-    const j=await r.json();
-    let head='';
-    if(j.blocked){head='<span class="badge b-block">BLOCKED (fail-closed)</span>';}
-    else if(j.egress==='local'){head='<span class="badge b-local">🔀 LOCAL — stays in the house</span>';}
-    else{head='<span class="badge b-cloud">CLOUD</span>';}
-    let h=head+'<div class="row" style="margin-top:12px"><span class="k">Classification</span> <span class="chip">task: '+(j.task||'?')+'</span><span class="chip">risk: '+(j.risk||'?')+'</span><span class="chip">sensitivity: '+(j.sensitivity||'none')+'</span>'+((j.pii_types&&j.pii_types.length)?'<span class="chip">pii: '+j.pii_types.join(',')+'</span>':'')+'</div>';
-    if(j.blocked){
-      h+='<div class="row"><span class="k">Block code</span> <span class="mono">'+(j.block_code||'')+'</span></div>';
-      h+='<div class="row"><span class="k">Reason</span> '+(j.block_reason||'')+'</div>';
-    }else{
-      h+='<div class="row"><span class="k">Selected model</span> <span class="mono">'+(j.selected_model||'')+'</span> <span class="chip">'+(j.tier||'')+'</span></div>';
-      h+='<div class="row"><span class="k">Provider / egress</span> '+(j.provider||'')+' — <b>'+(j.egress||'')+'</b>'+((j.model_tags&&j.model_tags.length)?' <span class="chip">'+j.model_tags.join(' ')+'</span>':'')+'</div>';
-    }
-    h+='<div class="row"><span class="k">Policy</span> <span class="mono">'+(j.policy_version||'')+'</span></div>';
-    if(j.reasons&&j.reasons.length){h+='<div class="row"><span class="k">Reasons (routing)</span> <span class="note">'+j.reasons.join(' · ')+'</span></div>';}
+    var r=await fetch('/router/policy/dryrun',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:p})});
+    if(!r.ok){res.innerHTML='<span class="badge b-block">error</span> '+esc(await r.text());return;}
+    var j=await r.json();
+    var masked=(j.reasons||[]).some(function(x){return x.indexOf('mask and send: ')===0&&x.indexOf('nothing is masked')<0;});
+    var head;
+    if(j.blocked){head='<span class="badge b-block">Blocked</span> The question is refused and recorded.';}
+    else if(j.egress==='local'){head='<span class="badge b-local">Stays on own hardware</span>';}
+    else if(masked){head='<span class="badge b-cloud">Masked, then sent to the cloud</span>';}
+    else{head='<span class="badge b-cloud">May go to the cloud</span>';}
+    var found=(j.sensitivities||[]).map(function(c){return CLASS[c]||c;});
+    var kinds=(j.pii_types||[]).map(function(t){return PII[t]||t;});
+    var h='<div class="row">'+head+'</div>';
+    h+='<div class="row"><span class="k">Found</span> '+(found.length?esc(found.join(', '))+(kinds.length?' <span class="note">('+esc(kinds.join(', '))+')</span>':''):'Nothing sensitive')+'</div>';
+    if(!j.blocked){h+='<div class="row"><span class="k">Answered by</span> <span class="mono">'+esc(j.selected_model||'')+'</span> <span class="note">'+(j.egress==='local'?'on own hardware':'in the cloud')+'</span></div>';}
+    var d='<div class="row"><span class="k">Task</span> '+esc(j.task||'')+' · risk '+esc(j.risk||'')+'</div>';
+    if(j.blocked){d+='<div class="row"><span class="k">Block code</span> <span class="mono">'+esc(j.block_code||'')+'</span> '+esc(j.block_reason||'')+'</div>';}
+    else{d+='<div class="row"><span class="k">Provider</span> '+esc(j.provider||'')+' · '+esc(j.tier||'')+((j.model_tags&&j.model_tags.length)?' · tags '+esc(j.model_tags.join(', ')):'')+'</div>';}
+    d+='<div class="row"><span class="k">Policy</span> <span class="mono">'+esc(j.policy_version||'')+'</span></div>';
+    if(j.reasons&&j.reasons.length){d+='<div class="row"><span class="k">Reasons</span> <span class="note">'+j.reasons.map(esc).join('<br>')+'</span></div>';}
+    h+='<details class="why"><summary>Details</summary>'+d+'</details>';
     res.innerHTML=h;
-  }catch(e){res.innerHTML='<span class="badge b-block">error</span> '+e.message;}
+  }catch(e){res.innerHTML='<span class="badge b-block">error</span> '+esc(e.message);}
 }
 </script>
 </body></html>`

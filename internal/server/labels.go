@@ -76,7 +76,21 @@ func humanize(code string) string {
 // labels mid-sentence. Reports and MCP keep the code form.
 func plainRule(s string) string {
 	words := strings.Fields(s)
+	agent := false
 	for i, w := range words {
+		switch {
+		case w == "can" && i > 0 && words[i-1] == "agent":
+			agent = true
+			continue
+		case agent && w == "or":
+			continue
+		case agent:
+			if l, ok := agentLabels[w]; ok {
+				words[i] = l
+				continue
+			}
+			agent = false
+		}
 		if l, ok := dataClassLabels[w]; ok && w != "" && w != "none" {
 			words[i] = strings.ToLower(l)
 		} else if l, ok := taskLabels[w]; ok {
@@ -84,4 +98,100 @@ func plainRule(s string) string {
 		}
 	}
 	return strings.Join(words, " ")
+}
+
+// plainThen is what a rule does, in the words of the three outcomes
+// (ISSUE-150). kind and then come from policy.RuleSummary; the full text stays
+// in a tooltip.
+func plainThen(kind, then string) string {
+	switch kind {
+	case "block":
+		return "Block"
+	case "mask":
+		return "Mask and send"
+	case "require":
+		const p = "only models tagged "
+		if strings.HasPrefix(then, p) && !strings.Contains(then, " · ") {
+			own := true
+			for _, t := range strings.Split(strings.TrimPrefix(then, p), " + ") {
+				own = own && localTags[strings.TrimSpace(t)]
+			}
+			if own {
+				return "Keep on own hardware"
+			}
+		}
+		return strings.ToUpper(then[:1]) + then[1:]
+	case "default", "other":
+		return "Any allowed model"
+	}
+	if then == "" {
+		return "Any allowed model"
+	}
+	return strings.ToUpper(then[:1]) + then[1:]
+}
+
+// agentLabels names what an agent's tools can do.
+var agentLabels = map[string]string{
+	"read":        "read",
+	"write":       "change things",
+	"external":    "send things out",
+	"destructive": "delete things",
+}
+
+// plainWhen is the condition of a rule added in the console, in words.
+func (r ConsoleRule) PlainWhen() string {
+	var parts []string
+	if len(r.Sensitivities) > 0 {
+		names := make([]string, len(r.Sensitivities))
+		for i, s := range r.Sensitivities {
+			names[i] = strings.ToLower(dataClassLabel(s))
+		}
+		parts = append(parts, "data is "+strings.Join(names, " or "))
+	}
+	if r.TaskType != "" {
+		parts = append(parts, "task is "+strings.ToLower(taskLabel(r.TaskType)))
+	}
+	if r.RiskLevel != "" {
+		parts = append(parts, "risk is "+r.RiskLevel)
+	}
+	if len(r.ToolRisks) > 0 {
+		names := make([]string, len(r.ToolRisks))
+		for i, t := range r.ToolRisks {
+			names[i] = agentLabels[t]
+			if names[i] == "" {
+				names[i] = t
+			}
+		}
+		parts = append(parts, "agent can "+strings.Join(names, " or "))
+	}
+	return strings.Join(parts, " and ")
+}
+
+// PlainThen is the outcome of a rule added in the console, in words.
+func (r ConsoleRule) PlainThen() string {
+	switch r.Action {
+	case "block":
+		return "Block"
+	case "mask":
+		return "Mask and send"
+	}
+	own := len(r.Tags) > 0
+	for _, t := range r.Tags {
+		own = own && localTags[t]
+	}
+	if own {
+		return "Keep on own hardware"
+	}
+	return "Only models tagged " + strings.Join(r.Tags, " + ")
+}
+
+// Kind is the outcome as a short code, for colour.
+func (r ConsoleRule) Kind() string {
+	switch r.Action {
+	case "block":
+		return "block"
+	case "mask":
+		return "mask"
+	}
+	return "require"
 }

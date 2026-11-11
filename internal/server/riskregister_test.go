@@ -76,7 +76,7 @@ func TestRiskRegisterGapWarningAndTagUpdate(t *testing.T) {
 	RiskRegisterPageHandler(o)(rec, httptest.NewRequest(http.MethodGet, "/router/risk", nil))
 	body := rec.Body.String()
 	for _, want := range []string{"Risk register", "dpa-signed", "iso27001", "subprocessors-vetted",
-		"The active policy requires", "<b>local</b>", "fail-closed", `action="/router/providers/tags"`} {
+		"Your rules require", "<b>local</b>", "are refused", `action="/router/providers/tags"`} {
 		if !strings.Contains(body, want) {
 			t.Errorf("register page missing %q", want)
 		}
@@ -88,7 +88,7 @@ func TestRiskRegisterGapWarningAndTagUpdate(t *testing.T) {
 	if strings.Contains(pb, `action="/router/providers/tags"`) {
 		t.Error("the tag matrix belongs on the risk register, not on Providers")
 	}
-	if !strings.Contains(pb, "The active policy requires") || !strings.Contains(pb, `href="/router/risk"`) {
+	if !strings.Contains(pb, "Your rules require") || !strings.Contains(pb, `href="/router/risk"`) {
 		t.Error("Providers should keep the gap warning with a link to the risk register")
 	}
 

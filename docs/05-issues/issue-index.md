@@ -14,7 +14,6 @@ Klart enligt kod- och test-evidens:
 
 Nästa (i ordning):
 
-- ISSUE-150 — Konsolen 70/30: väsentligt först, Advanced hopfällt, klartext i stället för koder; Policy blir regler + dry-run + enkel dialog, Providers och Models städas. `epic: EPIC-14`, `priority: P1`, `state: ready-for-human` (väntar på ägarens genomgång av demon).
 - ISSUE-152 — Kontroll av svaren: svaret läses med frågans värdedetektorer; det nya flaggas i request-loggen, auditkedjan, /metrics och inspektorn. Blockerar aldrig. `epic: EPIC-14`, `priority: P2`, `state: done`, klar 2026-11-08.
 
 Backlogg — användardriven (byggs när en användare ber om det):
@@ -132,6 +131,7 @@ P2:
 4. Uppdatera dokumentation om kontrakt ändras.
 5. Kontrollera latency om issue påverkar fast path.
 6. Merge efter review.
+- ISSUE-150 — Konsolen 70/30: Policy, Providers och Models visar det väsentliga på en skärm, resten under en Advanced-del som minns sitt läge; regler i klartext, lägg till regel i en dialog, dry-run i klartext. `epic: EPIC-14`, `priority: P1`, `state: done`, klar 2026-11-11.
 - ISSUE-173 — Historiska personer är inte personuppgifter: namnregeln hoppar över en lista på cirka 250 personer som inte längre lever; levande offentliga personer flaggas fortfarande. `epic: EPIC-14`, `priority: P3`, `state: done`, klar 2026-11-11.
 - ISSUE-172 — Sidan *Audit log* i konsolen (poster, fil i bruk, förseglade filer, nedladdning) med knappen *Seal now* som förseglar och aldrig raderar; signatur och SBOM-intyg på v1.10.0-imagen kontrollerade med cosign. `epic: EPIC-15`, `priority: P2`, `state: done`, klar 2026-11-11.
 - ISSUE-171 — Förseglad rotation av auditloggen: filen avslutas med `audit.sealed`, flyttas till `audit-archive/` (raderas aldrig), ny fil fortsätter samma kedja och bär den förseglade filens SHA-256; `ROUTER_AUDIT_ROTATE_MB`, `audit-verify` med flera filer. `epic: EPIC-15`, `priority: P2`, `state: done`, klar 2026-11-10.

@@ -49,7 +49,7 @@ The audit log is *not* in the database. It is its own file, `audit-chain.jsonl`,
 
 1. Sluss reads the environment.
 2. If the database is empty, it writes a starting roster into it: the OpenRouter connection and three models, one per level. Otherwise it reads the providers and models that are there.
-3. For each provider, it looks up the key variable *by name* in the environment. If the value is there, the provider's models can be chosen. If it is missing, the provider is listed but its models are not routable, and the Providers page says *key missing*. A local server that takes no key has no key variable, and needs none.
+3. For each provider, it looks up the key variable *by name* in the environment. If the value is there, the provider's models can be chosen. If it is missing, the provider is listed but its models are not routable, and the Providers page says *No key yet*; the name of the variable is under *Advanced* on that page. A local server that takes no key has no key variable, and needs none.
 4. From then on, a change on Models or Providers applies at once. The one exception is a **new key variable**: the environment is read only at start, so adding a key to a new provider means restarting Sluss. The Providers page says *awaiting restart* until you do.
 
 ## An example

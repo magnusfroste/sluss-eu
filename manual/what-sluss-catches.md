@@ -71,6 +71,6 @@ It only flags; it never blocks or changes the answer. The flag is in the request
 
 ## How to check for yourself
 
-The [dry-run]({{BASE}}/router/policy) shows what the rules find in any sentence without sending it anywhere. Try your own. With a second opinion turned on, the dry-run asks it too and shows its line under the rule's.
+The [dry-run]({{BASE}}/router/policy), *Test a sentence* on the Policy page, shows what the rules find in any sentence without sending it anywhere. Try your own. With a second opinion turned on, the dry-run asks it too and shows its line, under *Details*, under the rule's.
 
 To measure your own model the way the table above was measured, send the questions in `internal/classifier/catch_corpus_test.go` to `{{BASE}}/router/decision` one by one and read `decision_reasons`: the first line is the rules' verdict, a line starting with *second opinion* is the model's.
