@@ -5,12 +5,14 @@ All notable changes to Sluss. Versions follow [semantic versioning](https://semv
 Releases are published from this file by the `release` workflow (Actions → release → Run workflow). Every release is a container image you can pin:
 
 ```
-ghcr.io/magnusfroste/sluss-eu:v1.11.0  # this release
+ghcr.io/magnusfroste/sluss-eu:v1.11.1  # this release
 ghcr.io/magnusfroste/sluss-eu:1.11     # the newest 1.11.x
 ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 ```
 
-## Unreleased
+## v1.11.1 — 2026-11-11
+
+A release reaches the instance that follows `latest` with its version on it, and places named after people are not personal data.
 
 ### Protection
 - A street, a square or a school named after a person is a place, not a person: *Karl Johans gate*, *Gustav Adolfs torg*, *Anna Whitlocks gymnasium* are no longer personal data.
