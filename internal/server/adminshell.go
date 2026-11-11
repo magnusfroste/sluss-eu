@@ -76,7 +76,7 @@ type navGroup struct {
 
 var adminNavGroups = []navGroup{
 	{"overview", "Overview", icDashboard, []navItem{{key: "dashboard", href: "/router/dashboard", label: "Overview"}}},
-	{"activity", "Activity", icLog, []navItem{{key: "log", href: "/router/log", label: "Request log"}, {key: "reports", href: "/router/incident-report?window=24h", label: "Reports"}}},
+	{"activity", "Activity", icLog, []navItem{{key: "log", href: "/router/log", label: "Request log"}, {key: "reports", href: "/router/incident-report?window=24h", label: "Reports"}, {key: "audit", href: "/router/audit", label: "Audit log"}}},
 	{"policy", "Policy", icPolicy, []navItem{{key: "policy", href: "/router/policy", label: "Policy"}}},
 	{"models", "Models", icModels, []navItem{{key: "models", href: "/router/models", label: "Models"}, {key: "providers", href: "/router/providers", label: "Providers"}, {key: "risk", href: "/router/risk", label: "Risk register"}}},
 	{"access", "Access", icKeys, []navItem{{key: "keys", href: "/router/keys", label: "Department keys"}, {key: "users", href: "/router/users", label: "Console users"}}},

@@ -357,3 +357,21 @@ func VerifySealed(data []byte, next ChainRecord) error {
 	}
 	return nil
 }
+
+// Current describes the file being written: the sequence numbers it holds
+// and its size. first is 0 when the chain is empty.
+func (s *ChainSink) Current() (first, last uint64, bytes int64) {
+	if s == nil {
+		return 0, 0, 0
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if st, err := os.Stat(s.path); err == nil {
+		bytes = st.Size()
+	}
+	if seq, _, ok := lastRecord(s.path); ok {
+		last = seq
+		first = firstSeq(s.path)
+	}
+	return first, last, bytes
+}

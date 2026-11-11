@@ -469,7 +469,7 @@ details.adv[open]>summary{margin-bottom:1.25rem}
   <div class="ds-card ds-c4"><h2>Evidence</h2><div class="ds-sub">Counts and classes — never prompt content</div>
     <div class="ds-links">
       <a href="/router/incident-report?window=24h">Incident, last 24 h <small>NIS2 early warning →</small></a>
-      <a href="/router/audit/export">Audit chain <small>verify offline →</small></a>
+      <a href="/router/audit">Audit log <small>download, check, seal →</small></a>
       <a href="/router/gap-report">Gap report <small>shadow policy →</small></a>
       <a href="/router/compliance/report">Control report <small>rules and effect →</small></a>
     </div>

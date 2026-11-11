@@ -10,6 +10,11 @@ ghcr.io/magnusfroste/sluss-eu:1.10     # the newest 1.10.x
 ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 ```
 
+## Unreleased
+
+### Console
+- **A page for the audit log**, under *Activity*: how many records it holds, the file in use, the sealed files with their SHA-256, the download of the whole log, and one button, *Seal now*, that closes the file in use and continues the log in a new one. The seal records who pressed it. There is no way to delete anything from the page.
+
 ## v1.10.0 — 2026-11-10
 
 The audit log can be closed and continued as one chain, with nothing deleted.
