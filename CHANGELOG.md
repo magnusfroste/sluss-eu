@@ -10,6 +10,15 @@ ghcr.io/magnusfroste/sluss-eu:1.11     # the newest 1.11.x
 ghcr.io/magnusfroste/sluss-eu:latest   # main, for trying things out
 ```
 
+## Unreleased
+
+### Protection
+- A street, a square or a school named after a person is a place, not a person: *Karl Johans gate*, *Gustav Adolfs torg*, *Anna Whitlocks gymnasium* are no longer personal data.
+
+### Releases
+- An instance that follows `latest` now gets the image stamped with the release: the build for a release tag deploys too, and waits until the instance reports the tag. Before, the instance could keep the image built for main a moment earlier, and `/version` showed no release.
+- The release workflow tags the newest main and waits for the release notes to be there, so a run started right after a merge no longer fails on the commit before it.
+
 ## v1.11.0 — 2026-11-11
 
 The console shows the essential first: Policy, Providers and Models each fit on one screen, and everything else is one click away.

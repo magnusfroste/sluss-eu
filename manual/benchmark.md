@@ -37,19 +37,19 @@ Version 1.10.2.
 | | Sluss, rules only | Sluss, rules + second opinion | Presidio |
 |---|---|---|---|
 | Sensitive questions flagged | 194 of 232 (84 %) | 226 of 232 (97 %) | 161 of 232 (69 %) |
-| Harmless questions flagged | 16 of 212 (8 %) | 19 of 212 (9 %) | 47 of 212 (22 %) |
+| Harmless questions flagged | 15 of 212 (7 %) | 18 of 212 (8 %) | 47 of 212 (22 %) |
 | — with an identifier or key | 104 of 104 (100 %) | 104 of 104 (100 %) | 72 of 104 (69 %) |
 | — with a term or marking | 70 of 70 (100 %) | 70 of 70 (100 %) | 48 of 70 (69 %) |
 | — with meaning only | 20 of 58 (34 %) | 52 of 58 (90 %) | 41 of 58 (71 %) |
-| — look-alikes left alone | 94 of 110 (85 %) | 91 of 110 (83 %) | 68 of 110 (62 %) |
+| — look-alikes left alone | 95 of 110 (86 %) | 92 of 110 (84 %) | 68 of 110 (62 %) |
 | — plain questions left alone | 102 of 102 (100 %) | 102 of 102 (100 %) | 97 of 102 (95 %) |
-| Right class, exactly | 385 of 444 (87 %) | 365 of 444 (82 %) | 240 of 444 (54 %) |
+| Right class, exactly | 386 of 444 (87 %) | 366 of 444 (82 %) | 240 of 444 (54 %) |
 | Same answer every run | yes (5 runs) | yes (2 runs, live) | not measured |
 | Time per question (median / p95) | 0.13 ms / 0.20 ms | 304 ms / 333 ms (live) | 5 ms / 8 ms |
 
 | Class | Rules only, recall / precision | Rules + second opinion | Presidio |
 |---|---|---|---|
-| Personal data | 1.00 / 0.91 | 1.00 / 0.71 | 0.88 / 0.37 |
+| Personal data | 1.00 / 0.91 | 1.00 / 0.72 | 0.88 / 0.37 |
 | Keys and secrets | 0.75 / 1.00 | 1.00 / 0.84 | — |
 | Security-classified | 0.92 / 0.96 | 0.96 / 0.96 | — |
 | Health | 0.62 / 0.67 | 0.96 / 0.74 | — |

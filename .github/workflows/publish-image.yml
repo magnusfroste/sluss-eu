@@ -114,17 +114,21 @@ jobs:
   #   variable SLUSS_DEPLOY_URL          e.g. https://demo.sluss.eu (optional;
   #                                      without it the deploy is not verified)
   # Without the secret the job is skipped with a notice, so forks stay green.
+  # A release tag deploys too: its image is the one stamped with the version,
+  # and it is built after the image for main. Without this the instance kept
+  # the unstamped image and /version showed no release until the next one.
   deploy:
     needs: build-push
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' || github.ref_type == 'tag'
     runs-on: ubuntu-latest
     concurrency:
-      group: deploy-main
+      group: deploy-${{ github.ref_type }}
       cancel-in-progress: true
     env:
       WEBHOOK: ${{ secrets.EASYPANEL_DEPLOY_WEBHOOK }}
       DEPLOY_URL: ${{ vars.SLUSS_DEPLOY_URL }}
       WANT: ${{ github.sha }}
+      WANT_VERSION: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
     steps:
       - name: Deploy and verify
         run: |
@@ -143,9 +147,17 @@ jobs:
 
           running() {
             # /version is public and carries only release, commit and build
-            # time; /metrics needs a key since v1.3.
-            curl -sS --max-time 10 "${DEPLOY_URL%/}/version" 2>/dev/null \
-              | sed -n 's/.*"commit":"\([0-9a-f]*\)".*/\1/p'
+            # time; /metrics needs a key since v1.3. For a release the
+            # instance must also say the tag: the commit alone is the same
+            # as in the image built for main a moment earlier.
+            body=$(curl -sS --max-time 10 "${DEPLOY_URL%/}/version" 2>/dev/null)
+            commit=$(printf '%s' "$body" | sed -n 's/.*"commit":"\([0-9a-f]*\)".*/\1/p')
+            version=$(printf '%s' "$body" | sed -n 's/.*"version":"\([^"]*\)".*/\1/p')
+            if [ -n "$WANT_VERSION" ] && [ "$version" != "$WANT_VERSION" ]; then
+              echo "${commit:-unknown} without $WANT_VERSION"
+            else
+              echo "$commit"
+            fi
           }
 
           wait_for_build() {
