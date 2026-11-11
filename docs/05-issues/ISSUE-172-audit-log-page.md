@@ -37,3 +37,9 @@ knapp efteråt, ingen horisontell rullning i mobilbredd.
   `sha256:2b7a6996…f398ec`.
 - SBOM-intyget verifierar: SPDX 2.3, 36 paket, samma digest.
 - Med fel identitet (annat repo) misslyckas kontrollen, som den ska.
+
+## Go 1.26.11 (i samma ändring)
+
+CI stoppade ändringen på `govulncheck`: GO-2026-6859 i `net/http`, publicerad
+efter v1.10.0, rättad i Go 1.26.11. `go.mod` och `Dockerfile` är uppgraderade
+och kontrollen är ren. Releaser till och med v1.10.0 är byggda med 1.26.10.
