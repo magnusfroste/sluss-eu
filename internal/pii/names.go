@@ -17,8 +17,9 @@ import (
 //
 // What it does not do, by design:
 //   - A given name alone ("ask Karl") is not a name. Too many are also words.
-//   - It cannot tell a customer from an author: "Astrid Lindgren" is found
-//     too. That is an over-flag in the safe direction.
+//   - It cannot tell a customer from a living public figure: a minister or
+//     an athlete is found too. That is an over-flag in the safe direction.
+//     People from history are left alone (historical.go).
 //   - Given names that are also everyday words (Will, May, Mark, Love, Björn
 //     as "björn") are left out of the list.
 //
@@ -78,7 +79,7 @@ kent niklas patrik christian robert oskar oscar viktor victor emil simon jakob j
 david filip philip axel anton isak isac albin elias hugo lucas lukas liam noah oliver william
 theo leo vincent adam ludvig melvin nils olle sixten harry frank ville elliot alfred arvid
 edvin ebbe gabriel samuel josef joel jonathan johannes joakim kristian kristoffer
-christoffer linus rasmus sebastian tobias tim tommy tony torbjörn ulrik urban valter wilhelm
+christoffer linus rasmus sebastian tobias tim tommy tony torbjörn ulrik urban valter wilhelm vilhelm
 yngve örjan östen pontus pär ola ove ragnar reine rickard richard rikard rune sigvard
 staffan stellan sune sören tage ture uno claes klas conny dennis dick donald evert folke
 gert gösta hampus henry holger ingvar jesper jimmy jörgen kalle kenneth kurt lasse
@@ -141,6 +142,15 @@ func findNames(text string) [][2]int {
 			}
 		}
 		if end < 0 {
+			continue
+		}
+		// A person from history is not a person whose data needs keeping
+		// in the house (historical.go).
+		if isHistoricalFigure(text[w[0]:end]) {
+			for k := i; k <= j; k++ {
+				used[k] = true
+			}
+			i = j
 			continue
 		}
 		out = append(out, [2]int{w[0], end})

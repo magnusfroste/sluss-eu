@@ -129,3 +129,26 @@ func TestCriticalFacilityProtection(t *testing.T) {
 		t.Errorf("pii types %v, want national_id only", job.PIITypes)
 	}
 }
+
+// ISSUE-173: a person from history is not personal data; a living public
+// figure and a private person still are.
+func TestHistoricalFigures(t *testing.T) {
+	cases := []struct {
+		name, text string
+		pii        bool
+	}{
+		{"an author", "Sammanfatta Vilhelm Mobergs utvandrarserie för bokcirkeln.", false},
+		{"a scientist", "Explain what Charles Darwin meant by natural selection.", false},
+		{"possessive", "What was Florence Nightingale's contribution to statistics?", false},
+		{"with a particle", "Skriv tre meningar om Carl von Linné till skolans växtvandring.", false},
+		{"a private person", "Sammanfatta ärendet för Vilhelm Moström som väntar på återbetalning.", true},
+		{"a living public figure", "Skriv ett brev till Carl Bildt och bjud in honom som talare.", true},
+		{"history beside a private person", "Compare Charles Darwin's handwriting with our customer Henrik Wallin's signature.", true},
+		{"history beside an identifier", "Charles Darwin is the password hint; the account belongs to anna.ek@example.org.", true},
+	}
+	for _, c := range cases {
+		if got := classesOf(c.text)["pii"]; got != c.pii {
+			t.Errorf("%s: pii=%v, want %v", c.name, got, c.pii)
+		}
+	}
+}
