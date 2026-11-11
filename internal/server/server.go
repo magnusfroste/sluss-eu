@@ -151,6 +151,9 @@ type Config struct {
 	// the admin gate so the chain can be handed to an auditor and verified
 	// offline with cmd/audit-verify.
 	AuditChain *audit.ChainSink
+	// AuditRotateMB is ROUTER_AUDIT_ROTATE_MB as configured, for the Audit
+	// log page; empty when the log is never sealed by itself.
+	AuditRotateMB string
 
 	// Compliance report inputs (ISSUE-076). AuditMemory is the bounded in-memory
 	// audit window used for event breakdowns; ConservativeMode/BudgetUSD are the
@@ -474,6 +477,8 @@ func New(cfg Config) http.Handler {
 		// SHA-256 of each; and sealing the current file by hand. Sealing
 		// moves the file to the archive and continues the chain in a new
 		// one. There is no way to delete a file from here.
+		mux.Handle("GET /router/audit", dashGuard(AuditPageHandler(cfg.AuditChain, cfg.AuditRotateMB, cfg.Logger)))
+		mux.Handle("POST /router/audit/seal", dashGuard(AuditSealHandler(cfg.AuditChain)))
 		mux.Handle("GET /router/audit/segments", dashGuard(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			w.Header().Set("Cache-Control", "no-store")

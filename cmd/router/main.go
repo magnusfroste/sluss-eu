@@ -57,6 +57,7 @@ func main() {
 	// also appended to the tamper-evident hash chain (ISSUE-075) so the trail
 	// can be exported and verified offline (cmd/audit-verify).
 	var auditChain *audit.ChainSink
+	auditRotateMB := ""
 	if dir := strings.TrimSpace(os.Getenv("ROUTER_DATA_DIR")); dir != "" {
 		chain, err := audit.NewChainSink(filepath.Join(dir, "audit-chain.jsonl"), logger)
 		if err != nil {
@@ -70,6 +71,7 @@ func main() {
 			if v := strings.TrimSpace(os.Getenv("ROUTER_AUDIT_ROTATE_MB")); v != "" && v != "0" {
 				if mb, err := strconv.ParseFloat(v, 64); err == nil && mb > 0 {
 					chain.SetRotateBytes(int64(mb * 1024 * 1024))
+					auditRotateMB = v
 					logger.Info("audit chain rotation enabled: sealed files are kept in the archive, never deleted", "at_mb", mb, "archive", filepath.Join(dir, audit.ArchiveDirName))
 				} else {
 					logger.Warn("ROUTER_AUDIT_ROTATE_MB not understood; the audit chain is not rotated", "value", v)
@@ -724,6 +726,7 @@ func main() {
 		Experiment:                 experimentCfg,
 		Bandit:                     banditRouter,
 		AuditChain:                 auditChain,
+		AuditRotateMB:              auditRotateMB,
 		AuditMemory:                auditMemory,
 		ConservativeMode:           parseBoolEnv(os.Getenv("ROUTER_CONSERVATIVE_MODE")),
 		BudgetUSD:                  float64(parseIntEnv(os.Getenv("ROUTER_BUDGET_USD"), 0)),
